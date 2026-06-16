@@ -1,0 +1,50 @@
+# Low-RAM profile for the Oracle AMD E2.1.Micro (1 OCPU / 1 GB) + swap.
+# API only — NO Ollama (LLM can't fit), NO heavy scheduler (retrain would OOM).
+# Serves the on-demand /query API 24/7. Move to docker-compose.yml on an A1 box
+# to add Ollama + the full autonomous scheduler.
+#
+#   docker compose -f docker-compose.micro.yml up -d --build
+services:
+
+  api:
+    build: .
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000 --workers 1
+    ports:
+      - "8000:8000"
+    environment:
+      # Hard-disable the LLM so it can never spike memory on 1 GB.
+      - AOS_DISABLE_LLM=1
+      # Lock CORS to your frontend origin (comma-separated for multiple).
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
+      # Smaller thread pools = lower memory for numpy/xgboost.
+      - OMP_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    # Cap container memory; the host swap absorbs spikes without killing the box.
+    mem_limit: 820m
+    mem_reservation: 512m
+    restart: unless-stopped
+
+  # OPTIONAL light scheduler — only the cheap jobs (premarket/monitor), NO
+  # retrain, NO per-2-min loop (those reload models and OOM 1 GB). Enable only
+  # if you added ≥4 GB swap and accept slowness. Uncomment to use:
+  #
+  # scheduler-light:
+  #   build: .
+  #   command: python aos/scheduler.py run-forever
+  #   environment:
+  #     - AOS_DISABLE_LLM=1
+  #     - AOS_PROFILE=micro            # (skips heavy jobs — see scheduler.py)
+  #     - OMP_NUM_THREADS=1
+  #   volumes:
+  #     - ./data:/app/data
+  #     - ./models:/app/models
+  #     - ./outputs:/app/outputs
+  #     - ./logs:/app/logs
+  #   mem_limit: 700m
+  #   restart: unless-stopped

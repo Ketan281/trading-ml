@@ -1,0 +1,36 @@
+{
+  "train_end": 2019,
+  "test_year": 2020,
+  "train_count": 1391,
+  "test_count": 12799,
+  "train_actions": {
+    "hold": 259,
+    "avoid": 518,
+    "reduce_exposure": 518,
+    "sell": 24,
+    "buy": 72
+  },
+  "test_actions": {
+    "avoid": 10340,
+    "reduce_exposure": 1529,
+    "hold": 838,
+    "buy": 69,
+    "sell": 23
+  },
+  "train_direction": {
+    "sideways": 335,
+    "uptrend": 604,
+    "downtrend": 452
+  },
+  "test_direction": {
+    "downtrend": 4585,
+    "sideways": 2316,
+    "uptrend": 5898
+  },
+  "train_risk": {
+    "high": 680,
+    "extreme": 506,
+    "medium": 203,
+    "low": 2
+  }
+}

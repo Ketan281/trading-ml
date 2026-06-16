@@ -1,0 +1,130 @@
+{
+  "symbol": "BANKNIFTY",
+  "market_condition": "weak_downtrend",
+  "regime_alignment": "misaligned",
+  "action": "avoid",
+  "strategy": "bear_call_spread",
+  "confidence": 0.4,
+  "risk_level": "high",
+  "entry_zone": "N/A",
+  "stop_loss": "N/A",
+  "target": "N/A",
+  "position_size": "avoid",
+  "reasoning": [
+    "The market is in a weak downtrend, which contradicts the neutral regime score of 55/100.",
+    "The trend and regime do not align, further reducing confidence."
+  ],
+  "regime_notes": "The overall trending_down_normal_vol_expiry_week regime suggests caution but does not provide clear guidance on direction.",
+  "memory_notes": "Recent similar conditions indicate a lack of high win rate in this setup, suggesting lower confidence.",
+  "event_notes": "An elevated event risk level and Q4 results season alert suggest additional caution.",
+  "warnings": [
+    "Avoid trading as the market is not aligned with neutral regime expectations.",
+    "Pre-event window \u2014 reduced exposure",
+    "[EVENT] \ud83d\udcca Q4 results season \u2014 stock specific volatility high"
+  ],
+  "event_context": {
+    "risk": "elevated",
+    "is_event_day": false,
+    "alerts": [
+      "\ud83d\udcca Q4 results season \u2014 stock specific volatility high"
+    ]
+  },
+  "validation_status": "CLEAN",
+  "validation_penalty": 0.0,
+  "hallucination_check": {
+    "symbol": "BANKNIFTY",
+    "timestamp": "2026-05-25T13:00:00.633098",
+    "status": "CLEAN",
+    "original_confidence": 0.4,
+    "adjusted_confidence": 0.4,
+    "total_penalty": 0.0,
+    "issues_found": 0,
+    "issues": [],
+    "rule_results": [
+      {
+        "rule": "RSI vs Action",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "VWAP vs Action",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "Trend vs Action",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "MACD vs Action",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "Bollinger vs Action",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "Confidence vs Risk",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "Volatility vs Strategy",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "Numeric Consistency",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "OI Contradiction",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      },
+      {
+        "rule": "Regime Contradiction",
+        "passed": true,
+        "penalty": 0,
+        "issues": []
+      }
+    ],
+    "rules_passed": 10,
+    "rules_failed": 0
+  },
+  "regime_summary": {
+    "overall": "trending_down_normal_vol_expiry_week",
+    "bias": "neutral",
+    "score": 55,
+    "vol": "normal",
+    "expiry": "expiry_week",
+    "tradeable": true
+  },
+  "memory_summary": {
+    "similar_found": 1,
+    "failures_found": 0,
+    "winners_found": 0,
+    "stats": null,
+    "top_similarity": 1.0
+  },
+  "event_summary": {
+    "risk": "elevated",
+    "is_event_day": false,
+    "alerts": [
+      "\ud83d\udcca Q4 results season \u2014 stock specific volatility high"
+    ]
+  }
+}

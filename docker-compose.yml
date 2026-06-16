@@ -1,0 +1,50 @@
+# Agentic Trading OS — three long-running services sharing the project volume.
+# Paper-trading only. No broker integration.
+services:
+
+  # Local LLM for reasoning/prose ONLY (never numbers). Degrades gracefully if down.
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+    # After first start, pull the model once:
+    #   docker compose exec ollama ollama pull qwen2.5:3b
+
+  # FastAPI — frontend/CLI entry point. Stateless; horizontally scalable.
+  api:
+    build: .
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  # 24/7 scheduler — premarket, trade loop, monitor, postmarket, learn, retrain.
+  # Single instance (it owns the paper ledger + Trade Memory writes).
+  scheduler:
+    build: .
+    command: python aos/scheduler.py run-forever
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama-models:

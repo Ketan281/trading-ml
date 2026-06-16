@@ -1,0 +1,10 @@
+{
+  "type": "isotonic_confidence_calibrator",
+  "brier_raw": 0.2509,
+  "brier_cal": 0.2497,
+  "ece_raw": 0.02,
+  "ece_cal": 0.0,
+  "improved": true,
+  "n_oof": 848498,
+  "trained": "2026-05-29T18:11:01.130140"
+}

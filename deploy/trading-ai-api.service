@@ -1,0 +1,21 @@
+# systemd unit for the API (non-Docker option). Place at
+# /etc/systemd/system/trading-ai-api.service then: systemctl enable --now trading-ai-api
+[Unit]
+Description=Trading-AI API (FastAPI/uvicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/trading-ai
+Environment=PYTHONIOENCODING=utf-8
+Environment=PYTHONPATH=/home/ubuntu/trading-ai
+Environment=ALLOWED_ORIGINS=https://app.example.com
+# Run on localhost only; nginx is the public edge.
+ExecStart=/home/ubuntu/trading-ai/.venv/bin/uvicorn api.server:app --host 127.0.0.1 --port 8000 --workers 2
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

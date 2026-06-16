@@ -1,0 +1,27 @@
+{
+  "type": "mlp_cross_sectional_ranker",
+  "features": [
+    "mom_21_z",
+    "mom_63_z",
+    "mom_126_z",
+    "mom_252_z",
+    "rev_5_z",
+    "vol_21_z",
+    "rsi_14_z",
+    "dist_high_z",
+    "ma_ratio_z"
+  ],
+  "hidden": [
+    64,
+    32
+  ],
+  "dropout": 0.2,
+  "horizon": 21,
+  "mean_ic_dl": 0.0324,
+  "mean_ic_xgb": 0.0374,
+  "mean_ls_dl": 0.0021,
+  "mean_ls_xgb": 0.0074,
+  "dl_wins": false,
+  "verdict": "XGBoost still best \u2014 keeping it (DL did not beat the tree)",
+  "trained": "2026-06-03T18:06:13.400680"
+}

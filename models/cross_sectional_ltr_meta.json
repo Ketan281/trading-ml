@@ -1,0 +1,22 @@
+{
+  "type": "lambdamart_ranker",
+  "objective": "rank:ndcg",
+  "features": [
+    "mom_21_z",
+    "mom_63_z",
+    "mom_126_z",
+    "mom_252_z",
+    "rev_5_z",
+    "vol_21_z",
+    "rsi_14_z",
+    "dist_high_z",
+    "ma_ratio_z"
+  ],
+  "horizon": 21,
+  "mean_ic_ltr": 0.0218,
+  "mean_ic_classifier": 0.0374,
+  "mean_ls_ltr": 0.0145,
+  "winner": "classifier",
+  "verdict": "Classifier still best \u2014 keep it; LTR saved for reference",
+  "trained": "2026-05-29T18:10:02.554291"
+}

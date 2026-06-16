@@ -1,0 +1,81 @@
+{
+  "symbol": "BANKNIFTY",
+  "timestamp": "2026-05-22T18:28:37.315724",
+  "spot": 54055.35,
+  "atm": 54100,
+  "dte": 3,
+  "atm_summary": {
+    "symbol": "BANKNIFTY",
+    "spot": 54055.35,
+    "atm": 54100,
+    "dte": 3,
+    "atm_ce": {
+      "ltp": 525.35,
+      "iv": 22.95,
+      "delta": 0.4986,
+      "gamma": 0.000355,
+      "theta": -79.5018,
+      "vega": 19.5506
+    },
+    "atm_pe": {
+      "ltp": 275.35,
+      "iv": 12.52,
+      "delta": -0.508,
+      "gamma": 0.00065,
+      "theta": -35.8527,
+      "vega": 19.5468
+    }
+  },
+  "insights": [
+    "ATM calls \u2014 balanced delta exposure",
+    "High theta decay \u20b979.5018/day \u2014 time is working against buyers",
+    "Normal gamma \u2014 stable delta movement",
+    "Normal vega \u2014 manageable IV sensitivity"
+  ],
+  "straddle": {
+    "strategy": "straddle",
+    "symbol": "BANKNIFTY",
+    "spot": 54055.35,
+    "legs": [
+      {
+        "type": "CE",
+        "strike": 54100,
+        "action": "buy",
+        "greeks": {
+          "delta": 0.4986,
+          "gamma": 0.000355,
+          "theta": -79.5018,
+          "vega": 19.5506,
+          "price": 440.91,
+          "d1": -0.0036,
+          "d2": -0.0244
+        }
+      },
+      {
+        "type": "PE",
+        "strike": 54100,
+        "action": "buy",
+        "greeks": {
+          "delta": -0.508,
+          "gamma": 0.00065,
+          "theta": -35.8527,
+          "vega": 19.5468,
+          "price": 252.77,
+          "d1": -0.02,
+          "d2": -0.0313
+        }
+      }
+    ],
+    "net_greeks": {
+      "delta": -0.0094,
+      "gamma": 0.001005,
+      "theta": -115.3545,
+      "vega": 39.0974
+    },
+    "net_cost": 800.7,
+    "breakeven": {
+      "upper": 54900.7,
+      "lower": 53299.3
+    }
+  }
+}

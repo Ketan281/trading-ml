@@ -1,0 +1,72 @@
+{
+  "symbol": "BANKNIFTY",
+  "timestamp": "2026-05-22T18:19:31.138490",
+  "spot": 54055.35,
+  "atm": 54100,
+  "max_pain": 54300,
+  "pcr": {
+    "symbol": "BANKNIFTY",
+    "total_ce_oi": 732358,
+    "total_pe_oi": 543695,
+    "total_ce_volume": 4478907,
+    "total_pe_volume": 3968254,
+    "pcr_oi": 0.742,
+    "pcr_volume": 0.886,
+    "pcr_oi_signal": "bearish",
+    "pcr_vol_signal": "neutral"
+  },
+  "oi_walls": {
+    "ce_walls": [
+      56000,
+      60000,
+      58000,
+      55000,
+      54000
+    ],
+    "pe_walls": [
+      54000,
+      50000,
+      53000,
+      53500,
+      52000
+    ],
+    "nearest_resistance": 55000,
+    "nearest_support": 54000,
+    "atm": 54100,
+    "spot": 54055.35
+  },
+  "oi_change": {
+    "ce_oi_added_strikes": [
+      56000,
+      54400,
+      56900
+    ],
+    "pe_oi_added_strikes": [
+      54000,
+      54100,
+      53500
+    ],
+    "ce_oi_shed_strikes": [
+      53500,
+      53700,
+      53600
+    ],
+    "pe_oi_shed_strikes": [
+      49000,
+      57500,
+      60000
+    ],
+    "total_ce_oi_added": 73905,
+    "total_pe_oi_added": 95134,
+    "total_ce_oi_shed": 41406,
+    "total_pe_oi_shed": 26679,
+    "dominant_activity": "put_writing",
+    "activity_signal": "bullish_pressure"
+  },
+  "concentration": {
+    "ce_concentration_pct": 29.1,
+    "pe_concentration_pct": 37.8,
+    "interpretation": "high_activity_near_spot"
+  },
+  "overall_signal": "neutral"
+}

@@ -1,0 +1,36 @@
+{
+  "train_end": 2022,
+  "test_year": 2023,
+  "train_count": 1194,
+  "test_count": 12495,
+  "train_actions": {
+    "buy": 71,
+    "avoid": 440,
+    "hold": 220,
+    "sell": 23,
+    "reduce_exposure": 440
+  },
+  "test_actions": {
+    "avoid": 3460,
+    "reduce_exposure": 3844,
+    "hold": 4472,
+    "sell": 206,
+    "buy": 513
+  },
+  "train_direction": {
+    "uptrend": 510,
+    "sideways": 252,
+    "downtrend": 432
+  },
+  "test_direction": {
+    "sideways": 3823,
+    "downtrend": 3434,
+    "uptrend": 5238
+  },
+  "train_risk": {
+    "medium": 182,
+    "extreme": 428,
+    "high": 580,
+    "low": 4
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "fetch_date": "2026-05-25T14:05:33.675453",
+  "start_date": "2014-01-01",
+  "end_date": "2024-12-31",
+  "total": 52,
+  "success": 51,
+  "failed": 1,
+  "symbols": [
+    {
+      "name": "NIFTY",
+      "ticker": "^NSEI",
+      "rows": 2698,
+      "start": "2014-01-02",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BANKNIFTY",
+      "ticker": "^NSEBANK",
+      "rows": 2706,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "RELIANCE",
+      "ticker": "RELIANCE.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "TCS",
+      "ticker": "TCS.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "HDFCBANK",
+      "ticker": "HDFCBANK.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "INFY",
+      "ticker": "INFY.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ICICIBANK",
+      "ticker": "ICICIBANK.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "HINDUNILVR",
+      "ticker": "HINDUNILVR.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ITC",
+      "ticker": "ITC.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "SBIN",
+      "ticker": "SBIN.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BHARTIARTL",
+      "ticker": "BHARTIARTL.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "KOTAKBANK",
+      "ticker": "KOTAKBANK.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "LT",
+      "ticker": "LT.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "AXISBANK",
+      "ticker": "AXISBANK.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ASIANPAINT",
+      "ticker": "ASIANPAINT.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "MARUTI",
+      "ticker": "MARUTI.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "TITAN",
+      "ticker": "TITAN.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "NESTLEIND",
+      "ticker": "NESTLEIND.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "WIPRO",
+      "ticker": "WIPRO.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ULTRACEMCO",
+      "ticker": "ULTRACEMCO.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BAJFINANCE",
+      "ticker": "BAJFINANCE.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "HCLTECH",
+      "ticker": "HCLTECH.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "SUNPHARMA",
+      "ticker": "SUNPHARMA.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "POWERGRID",
+      "ticker": "POWERGRID.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "NTPC",
+      "ticker": "NTPC.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ONGC",
+      "ticker": "ONGC.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "JSWSTEEL",
+      "ticker": "JSWSTEEL.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "TATASTEEL",
+      "ticker": "TATASTEEL.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ADANIENT",
+      "ticker": "ADANIENT.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "ADANIPORTS",
+      "ticker": "ADANIPORTS.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "COALINDIA",
+      "ticker": "COALINDIA.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BAJAJFINSV",
+      "ticker": "BAJAJFINSV.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "TECHM",
+      "ticker": "TECHM.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "DIVISLAB",
+      "ticker": "DIVISLAB.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "DRREDDY",
+      "ticker": "DRREDDY.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "CIPLA",
+      "ticker": "CIPLA.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "GRASIM",
+      "ticker": "GRASIM.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "HINDALCO",
+      "ticker": "HINDALCO.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "EICHERMOT",
+      "ticker": "EICHERMOT.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "HEROMOTOCO",
+      "ticker": "HEROMOTOCO.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BPCL",
+      "ticker": "BPCL.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "INDUSINDBK",
+      "ticker": "INDUSINDBK.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BRITANNIA",
+      "ticker": "BRITANNIA.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "APOLLOHOSP",
+      "ticker": "APOLLOHOSP.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "TATACONSUM",
+      "ticker": "TATACONSUM.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "BAJAJ-AUTO",
+      "ticker": "BAJAJ-AUTO.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "UPL",
+      "ticker": "UPL.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "SBILIFE",
+      "ticker": "SBILIFE.NS",
+      "rows": 1788,
+      "start": "2017-10-03",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "HDFCLIFE",
+      "ticker": "HDFCLIFE.NS",
+      "rows": 1756,
+      "start": "2017-11-17",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "PIDILITIND",
+      "ticker": "PIDILITIND.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    },
+    {
+      "name": "VEDL",
+      "ticker": "VEDL.NS",
+      "rows": 2710,
+      "start": "2014-01-01",
+      "end": "2024-12-30"
+    }
+  ],
+  "failed_list": [
+    "TATAMOTORS"
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "symbol": "BANKNIFTY",
+  "timestamp": "2026-05-22T18:29:42.110183",
+  "spot": 54055.35,
+  "atm": 54100,
+  "oi_report": {
+    "symbol": "BANKNIFTY",
+    "timestamp": "2026-05-22T18:28:30.728811",
+    "spot": 54055.35,
+    "atm": 54100,
+    "max_pain": 54300,
+    "pcr": {
+      "symbol": "BANKNIFTY",
+      "total_ce_oi": 732358,
+      "total_pe_oi": 543695,
+      "total_ce_volume": 4478907,
+      "total_pe_volume": 3968254,
+      "pcr_oi": 0.742,
+      "pcr_volume": 0.886,
+      "pcr_oi_signal": "bearish",
+      "pcr_vol_signal": "neutral"
+    },
+    "oi_walls": {
+      "ce_walls": [
+        56000,
+        60000,
+        58000,
+        55000,
+        54000
+      ],
+      "pe_walls": [
+        54000,
+        50000,
+        53000,
+        53500,
+        52000
+      ],
+      "nearest_resistance": 55000,
+      "nearest_support": 54000,
+      "atm": 54100,
+      "spot": 54055.35
+    },
+    "oi_change": {
+      "ce_oi_added_strikes": [
+        56000,
+        54400,
+        56900
+      ],
+      "pe_oi_added_strikes": [
+        54000,
+        54100,
+        53500
+      ],
+      "ce_oi_shed_strikes": [
+        53500,
+        53700,
+        53600
+      ],
+      "pe_oi_shed_strikes": [
+        49000,
+        57500,
+        60000
+      ],
+      "total_ce_oi_added": 73905,
+      "total_pe_oi_added": 95134,
+      "total_ce_oi_shed": 41406,
+      "total_pe_oi_shed": 26679,
+      "dominant_activity": "put_writing",
+      "activity_signal": "bullish_pressure"
+    },
+    "concentration": {
+      "ce_concentration_pct": 29.1,
+      "pe_concentration_pct": 37.8,
+      "interpretation": "high_activity_near_spot"
+    },
+    "overall_signal": "neutral"
+  },
+  "iv_report": {
+    "symbol": "BANKNIFTY",
+    "timestamp": "2026-05-22T18:28:37.020739",
+    "spot": 54055.35,
+    "atm": 54100,
+    "expiry": "26-May-2026",
+    "dte": 3,
+    "iv_surface": {
+      "atm_iv": 17.73,
+      "atm_ce_iv": 22.95,
+      "atm_pe_iv": 12.52,
+      "otm_ce_iv": 20.99,
+      "otm_pe_iv": 14.53,
+      "avg_iv": 39.73,
+      "max_iv": 154.88,
+      "min_iv": 8.08,
+      "iv_rank": 6.6,
+      "iv_skew": -10.43,
+      "iv_regime": "high",
+      "iv_signal": "prefer_selling",
+      "skew_signal": "extreme_greed"
+    },
+    "iv_curve": [
+      {
+        "strike": 53300,
+        "distance": -8,
+        "ce_iv": 28.85,
+        "pe_iv": 15.64,
+        "avg_iv": 22.25,
+        "label": "ATM-8"
+      },
+      {
+        "strike": 53400,
+        "distance": -7,
+        "ce_iv": 27.45,
+        "pe_iv": 15.29,
+        "avg_iv": 21.37,
+        "label": "ATM-7"
+      },
+      {
+        "strike": 53500,
+        "distance": -6,
+        "ce_iv": 27.02,
+        "pe_iv": 14.84,
+        "avg_iv": 20.93,
+        "label": "ATM-6"
+      },
+      {
+        "strike": 53600,
+        "distance": -5,
+        "ce_iv": 25.78,
+        "pe_iv": 14.53,
+        "avg_iv": 20.16,
+        "label": "ATM-5"
+      },
+      {
+        "strike": 53700,
+        "distance": -4,
+        "ce_iv": 25.43,
+        "pe_iv": 14.24,
+        "avg_iv": 19.84,
+        "label": "ATM-4"
+      },
+      {
+        "strike": 53800,
+        "distance": -3,
+        "ce_iv": 24.35,
+        "pe_iv": 13.8,
+        "avg_iv": 19.08,
+        "label": "ATM-3"
+      },
+      {
+        "strike": 53900,
+        "distance": -2,
+        "ce_iv": 24.02,
+        "pe_iv": 13.4,
+        "avg_iv": 18.71,
+        "label": "ATM-2"
+      },
+      {
+        "strike": 54000,
+        "distance": -1,
+        "ce_iv": 23.14,
+        "pe_iv": 12.89,
+        "avg_iv": 18.02,
+        "label": "ATM-1"
+      },
+      {
+        "strike": 54100,
+        "distance": 0,
+        "ce_iv": 22.95,
+        "pe_iv": 12.52,
+        "avg_iv": 17.73,
+        "label": "ATM"
+      },
+      {
+        "strike": 54200,
+        "distance": 1,
+        "ce_iv": 22.6,
+        "pe_iv": 11.97,
+        "avg_iv": 17.29,
+        "label": "ATM+1"
+      },
+      {
+        "strike": 54300,
+        "distance": 2,
+        "ce_iv": 22.15,
+        "pe_iv": 11.37,
+        "avg_iv": 16.76,
+        "label": "ATM+2"
+      },
+      {
+        "strike": 54400,
+        "distance": 3,
+        "ce_iv": 21.78,
+        "pe_iv": 10.8,
+        "avg_iv": 16.29,
+        "label": "ATM+3"
+      },
+      {
+        "strike": 54500,
+        "distance": 4,
+        "ce_iv": 21.42,
+        "pe_iv": 8.83,
+        "avg_iv": 15.12,
+        "label": "ATM+4"
+      },
+      {
+        "strike": 54600,
+        "distance": 5,
+        "ce_iv": 20.99,
+        "pe_iv": 8.08,
+        "avg_iv": 14.54,
+        "label": "ATM+5"
+      },
+      {
+        "strike": 54700,
+        "distance": 6,
+        "ce_iv": 20.84,
+        "pe_iv": 0.0,
+        "avg_iv": 20.84,
+        "label": "ATM+6"
+      },
+      {
+        "strike": 54800,
+        "distance": 7,
+        "ce_iv": 20.8,
+        "pe_iv": 0.0,
+        "avg_iv": 20.8,
+        "label": "ATM+7"
+      },
+      {
+        "strike": 54900,
+        "distance": 8,
+        "ce_iv": 20.59,
+        "pe_iv": 0.0,
+        "avg_iv": 20.59,
+        "label": "ATM+8"
+      }
+    ],
+    "max_pain": {
+      "max_pain": 54300,
+      "second_max_pain": 54400,
+      "spot": 54055.35,
+      "distance_pct": 0.45,
+      "signal": "price_near_max_pain",
+      "pain_table": [
+        {
+          "strike": 54300,
+          "ce_pain": 96450000,
+          "pe_pain": 335805400,
+          "total_pain": 432255400
+        },
+        {
+          "strike": 54400,
+          "ce_pain": 109334200,
+          "pe_pain": 322991900,
+          "total_pain": 432326100
+        },
+        {
+          "strike": 54200,
+          "ce_pain": 84217000,
+          "pe_pain": 349075300,
+          "total_pain": 433292300
+        },
+        {
+          "strike": 54500,
+          "ce_pain": 123214600,
+          "pe_pain": 310412200,
+          "total_pain": 433626800
+        },
+        {
+          "strike": 54100,
+          "ce_pain": 72807500,
+          "pe_pain": 362891700,
+          "total_pain": 435699200
+        }
+      ]
+    },
+    "exp_move": {
+      "expected_move": 868.88,
+      "upper_range": 54924.23,
+      "lower_range": 53186.47,
+      "days_to_expiry": 3,
+      "interpretation": "Market expects \u00b1868.88 points move in 3 days"
+    }
+  },
+  "futures_report": {
+    "symbol": "BANKNIFTY",
+    "timestamp": "2026-05-22T18:28:37.870378",
+    "spot": 54055.35,
+    "note": "Futures data unavailable \u2014 market may be closed",
+    "basis": [],
+    "rollover": null,
+    "oi_analysis": null
+  },
+  "ai_signal": {
+    "symbol": "BANKNIFTY",
+    "spot": 54055.35,
+    "atm": 54100,
+    "market_bias": "bearish",
+    "confidence": 0.8,
+    "risk_level": "high",
+    "recommended_strategy": "sell_options",
+    "strategy_legs": [
+      {
+        "action": "sell",
+        "type": "CE",
+        "strike": 54100,
+        "reason": "The market is bearish, and the IV signal indicates a high risk of further decline. Selling options can help limit potential losses."
+      }
+    ],
+    "entry_condition": "when the market shows signs of weakness or when the resistance level (\u20b955000) is approached",
+    "exit_condition": "when the support level (\u20b954000) is breached, indicating a possible reversal in trend",
+    "stop_loss": "\u20b953299.3",
+    "target": "\u20b954100",
+    "max_loss": "\u20b9868.88",
+    "max_profit": "\u20b9868.88",
+    "key_levels": {
+      "resistance": 55000,
+      "support": 54000,
+      "max_pain": 54300
+    },
+    "iv_edge": "sell_options",
+    "reasoning": [
+      "The IV signal indicates a high risk of further decline, and selling options can help limit potential losses.",
+      "The market is bearish, and the resistance level (\u20b955000) is approaching, indicating that the trend may reverse."
+    ],
+    "warnings": []
+  }
+}

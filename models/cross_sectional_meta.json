@@ -1,0 +1,20 @@
+{
+  "type": "cross_sectional_ranker",
+  "horizon": 21,
+  "features": [
+    "mom_21",
+    "mom_63",
+    "mom_126",
+    "mom_252",
+    "rev_5",
+    "vol_21",
+    "rsi_14",
+    "dist_high",
+    "ma_ratio"
+  ],
+  "n_symbols": 473,
+  "mean_ic": 0.0374,
+  "mean_ls": 0.0074,
+  "verdict": "EDGE",
+  "trained": "2026-06-05T12:07:27.443864"
+}

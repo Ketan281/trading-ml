@@ -1,0 +1,194 @@
+[
+  {
+    "id": 1,
+    "timestamp": "2026-05-22T17:22:19.691650",
+    "symbol": "NIFTY",
+    "market_data": {
+      "symbol": "NIFTY",
+      "price": 22350,
+      "trend": "uptrend",
+      "rsi": 68,
+      "macd": "bullish",
+      "volatility": "medium"
+    },
+    "ai_decision": {
+      "market_condition": "weak_uptrend",
+      "action": "hold",
+      "confidence": 0.72,
+      "risk_level": "medium",
+      "entry_zone": "22100-22200",
+      "stop_loss": "21800",
+      "reasoning": [
+        "RSI elevated",
+        "Momentum slowing"
+      ]
+    },
+    "action": "hold",
+    "confidence": 0.72,
+    "risk_level": "medium",
+    "market_condition": "weak_uptrend",
+    "outcome": {
+      "result": "profit",
+      "pnl": 250.0,
+      "entry_price": 22200.0,
+      "exit_price": 22450.0,
+      "action_taken": "hold"
+    },
+    "reflection": {
+      "data": {
+        "raw": "Hold was correct given slowing momentum"
+      },
+      "improvement": "Watch RSI more carefully near 70"
+    }
+  },
+  {
+    "id": 2,
+    "timestamp": "2026-05-22T17:27:07.994087",
+    "symbol": "NIFTY",
+    "market_data": {
+      "symbol": "NIFTY",
+      "price": 23719.3,
+      "trend": "downtrend",
+      "rsi": 39.13,
+      "macd": "bearish",
+      "ema_20": 23794.41,
+      "ema_50": 23994.58,
+      "bollinger": "inside_bands",
+      "vwap": "below_vwap",
+      "atr": 290.28,
+      "volatility": "medium"
+    },
+    "ai_decision": {
+      "symbol": "NIFTY",
+      "market_condition": "weak_downtrend",
+      "action": "sell",
+      "confidence": 0.5,
+      "risk_level": "medium",
+      "entry_zone": "wait",
+      "stop_loss": "23400",
+      "reasoning": [
+        "The NIFTY is currently in a weak downtrend, with declining prices and lower EMAs.",
+        "RSI of 39.13 indicates overbought conditions approaching the bottom of the uptrend channel.",
+        "ATR (Average True Range) has increased slightly from recent lows."
+      ]
+    },
+    "action": "sell",
+    "confidence": 0.5,
+    "risk_level": "medium",
+    "market_condition": "weak_downtrend",
+    "outcome": null,
+    "reflection": null
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-05-22T17:27:08.001243",
+    "symbol": "BANKNIFTY",
+    "market_data": {
+      "symbol": "BANKNIFTY",
+      "price": 54055.35,
+      "trend": "downtrend",
+      "rsi": 43.86,
+      "macd": "bearish",
+      "ema_20": 54362.45,
+      "ema_50": 55253.58,
+      "bollinger": "inside_bands",
+      "vwap": "below_vwap",
+      "atr": 883.4,
+      "volatility": "medium"
+    },
+    "ai_decision": {
+      "symbol": "BANKNIFTY",
+      "market_condition": "weak_downtrend",
+      "action": "avoid",
+      "confidence": 0.5,
+      "risk_level": "medium",
+      "entry_zone": "wait",
+      "stop_loss": "N/A",
+      "reasoning": [
+        "BANKNIFTY is currently in a downtrend with RSI at 43.86, MACD bearish, EMA20 above EMA50.",
+        "The recent volatility and medium ATR indicate that the market may not be stabilizing soon."
+      ]
+    },
+    "action": "avoid",
+    "confidence": 0.5,
+    "risk_level": "medium",
+    "market_condition": "weak_downtrend",
+    "outcome": null,
+    "reflection": null
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-05-22T17:27:08.007171",
+    "symbol": "RELIANCE",
+    "market_data": {
+      "symbol": "RELIANCE",
+      "price": 1354.5,
+      "trend": "downtrend",
+      "rsi": 22.77,
+      "macd": "bearish",
+      "ema_20": 1370.46,
+      "ema_50": 1382.46,
+      "bollinger": "inside_bands",
+      "vwap": "below_vwap",
+      "atr": 29.89,
+      "volatility": "high"
+    },
+    "ai_decision": {
+      "symbol": "RELIANCE",
+      "market_condition": "weak_downtrend",
+      "action": "sell",
+      "confidence": 0.9,
+      "risk_level": "high",
+      "entry_zone": "N/A",
+      "stop_loss": "N/A",
+      "reasoning": [
+        "Reliance's current price is below the EMA 50, indicating a strong downtrend.",
+        "RSI (22.77) and MACD (bearish) further confirm this downward trend.",
+        "The low ATR of 29.89 and high volatility suggest significant market pullback risk."
+      ]
+    },
+    "action": "sell",
+    "confidence": 0.9,
+    "risk_level": "high",
+    "market_condition": "weak_downtrend",
+    "outcome": null,
+    "reflection": null
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-05-22T17:27:08.014206",
+    "symbol": "TCS",
+    "market_data": {
+      "symbol": "TCS",
+      "price": 2317.3,
+      "trend": "downtrend",
+      "rsi": 30.55,
+      "macd": "bullish",
+      "ema_20": 2364.75,
+      "ema_50": 2464.65,
+      "bollinger": "inside_bands",
+      "vwap": "below_vwap",
+      "atr": 51.34,
+      "volatility": "high"
+    },
+    "ai_decision": {
+      "symbol": "TCS",
+      "market_condition": "weak_downtrend",
+      "action": "avoid",
+      "confidence": 0.95,
+      "risk_level": "high",
+      "entry_zone": "N/A",
+      "stop_loss": "N/A",
+      "reasoning": [
+        "TCS is in a weak downtrend with high volatility and low MACD signal strength, indicating imminent price reversal.",
+        "The Bollinger bands are inside the upper band, suggesting further downside pressure."
+      ]
+    },
+    "action": "avoid",
+    "confidence": 0.95,
+    "risk_level": "high",
+    "market_condition": "weak_downtrend",
+    "outcome": null,
+    "reflection": null
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "instruction": "You are a professional risk-aware trading \nintelligence system analyzing Indian markets.\n\nAnalyze the following market data and make a trading decision:\n\nSymbol     : NIFTY\nPrice      : 22350\nTrend      : uptrend\nRSI        : 68\nMACD       : bullish\nVolatility : medium\nBollinger  : None\nVWAP       : None\nATR        : None\n\nReturn a JSON trading decision with:\nmarket_condition, action, confidence,\nrisk_level, entry_zone, stop_loss, reasoning",
+    "response": "{\n  \"symbol\": \"NIFTY\",\n  \"market_condition\": \"weak_uptrend\",\n  \"action\": \"hold\",\n  \"confidence\": 0.72,\n  \"risk_level\": \"medium\",\n  \"entry_zone\": \"22100-22200\",\n  \"stop_loss\": \"21800\",\n  \"reasoning\": [\n    \"RSI elevated\",\n    \"Momentum slowing\"\n  ]\n}",
+    "outcome": "profit",
+    "pnl": 250.0,
+    "reflection_context": "Trade Outcome  : PROFIT | PnL: 250.0\nKey Lesson     : N/A\nImprovement    : N/A\nPattern Found  : N/A",
+    "symbol": "NIFTY",
+    "timestamp": "2026-05-22T17:22:19.691650",
+    "quality_score": 100
+  }
+]

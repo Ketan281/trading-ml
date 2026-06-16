@@ -1,0 +1,115 @@
+TRADING AI - GOOGLE COLAB FINE-TUNING GUIDE
+============================================================
+
+WHAT YOU HAVE BUILT
+------------------------------------------------------------
+  6 Walk-Forward Training Windows
+  Total Train Samples : ~29,000
+  Total Test Samples  : ~77,000
+  Total Dataset Size  : 8.8 MB
+
+FILES TO UPLOAD TO COLAB
+------------------------------------------------------------
+  Location: C:\Users\KetanMohite\OneDrive - INTELLINUM\Desktop\git\allGit\trading-ai\colab
+
+  Datasets (upload ONE at a time):
+  - window_2014_2018_test_2019.zip  (1.48 MB)  [2018 -> Test 2019]
+  - window_2014_2019_test_2020.zip  (1.49 MB)  [2019 -> Test 2020]
+  - window_2014_2020_test_2021.zip  (1.46 MB)  [2020 -> Test 2021]
+  - window_2014_2021_test_2022.zip  (1.47 MB)  [2021 -> Test 2022]
+  - window_2014_2022_test_2023.zip  (1.46 MB)  [2022 -> Test 2023]
+  - window_2014_2023_test_2024.zip  (1.46 MB)  [2023 -> Test 2024]
+
+  Notebook:
+  - trading_ai_finetune.ipynb
+
+STEP BY STEP GUIDE
+------------------------------------------------------------
+
+STEP 1 - Open Google Colab
+  -> Go to: https://colab.research.google.com
+  -> Sign in with Google account (free)
+
+STEP 2 - Upload Notebook
+  -> File -> Upload notebook
+  -> Select: trading_ai_finetune.ipynb
+
+STEP 3 - Enable GPU
+  -> Runtime -> Change runtime type
+  -> Hardware accelerator -> T4 GPU
+  -> Click Save
+
+STEP 4 - Run Cells 1-3 (Install)
+  -> Run GPU check cell
+  -> Run install cell (takes 2-3 mins)
+
+STEP 5 - Upload Dataset
+  -> Run the upload cell
+  -> Click Choose Files
+  -> Upload: window_2014_2018_test_2019.zip
+    (Start with this - smallest dataset)
+
+STEP 6 - Run All Remaining Cells
+  -> Run cells in order: 4 -> 5 -> 6 -> 7
+     -> 8 -> 9 (training starts here)
+  -> Training takes ~20-40 mins on T4
+
+STEP 7 - Evaluate
+  -> Run evaluation cell (cell 10)
+  -> Check action match accuracy
+
+STEP 8 - Download Model
+  -> Run download cell (cell 13)
+  -> Two files download:
+    a) trading_ai_lora.zip (LoRA weights)
+    b) model.gguf (for Ollama)
+
+STEP 9 - Deploy Locally
+  -> Extract trading_ai_lora.zip
+  -> Place .gguf file in models folder
+  -> Run deploy.bat (Windows)
+
+TRAINING ORDER (RECOMMENDED)
+------------------------------------------------------------
+  Run windows in this order:
+
+  Window 1: 2014-2018 -> Test 2019  (baseline)
+  Window 2: 2014-2019 -> Test 2020  (includes COVID)
+  Window 3: 2014-2020 -> Test 2021  (recovery)
+  Window 4: 2014-2021 -> Test 2022  (bear market)
+  Window 5: 2014-2022 -> Test 2023  (recovery)
+  Window 6: 2014-2023 -> Test 2024  (latest data)
+
+  BEST MODEL = Window 6 (most recent data)
+
+EXPECTED RESULTS
+------------------------------------------------------------
+  Valid JSON rate    : >90%
+  Action accuracy    : 55-70%
+  Training time      : 20-40 mins per window
+  Model size (LoRA)  : ~50 MB
+  Model size (GGUF)  : ~900 MB
+
+AFTER DOWNLOADING
+------------------------------------------------------------
+  1. Save .gguf to: trading-ai/models/
+
+  2. Create Ollama Modelfile:
+     FROM ./trading_ai_model.gguf
+     SYSTEM 'You are a professional trading
+     intelligence system for Indian markets.'
+
+  3. Register with Ollama:
+     ollama create trading-ai -f Modelfile
+
+  4. Update intelligence.py:
+     Change: model = 'qwen2.5:1.5b'
+     To    : model = 'trading-ai'
+
+  5. Run pipeline:
+     python pipelines/intelligence.py
+
+============================================================
+  Your fine-tuned Trading AI will be dramatically
+  better at Indian market decisions
+============================================================

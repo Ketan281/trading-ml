@@ -1,0 +1,30 @@
+# ── Never commit (huge / machine-specific / secrets) ──
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+*.log
+logs/
+
+# LLM model weights — Ollama downloads these on the server (never commit ~1GB)
+*.gguf
+*.bin
+*.safetensors
+
+# ── Runtime state (regenerated on the server; do NOT commit) ──
+data/aos/
+data/agents/
+data/api_cache/
+data/intraday/
+data/option_chain/
+data/paper/
+data/feature_store/
+outputs/
+
+# ── DO commit (needed to run): code + price history + fundamentals + models ──
+# data/historical/*.csv         (10-yr price + index CSVs)  — kept
+# data/*_daily.csv              (index dailies)             — kept
+# data/historical/*.json        (fundamentals)              — kept
+# models/*.pkl, models/*.json, models/registry/             — kept
+# everything under api/ aos/ agents/ models/ pipelines/ infra/ training/ — kept

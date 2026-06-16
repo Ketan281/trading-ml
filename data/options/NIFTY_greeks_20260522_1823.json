@@ -1,0 +1,81 @@
+{
+  "symbol": "NIFTY",
+  "timestamp": "2026-05-22T18:23:54.436494",
+  "spot": 23719.3,
+  "atm": 23700,
+  "dte": 3,
+  "atm_summary": {
+    "symbol": "NIFTY",
+    "spot": 23719.3,
+    "atm": 23700,
+    "dte": 3,
+    "atm_ce": {
+      "ltp": 182.7,
+      "iv": 16.07,
+      "delta": 0.5398,
+      "gamma": 0.001149,
+      "theta": -25.1151,
+      "vega": 8.5362
+    },
+    "atm_pe": {
+      "ltp": 103.75,
+      "iv": 12.64,
+      "delta": -0.4509,
+      "gamma": 0.001457,
+      "theta": -16.0144,
+      "vega": 8.5137
+    }
+  },
+  "insights": [
+    "ATM calls \u2014 balanced delta exposure",
+    "Moderate theta \u20b925.1151/day",
+    "Normal gamma \u2014 stable delta movement",
+    "Normal vega \u2014 manageable IV sensitivity"
+  ],
+  "straddle": {
+    "strategy": "straddle",
+    "symbol": "NIFTY",
+    "spot": 23719.3,
+    "legs": [
+      {
+        "type": "CE",
+        "strike": 23700,
+        "action": "buy",
+        "greeks": {
+          "delta": 0.5398,
+          "gamma": 0.001149,
+          "theta": -25.1151,
+          "vega": 8.5362,
+          "price": 154.34,
+          "d1": 0.0998,
+          "d2": 0.0853
+        }
+      },
+      {
+        "type": "PE",
+        "strike": 23700,
+        "action": "buy",
+        "greeks": {
+          "delta": -0.4509,
+          "gamma": 0.001457,
+          "theta": -16.0144,
+          "vega": 8.5137,
+          "price": 93.13,
+          "d1": 0.1234,
+          "d2": 0.1119
+        }
+      }
+    ],
+    "net_greeks": {
+      "delta": 0.0889,
+      "gamma": 0.002606,
+      "theta": -41.1295,
+      "vega": 17.0499
+    },
+    "net_cost": 286.45,
+    "breakeven": {
+      "upper": 23986.45,
+      "lower": 23413.55
+    }
+  }
+}

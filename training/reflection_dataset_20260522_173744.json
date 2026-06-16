@@ -1,0 +1,24 @@
+[
+  {
+    "symbol": "NIFTY",
+    "timestamp": "2026-05-22T17:22:19.691650",
+    "market_snapshot": {
+      "trend": "uptrend",
+      "rsi": 68,
+      "volatility": "medium",
+      "macd": "bullish"
+    },
+    "trade_result": {
+      "action": "hold",
+      "result": "profit",
+      "pnl": 250.0
+    },
+    "lessons": {
+      "what_went_right": [],
+      "what_went_wrong": [],
+      "key_lesson": "",
+      "improvement": "",
+      "pattern": ""
+    }
+  }
+]

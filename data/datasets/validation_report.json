@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-05-25T21:05:19.398943",
+  "total": 6,
+  "passed": 6,
+  "failed": 0,
+  "total_train": 7827,
+  "total_test": 75220,
+  "results": [
+    {
+      "window": "2014-2018 \u2192 Test 2019",
+      "passed": true
+    },
+    {
+      "window": "2014-2019 \u2192 Test 2020",
+      "passed": true
+    },
+    {
+      "window": "2014-2020 \u2192 Test 2021",
+      "passed": true
+    },
+    {
+      "window": "2014-2021 \u2192 Test 2022",
+      "passed": true
+    },
+    {
+      "window": "2014-2022 \u2192 Test 2023",
+      "passed": true
+    },
+    {
+      "window": "2014-2023 \u2192 Test 2024",
+      "passed": true
+    }
+  ]
+}

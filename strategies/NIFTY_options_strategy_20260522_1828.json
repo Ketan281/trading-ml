@@ -1,0 +1,330 @@
+{
+  "symbol": "NIFTY",
+  "timestamp": "2026-05-22T18:28:29.164567",
+  "spot": 23719.3,
+  "atm": 23700,
+  "oi_report": {
+    "symbol": "NIFTY",
+    "timestamp": "2026-05-22T18:27:25.905712",
+    "spot": 23719.3,
+    "atm": 23700,
+    "max_pain": 23800,
+    "pcr": {
+      "symbol": "NIFTY",
+      "total_ce_oi": 2396933,
+      "total_pe_oi": 2439472,
+      "total_ce_volume": 37115293,
+      "total_pe_volume": 36143728,
+      "pcr_oi": 1.018,
+      "pcr_volume": 0.974,
+      "pcr_oi_signal": "neutral",
+      "pcr_vol_signal": "neutral"
+    },
+    "oi_walls": {
+      "ce_walls": [
+        24000,
+        25000,
+        24500,
+        23800,
+        25500
+      ],
+      "pe_walls": [
+        23000,
+        22500,
+        23500,
+        22000,
+        23700
+      ],
+      "nearest_resistance": 23800,
+      "nearest_support": 23700,
+      "atm": 23700,
+      "spot": 23719.3
+    },
+    "oi_change": {
+      "ce_oi_added_strikes": [
+        24400,
+        24750,
+        25400
+      ],
+      "pe_oi_added_strikes": [
+        23750,
+        23500,
+        23700
+      ],
+      "ce_oi_shed_strikes": [
+        23700,
+        24700,
+        23600
+      ],
+      "pe_oi_shed_strikes": [
+        22000,
+        22500,
+        22100
+      ],
+      "total_ce_oi_added": 124687,
+      "total_pe_oi_added": 239856,
+      "total_ce_oi_shed": 276699,
+      "total_pe_oi_shed": 193283,
+      "dominant_activity": "put_writing",
+      "activity_signal": "bullish_pressure"
+    },
+    "concentration": {
+      "ce_concentration_pct": 35.3,
+      "pe_concentration_pct": 36.0,
+      "interpretation": "high_activity_near_spot"
+    },
+    "overall_signal": "bullish"
+  },
+  "iv_report": {
+    "symbol": "NIFTY",
+    "timestamp": "2026-05-22T18:27:26.372604",
+    "spot": 23719.3,
+    "atm": 23700,
+    "expiry": "26-May-2026",
+    "dte": 3,
+    "iv_surface": {
+      "atm_iv": 14.36,
+      "atm_ce_iv": 16.07,
+      "atm_pe_iv": 12.64,
+      "otm_ce_iv": 15.34,
+      "otm_pe_iv": 13.75,
+      "avg_iv": 30.12,
+      "max_iv": 94.17,
+      "min_iv": 7.68,
+      "iv_rank": 7.7,
+      "iv_skew": -3.43,
+      "iv_regime": "normal",
+      "iv_signal": "neutral",
+      "skew_signal": "extreme_greed"
+    },
+    "iv_curve": [
+      {
+        "strike": 23300,
+        "distance": -8,
+        "ce_iv": 20.19,
+        "pe_iv": 14.53,
+        "avg_iv": 17.36,
+        "label": "ATM-8"
+      },
+      {
+        "strike": 23350,
+        "distance": -7,
+        "ce_iv": 19.67,
+        "pe_iv": 14.25,
+        "avg_iv": 16.96,
+        "label": "ATM-7"
+      },
+      {
+        "strike": 23400,
+        "distance": -6,
+        "ce_iv": 19.11,
+        "pe_iv": 14.04,
+        "avg_iv": 16.57,
+        "label": "ATM-6"
+      },
+      {
+        "strike": 23450,
+        "distance": -5,
+        "ce_iv": 18.32,
+        "pe_iv": 13.75,
+        "avg_iv": 16.04,
+        "label": "ATM-5"
+      },
+      {
+        "strike": 23500,
+        "distance": -4,
+        "ce_iv": 17.82,
+        "pe_iv": 13.49,
+        "avg_iv": 15.66,
+        "label": "ATM-4"
+      },
+      {
+        "strike": 23550,
+        "distance": -3,
+        "ce_iv": 17.17,
+        "pe_iv": 13.29,
+        "avg_iv": 15.23,
+        "label": "ATM-3"
+      },
+      {
+        "strike": 23600,
+        "distance": -2,
+        "ce_iv": 16.61,
+        "pe_iv": 13.02,
+        "avg_iv": 14.81,
+        "label": "ATM-2"
+      },
+      {
+        "strike": 23650,
+        "distance": -1,
+        "ce_iv": 16.34,
+        "pe_iv": 12.87,
+        "avg_iv": 14.61,
+        "label": "ATM-1"
+      },
+      {
+        "strike": 23700,
+        "distance": 0,
+        "ce_iv": 16.07,
+        "pe_iv": 12.64,
+        "avg_iv": 14.36,
+        "label": "ATM"
+      },
+      {
+        "strike": 23750,
+        "distance": 1,
+        "ce_iv": 15.75,
+        "pe_iv": 12.38,
+        "avg_iv": 14.07,
+        "label": "ATM+1"
+      },
+      {
+        "strike": 23800,
+        "distance": 2,
+        "ce_iv": 15.55,
+        "pe_iv": 12.08,
+        "avg_iv": 13.82,
+        "label": "ATM+2"
+      },
+      {
+        "strike": 23850,
+        "distance": 3,
+        "ce_iv": 15.48,
+        "pe_iv": 11.81,
+        "avg_iv": 13.64,
+        "label": "ATM+3"
+      },
+      {
+        "strike": 23900,
+        "distance": 4,
+        "ce_iv": 15.34,
+        "pe_iv": 11.5,
+        "avg_iv": 13.42,
+        "label": "ATM+4"
+      },
+      {
+        "strike": 23950,
+        "distance": 5,
+        "ce_iv": 15.34,
+        "pe_iv": 11.12,
+        "avg_iv": 13.23,
+        "label": "ATM+5"
+      },
+      {
+        "strike": 24000,
+        "distance": 6,
+        "ce_iv": 15.41,
+        "pe_iv": 10.54,
+        "avg_iv": 12.97,
+        "label": "ATM+6"
+      },
+      {
+        "strike": 24050,
+        "distance": 7,
+        "ce_iv": 15.43,
+        "pe_iv": 10.23,
+        "avg_iv": 12.83,
+        "label": "ATM+7"
+      },
+      {
+        "strike": 24100,
+        "distance": 8,
+        "ce_iv": 15.6,
+        "pe_iv": 7.68,
+        "avg_iv": 11.64,
+        "label": "ATM+8"
+      }
+    ],
+    "max_pain": {
+      "max_pain": 23800,
+      "second_max_pain": 23750,
+      "spot": 23719.3,
+      "distance_pct": 0.34,
+      "signal": "price_near_max_pain",
+      "pain_table": [
+        {
+          "strike": 23800,
+          "ce_pain": 97030150,
+          "pe_pain": 213498950,
+          "total_pain": 310529100
+        },
+        {
+          "strike": 23750,
+          "ce_pain": 82164100,
+          "pe_pain": 229990250,
+          "total_pain": 312154350
+        },
+        {
+          "strike": 23850,
+          "ce_pain": 117751500,
+          "pe_pain": 200392550,
+          "total_pain": 318144050
+        },
+        {
+          "strike": 23700,
+          "ce_pain": 69586500,
+          "pe_pain": 249004000,
+          "total_pain": 318590500
+        },
+        {
+          "strike": 23900,
+          "ce_pain": 140390250,
+          "pe_pain": 187807600,
+          "total_pain": 328197850
+        }
+      ]
+    },
+    "exp_move": {
+      "expected_move": 308.8,
+      "upper_range": 24028.1,
+      "lower_range": 23410.5,
+      "days_to_expiry": 3,
+      "interpretation": "Market expects \u00b1308.8 points move in 3 days"
+    }
+  },
+  "futures_report": {
+    "symbol": "NIFTY",
+    "timestamp": "2026-05-22T18:27:27.372736",
+    "spot": 23719.3,
+    "note": "Futures data unavailable \u2014 market may be closed",
+    "basis": [],
+    "rollover": null,
+    "oi_analysis": null
+  },
+  "ai_signal": {
+    "symbol": "NIFTY",
+    "spot": 23719.3,
+    "atm": 23700,
+    "market_bias": "neutral",
+    "confidence": 0.85,
+    "risk_level": "medium",
+    "recommended_strategy": "buy_options",
+    "strategy_legs": [
+      {
+        "action": "buy",
+        "type": "CE",
+        "strike": 23700,
+        "reason": "The market is neutral, and the IV signal suggests a bullish pressure. The OI shows a bullish overall trend with put writing activity."
+      }
+    ],
+    "entry_condition": "after the current timestamp (2026-05-22 18:27)",
+    "exit_condition": "when the NIFTY index reaches 23900 or above",
+    "stop_loss": "\u20b923410.5",
+    "target": "\u20b924028.1",
+    "max_loss": "\u20b9-308.8",
+    "max_profit": "\u20b9+308.8",
+    "key_levels": {
+      "resistance": 23800,
+      "support": 23700,
+      "max_pain": 23800
+    },
+    "iv_edge": "sell_options",
+    "reasoning": [
+      "The IV signal is neutral, but the OI shows a bullish pressure. The market is currently in a stable state with no significant trends.",
+      "The NIFTY index has been near its resistance level (23800) for some time, indicating that it may be due to move higher."
+    ],
+    "warnings": [
+      "Be cautious of the neutral IV signal and avoid overreacting to market movements."
+    ]
+  }
+}

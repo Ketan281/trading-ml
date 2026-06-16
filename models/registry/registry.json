@@ -1,0 +1,21 @@
+{
+  "cross_sectional_ranker": [
+    {
+      "version": 1,
+      "path": "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\registry\\cross_sectional_ranker_v1.pkl",
+      "metrics": {
+        "mean_ic": 0.0374,
+        "mean_ls": 0.0074
+      },
+      "params": {
+        "type": "xgboost_classifier"
+      },
+      "data_hash": "394926081287402d",
+      "tags": [
+        "EDGE"
+      ],
+      "status": "production",
+      "registered": "2026-06-05T12:07:27.614989"
+    }
+  ]
+}

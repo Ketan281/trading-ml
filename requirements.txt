@@ -1,0 +1,15 @@
+# Agentic Trading OS — runtime dependencies (paper mode).
+numpy
+pandas
+scipy
+scikit-learn
+xgboost
+yfinance
+jugaad-data
+fastapi
+uvicorn[standard]
+pydantic
+# optional: only needed for LLM narration/prose of decisions
+ollama
+# optional (research / DL comparison only; large). Uncomment to enable:
+# torch
