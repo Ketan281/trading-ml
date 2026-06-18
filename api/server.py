@@ -24,6 +24,8 @@ to keep repeated queries snappy.
 import os
 import sys
 import time
+import threading
+import logging
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
@@ -242,6 +244,19 @@ def me_trade_explain(trade_id: str, user: dict = Depends(auth.current_user)):
     return _silent(uw.explain_trade, user["id"], trade_id)
 
 
+# ── Trade mode (ML auto / custom manual) ─────────────
+class ModeChange(BaseModel):
+    mode: str  # "ml" or "custom"
+
+@app.get("/me/mode")
+def me_mode(user: dict = Depends(auth.current_user)):
+    return {"trade_mode": uw.get_mode(user["id"])}
+
+@app.post("/me/mode")
+def me_set_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
+    return _silent(uw.set_mode, user["id"], body.mode)
+
+
 # ── Market data: candles + best recommendation ────────
 @app.get("/candles/{symbol}")
 def candles_ep(symbol: str, interval: str = "5m", period: str = "1d"):
@@ -283,6 +298,29 @@ def admin_overview(user: dict = Depends(auth.admin_only)):
                     "live_equity": st.get("live_equity"),
                     "open_trades": st.get("open_trades", [])})
     return {"overview": out}
+
+
+# ── Background ML auto-trading loop ──────────────────
+_ml_log = logging.getLogger("ml_auto")
+
+def _ml_loop():
+    """Every 2 minutes, tick all ML-mode users and auto-open trades during
+    market hours. Runs in a daemon thread — dies with the process."""
+    from datetime import time as dtime
+    while True:
+        time.sleep(120)
+        try:
+            results = uw.ml_tick_all()
+            if results:
+                _ml_log.info("ML auto-traded: %s", results)
+        except Exception as e:
+            _ml_log.warning("ML loop error: %s", e)
+
+@app.on_event("startup")
+def _start_ml_loop():
+    t = threading.Thread(target=_ml_loop, daemon=True, name="ml-auto-trader")
+    t.start()
+    _ml_log.info("ML auto-trading background loop started")
 
 
 if __name__ == "__main__":

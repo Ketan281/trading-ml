@@ -100,10 +100,13 @@ def init_db():
                 ai_why      TEXT
             )""")
         c.execute("CREATE INDEX IF NOT EXISTS idx_trades_user ON trades(user_id, status)")
-        # Migration: add ai_why to pre-existing trades tables that lack it.
+        # Migrations for pre-existing tables.
         cols = [r[1] for r in c.execute("PRAGMA table_info(trades)")]
         if "ai_why" not in cols:
             c.execute("ALTER TABLE trades ADD COLUMN ai_why TEXT")
+        wcols = [r[1] for r in c.execute("PRAGMA table_info(wallets)")]
+        if "trade_mode" not in wcols:
+            c.execute("ALTER TABLE wallets ADD COLUMN trade_mode TEXT DEFAULT 'custom'")
 
 
 # ── wallet ops ────────────────────────────────────────
@@ -127,6 +130,22 @@ def _save_wallet(w):
         c.execute("UPDATE wallets SET balance=?, total_deposited=?, realized_pnl=? "
                   "WHERE user_id=?",
                   (w["balance"], w["total_deposited"], w["realized_pnl"], w["user_id"]))
+
+
+def get_mode(uid):
+    get_wallet(uid)  # ensure row exists
+    with _conn() as c:
+        row = c.execute("SELECT trade_mode FROM wallets WHERE user_id=?", (uid,)).fetchone()
+    return (row["trade_mode"] if row and row["trade_mode"] else "custom")
+
+
+def set_mode(uid, mode):
+    if mode not in ("ml", "custom"):
+        return {"error": "mode must be 'ml' or 'custom'"}
+    get_wallet(uid)
+    with _conn() as c:
+        c.execute("UPDATE wallets SET trade_mode=? WHERE user_id=?", (mode, uid))
+    return {"ok": True, "trade_mode": mode}
 
 
 def deposit(uid, amount):
@@ -476,6 +495,70 @@ def explain_trade(uid, trade_id):
     return {"ai_why": prose, "cached": False}
 
 
+# ── ML auto-trading ──────────────────────────────────
+def ml_users():
+    """All user IDs with trade_mode='ml'."""
+    init_db()
+    with _conn() as c:
+        rows = c.execute("SELECT user_id FROM wallets WHERE trade_mode='ml'").fetchall()
+    return [r["user_id"] for r in rows]
+
+
+def auto_open_trade(uid):
+    """Pick and open the best trade for an ML-mode user (one at a time).
+    Returns the trade dict on success, None if no trade available or already
+    has an open position."""
+    opens = _open_trades(uid)
+    if opens:
+        return None  # already has a position — let it ride
+    w = get_wallet(uid)
+    available = round(w["balance"] - _locked_margin(uid), 2)
+    from aos.sim_wallet import pick_trade
+    plan = pick_trade(available)
+    if not plan:
+        return None
+    spec = {"segment": plan.get("segment", "options")}
+    if plan.get("underlying"):
+        spec["underlying"] = plan["underlying"]
+    if plan.get("leg"):
+        spec["leg"] = plan["leg"]
+    if plan.get("strike"):
+        spec["strike"] = plan["strike"]
+    if plan.get("lots"):
+        spec["lots"] = plan["lots"]
+    if plan.get("symbol") and plan.get("kind") == "equity":
+        spec["symbol"] = plan["symbol"]
+    if plan.get("qty") and plan.get("kind") == "equity":
+        spec["qty"] = plan["qty"]
+    spec["side"] = plan.get("side", "long")
+    spec["reason"] = f"[ML auto] {plan.get('reason', 'system pick')}"
+    res = open_trade(uid, spec)
+    if res.get("error"):
+        return None
+    return res.get("trade")
+
+
+def ml_tick_all():
+    """Run one cycle for every ML-mode user: tick open trades (auto-closes on
+    SL/target/square-off) and open a new trade if flat. Called by the background
+    loop in the API server."""
+    now = datetime.now()
+    from aos.sim_wallet import SQUARE_OFF
+    from datetime import time as dtime
+    market_open = dtime(9, 15) <= now.time() <= SQUARE_OFF
+    results = []
+    for uid in ml_users():
+        try:
+            tick_user(uid, now)
+            if market_open:
+                t = auto_open_trade(uid)
+                if t:
+                    results.append({"uid": uid, "opened": t["symbol"]})
+        except Exception:
+            pass
+    return results
+
+
 # ── view object for the API / frontend ────────────────
 def status(uid, do_tick=True):
     if do_tick:
@@ -491,7 +574,7 @@ def status(uid, do_tick=True):
             unreal += t["pnl_series"][-1][2]
     return {"wallet": w, "live_equity": round(w["balance"] + unreal, 2),
             "unrealized": round(unreal, 1), "open_trades": opens,
-            "history": _history(uid)}
+            "history": _history(uid), "trade_mode": get_mode(uid)}
 
 
 # Ensure tables + migrations are applied whenever this module is imported (e.g.
