@@ -51,6 +51,11 @@ FUT_MARGIN_PCT = 0.15
 EQ_SL_PCT, EQ_TGT_PCT = 0.01, 0.02
 INDICES = ("NIFTY", "BANKNIFTY")
 
+# Forex: leveraged (50:1 default), pip-based P&L, spread as cost.
+FX_LEVERAGE = 50
+FX_LOT_SIZES = {"standard": 100_000, "mini": 10_000, "micro": 1_000}
+FX_DEFAULT_LOT = "micro"
+
 
 # ── DB ────────────────────────────────────────────────
 def _conn():
@@ -223,6 +228,9 @@ def _locked_margin(uid):
 def _live_price(t):
     if t["kind"] == "option":
         return _option_ltp(t["underlying"], t["strike"], t["leg"])
+    if t["kind"] == "forex":
+        from pipelines.forex.data import current_price as fx_price
+        return fx_price(t["symbol"])
     from agents.auto_trader import _stock_price
     return _stock_price(t["chart_symbol"] or t["symbol"])
 
@@ -248,6 +256,8 @@ def open_trade(uid, spec):
             plan = _plan_futures(spec, available)
         elif seg in ("equity", "equity_intraday", "intraday"):
             plan = _plan_equity(spec, available)
+        elif seg == "forex":
+            plan = _plan_forex(spec, available)
         else:
             return {"error": f"unknown segment '{seg}'"}
     except _PlanError as e:
@@ -362,15 +372,60 @@ def _plan_equity(spec, available):
                       f"Manual {side} intraday {sym} @ {round(px,2)} × {qty} sh."}
 
 
+def _plan_forex(spec, available):
+    from pipelines.forex.data import current_price as fx_price, PIP_INFO, SPREADS, list_pairs
+    pair = spec.get("pair") or spec.get("symbol") or ""
+    if not pair or pair not in list_pairs():
+        raise _PlanError(f"unsupported forex pair '{pair}' — supported: {list_pairs()}")
+    side = (spec.get("side") or spec.get("direction") or "buy").lower()
+    if side not in ("buy", "sell"):
+        raise _PlanError("side must be buy or sell")
+    px = fx_price(pair)
+    if not px:
+        raise _PlanError(f"could not read {pair} price right now")
+    pip = PIP_INFO.get(pair, {"pip": 0.0001, "pip_value": 10.0})
+    pip_size = pip["pip"]
+    pip_value = pip["pip_value"]
+    lot_type = spec.get("lot_type", FX_DEFAULT_LOT)
+    lot_units = FX_LOT_SIZES.get(lot_type, FX_LOT_SIZES["micro"])
+    lots = int(spec.get("lots") or 1)
+    qty = lots * lot_units
+    margin = round(qty * px / FX_LEVERAGE, 2)
+    if margin > available:
+        max_lots = int(available * FX_LEVERAGE / (lot_units * px))
+        if max_lots < 1:
+            raise _PlanError(f"insufficient margin: need ${margin:,.0f} for {lots} "
+                             f"{lot_type} lot(s), only ${available:,.0f} free.")
+        lots = max_lots
+        qty = lots * lot_units
+        margin = round(qty * px / FX_LEVERAGE, 2)
+    sl_pips = float(spec.get("sl_pips") or 30)
+    tp_pips = float(spec.get("tp_pips") or 60)
+    sign = 1 if side == "buy" else -1
+    stop = round(px - sign * sl_pips * pip_size, 5)
+    target = round(px + sign * tp_pips * pip_size, 5)
+    spread_cost = round(SPREADS.get(pair, 1.5) * pip_value * lots * (lot_units / 100_000), 2)
+    return {"kind": "forex", "segment": "forex", "side": side,
+            "underlying": None, "chart_symbol": pair, "strike": None, "leg": None,
+            "symbol": pair, "qty": qty, "lots": lots, "entry": round(px, 5),
+            "stop": stop, "target": target, "cost": margin,
+            "reason": spec.get("reason") or
+                      f"Forex {side} {pair} @ {px} × {lots} {lot_type} lot(s) "
+                      f"(margin ${margin:,.0f}, leverage {FX_LEVERAGE}:1, "
+                      f"spread ~${spread_cost})."}
+
+
 # ── tick / close ──────────────────────────────────────
 def _signed_gross(t, px):
     sign = 1 if t.get("side", "long") == "long" else -1
+    if t.get("kind") == "forex":
+        sign = 1 if t.get("side") == "buy" else -1
     return (px - t["entry"]) * t["qty"] * sign
 
 
 def _hit_exit(t, px, now):
-    long = t.get("side", "long") == "long"
-    if long:
+    is_long = t.get("side", "long") in ("long", "buy")
+    if is_long:
         if px <= t["stop"]:
             return "stop_loss"
         if px >= t["target"]:
@@ -380,7 +435,8 @@ def _hit_exit(t, px, now):
             return "stop_loss"
         if px <= t["target"]:
             return "target"
-    if now.time() >= SQUARE_OFF:
+    # Forex trades run 24/5 — no intraday square-off
+    if t.get("kind") != "forex" and now.time() >= SQUARE_OFF:
         return "square_off"
     return None
 

@@ -45,6 +45,9 @@ RATES = {
         "exch_txn": 0.0000173,                           # NSE futures 0.00173%
         "sebi": 0.000001, "stamp_buy": 0.00002,          # stamp 0.002% buy
     },
+    "forex": {
+        "spread_based": True,
+    },
 }
 GST = 0.18
 
@@ -55,6 +58,11 @@ def charges(segment, side, price, qty):
     r = RATES[segment]
     side = side.lower()
     turnover = price * qty
+
+    if r.get("spread_based"):
+        return {"segment": segment, "side": side, "turnover": round(turnover, 2),
+                "brokerage": 0, "stt": 0, "exchange": 0, "sebi": 0, "stamp": 0,
+                "gst": 0, "total": 0, "note": "forex cost is spread-based (built into entry)"}
 
     if segment == "options":
         brokerage = r["brokerage_flat"]

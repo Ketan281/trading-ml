@@ -198,12 +198,13 @@ def auth_change_password(body: PasswordChange, user: dict = Depends(auth.current
 
 # ── Per-user paper trading (auth required) ────────────
 class TradeSpec(BaseModel):
-    segment: str                       # options | futures | equity
+    segment: str                       # options | futures | equity | forex
     underlying: str | None = None      # NIFTY | BANKNIFTY (options/futures)
     symbol: str | None = None          # stock symbol (equity)
+    pair: str | None = None            # forex pair (EUR/USD, GBP/USD, …)
     leg: str | None = None             # CE | PE (options)
     strike: int | None = None          # options strike (default ATM)
-    side: str | None = None            # long | short (futures/equity)
+    side: str | None = None            # long | short | buy | sell
     lots: int | None = None
     qty: int | None = None
     entry: float | None = None
@@ -269,6 +270,46 @@ def recommendation_ep(user: dict = Depends(auth.current_user)):
     from api.market import recommendation
     bal = _silent(uw.get_wallet, user["id"]).get("balance", 10_000)
     return _cached("reco", lambda: _silent(recommendation, bal))
+
+
+# ── Forex ────────────────────────────────────────────
+@app.get("/forex/pairs")
+def forex_pairs():
+    from pipelines.forex.data import list_pairs
+    return {"pairs": list_pairs()}
+
+@app.get("/forex/candles/{pair:path}")
+def forex_candles(pair: str, interval: str = "15m", period: str = "5d"):
+    from pipelines.forex.data import fetch_candles, candles_to_list
+    df = fetch_candles(pair, interval, period)
+    return _cached(f"fxc::{pair}::{interval}::{period}",
+                   lambda: {"pair": pair, "candles": candles_to_list(df)})
+
+@app.get("/forex/signals/{pair:path}")
+def forex_signals(pair: str):
+    from pipelines.forex.confluence import score_pair
+    return _cached(f"fxsig::{pair}", lambda: _silent(score_pair, pair))
+
+@app.get("/forex/scan")
+def forex_scan():
+    from pipelines.forex.confluence import scan_all_pairs
+    return _cached("fxscan", lambda: {"pairs": _silent(scan_all_pairs)})
+
+@app.get("/forex/recommendation")
+def forex_recommendation():
+    from pipelines.forex.confluence import best_trade
+    r = _cached("fxreco", lambda: _silent(best_trade))
+    if not r:
+        return {"answer": "No forex pair meets the confluence threshold right now — "
+                "the system is waiting for a high-confidence setup.",
+                "trade": None}
+    return {"answer": f"Best forex setup: {r['direction'].upper()} {r['pair']} "
+            f"(confluence {r['score']:.2f}, {r['confidence']} confidence, "
+            f"{r['agreeing_timeframes']}/{r['total_timeframes']} TFs agree). "
+            f"Entry {r['trade_plan']['entry']}, SL {r['trade_plan']['stop_loss']}, "
+            f"TP {r['trade_plan']['take_profit']} "
+            f"(R:R {r['trade_plan']['risk_reward']}:1).",
+            "trade": r}
 
 
 # ── Admin (owner only) ────────────────────────────────
