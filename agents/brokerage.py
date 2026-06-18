@@ -10,6 +10,7 @@ Segments:
   • equity_delivery (CNC swing) — STT 0.1% both sides, ₹0 brokerage, stamp 0.015% buy
   • equity_intraday (MIS)       — brokerage 0.03%/₹20, STT 0.025% sell only
   • options                     — flat ₹20/leg, STT 0.1% sell premium, higher txn
+  • futures                      — brokerage 0.03%/₹20, STT 0.02% sell, low exch txn
 
 charges(segment, side, price, qty) → full breakdown + total, so the trade
 manager can compute net P&L to the rupee.
@@ -37,6 +38,12 @@ RATES = {
         "stt_buy": 0.0, "stt_sell": 0.001,              # 0.1% sell premium (post Oct-24)
         "exch_txn": 0.0003503,                          # NSE options 0.03503%
         "sebi": 0.000001, "stamp_buy": 0.00003,         # stamp 0.003% buy
+    },
+    "futures": {
+        "brokerage_pct": 0.0003, "brokerage_max": 20.0,  # 0.03% capped at ₹20
+        "stt_buy": 0.0, "stt_sell": 0.0002,              # STT 0.02% sell side only
+        "exch_txn": 0.0000173,                           # NSE futures 0.00173%
+        "sebi": 0.000001, "stamp_buy": 0.00002,          # stamp 0.002% buy
     },
 }
 GST = 0.18

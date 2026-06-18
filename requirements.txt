@@ -9,6 +9,7 @@ jugaad-data
 fastapi
 uvicorn[standard]
 pydantic
+PyJWT
 # optional: only needed for LLM narration/prose of decisions
 ollama
 # optional (research / DL comparison only; large). Uncomment to enable:

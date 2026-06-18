@@ -1,0 +1,577 @@
+{
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\agents\\__init__.py": {
+    "mtime": 1780661453.9960697,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\agents\\auto_trader.py": {
+    "mtime": 1780910636.5552676,
+    "ast_hash": "6290fc9be76312af4fb18765719863f0",
+    "semantic_hash": "6290fc9be76312af4fb18765719863f0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\agents\\brokerage.py": {
+    "mtime": 1781759407.6540246,
+    "ast_hash": "c7c62ecd666b1c9d45fc3e0cf7d3e1d0",
+    "semantic_hash": "c7c62ecd666b1c9d45fc3e0cf7d3e1d0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\agents\\manager.py": {
+    "mtime": 1780661683.4434645,
+    "ast_hash": "67ebcf4c8289c60738c0ed2ee617e16b",
+    "semantic_hash": "67ebcf4c8289c60738c0ed2ee617e16b"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\agents\\position.py": {
+    "mtime": 1780661619.981726,
+    "ast_hash": "aaad670ae331d85a7619382811741e20",
+    "semantic_hash": "aaad670ae331d85a7619382811741e20"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\agents\\wallet.py": {
+    "mtime": 1780661599.7962594,
+    "ast_hash": "0d86fdd517495b0d18b103e155dfb80d",
+    "semantic_hash": "0d86fdd517495b0d18b103e155dfb80d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\__init__.py": {
+    "mtime": 1780911429.9507947,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\agents.py": {
+    "mtime": 1780912247.0617056,
+    "ast_hash": "c5fcaf4c3e7e40fd8b6ea5b39139435a",
+    "semantic_hash": "c5fcaf4c3e7e40fd8b6ea5b39139435a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\allocator.py": {
+    "mtime": 1780913164.9281185,
+    "ast_hash": "c518ff75d2374f3400cd6b3c97eb3c41",
+    "semantic_hash": "c518ff75d2374f3400cd6b3c97eb3c41"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\base.py": {
+    "mtime": 1780911446.1383016,
+    "ast_hash": "1968f2393d70941c1f47c934b2a59fe2",
+    "semantic_hash": "1968f2393d70941c1f47c934b2a59fe2"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\memory.py": {
+    "mtime": 1780911639.5977125,
+    "ast_hash": "165ad30b63682ee0a3d1d4b482b05a0a",
+    "semantic_hash": "165ad30b63682ee0a3d1d4b482b05a0a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\meta_learning.py": {
+    "mtime": 1780912906.2498093,
+    "ast_hash": "542bd230797ff5850c0e3a3b712c00ae",
+    "semantic_hash": "542bd230797ff5850c0e3a3b712c00ae"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\monitoring.py": {
+    "mtime": 1780913028.307967,
+    "ast_hash": "c401675a1adcd55208a2474c5c05b9b3",
+    "semantic_hash": "c401675a1adcd55208a2474c5c05b9b3"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\orchestrator.py": {
+    "mtime": 1780912390.7498963,
+    "ast_hash": "eeb5ab7795b964000117041cba9dda9a",
+    "semantic_hash": "eeb5ab7795b964000117041cba9dda9a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\postmarket.py": {
+    "mtime": 1780912764.2719376,
+    "ast_hash": "510a6122725b6a0e5a43867193305efd",
+    "semantic_hash": "510a6122725b6a0e5a43867193305efd"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\premarket.py": {
+    "mtime": 1780912592.8567166,
+    "ast_hash": "28422fd519d960271f7a4ef96b1c1556",
+    "semantic_hash": "28422fd519d960271f7a4ef96b1c1556"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\scheduler.py": {
+    "mtime": 1781755928.94295,
+    "ast_hash": "3b59727af9aa053c453ab46f148efb10",
+    "semantic_hash": "3b59727af9aa053c453ab46f148efb10"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\sim_wallet.py": {
+    "mtime": 1781755782.0687401,
+    "ast_hash": "cb57f4304a99b16a87bc9531e1c30011",
+    "semantic_hash": "cb57f4304a99b16a87bc9531e1c30011"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\aos\\user_wallet.py": {
+    "mtime": 1781760677.5428517,
+    "ast_hash": "e29ff2dec353c2be4750993c7e3e2913",
+    "semantic_hash": "e29ff2dec353c2be4750993c7e3e2913"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\__init__.py": {
+    "mtime": 1780654504.9957416,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\auth.py": {
+    "mtime": 1781759839.3862073,
+    "ast_hash": "6dbbfafdf917028bf4b9d3d7245d3bd4",
+    "semantic_hash": "6dbbfafdf917028bf4b9d3d7245d3bd4"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\market.py": {
+    "mtime": 1781760091.5297341,
+    "ast_hash": "ef44ebc6fbbdd33d4427d857118c88e8",
+    "semantic_hash": "ef44ebc6fbbdd33d4427d857118c88e8"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\narrate.py": {
+    "mtime": 1780655310.1757703,
+    "ast_hash": "51d7e669d3d78a333980429664da293a",
+    "semantic_hash": "51d7e669d3d78a333980429664da293a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\precompute.py": {
+    "mtime": 1780654849.8275192,
+    "ast_hash": "44a99fb2555644cefc05b6f8f0207418",
+    "semantic_hash": "44a99fb2555644cefc05b6f8f0207418"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\router.py": {
+    "mtime": 1780655046.4141421,
+    "ast_hash": "387a4c62821f759ca9d35c9c324b4d3d",
+    "semantic_hash": "387a4c62821f759ca9d35c9c324b4d3d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\api\\server.py": {
+    "mtime": 1781760248.2426984,
+    "ast_hash": "1fb1c3f95eb8767193aec6905ea3fe52",
+    "semantic_hash": "1fb1c3f95eb8767193aec6905ea3fe52"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\infra\\__init__.py": {
+    "mtime": 1780640990.7566907,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\infra\\data_quality.py": {
+    "mtime": 1780641127.2795608,
+    "ast_hash": "35fcea595efba5021d4ff3ea35e7a132",
+    "semantic_hash": "35fcea595efba5021d4ff3ea35e7a132"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\infra\\feature_store.py": {
+    "mtime": 1780641022.1595037,
+    "ast_hash": "8aee7ec42d6a3ff9e0b67dd77e42aeab",
+    "semantic_hash": "8aee7ec42d6a3ff9e0b67dd77e42aeab"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\infra\\iv_surface.py": {
+    "mtime": 1780653311.3001668,
+    "ast_hash": "007bc1a52cbc264394de9b6bf73472ab",
+    "semantic_hash": "007bc1a52cbc264394de9b6bf73472ab"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\infra\\model_registry.py": {
+    "mtime": 1780641043.9032214,
+    "ast_hash": "e120dfdb9bb2fe182669f9b13f1fdcc9",
+    "semantic_hash": "e120dfdb9bb2fe182669f9b13f1fdcc9"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\infra\\retrain_pipeline.py": {
+    "mtime": 1780641263.0367427,
+    "ast_hash": "a6cd5dfa01977d5783b4b93e51118212",
+    "semantic_hash": "a6cd5dfa01977d5783b4b93e51118212"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\memory\\memory_retrieval.py": {
+    "mtime": 1779692666.903814,
+    "ast_hash": "0e8fdd72954fd98e18465dc8335d7dd5",
+    "semantic_hash": "0e8fdd72954fd98e18465dc8335d7dd5"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\memory\\memory_store.py": {
+    "mtime": 1779450727.439494,
+    "ast_hash": "0eb1625553789ddbb88a53adf39f3f4a",
+    "semantic_hash": "0eb1625553789ddbb88a53adf39f3f4a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\calibrate.py": {
+    "mtime": 1780058387.2218468,
+    "ast_hash": "b867f6a6dd6d64fce5dc7a566ed78248",
+    "semantic_hash": "b867f6a6dd6d64fce5dc7a566ed78248"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\cross_sectional.py": {
+    "mtime": 1780052553.9747653,
+    "ast_hash": "9b58a4c4e787d1e24457c664503485db",
+    "semantic_hash": "9b58a4c4e787d1e24457c664503485db"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\deep_ranker.py": {
+    "mtime": 1780489613.8296554,
+    "ast_hash": "40b2c74c2929ed34b3ccc873498b23e0",
+    "semantic_hash": "40b2c74c2929ed34b3ccc873498b23e0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\drift_monitor.py": {
+    "mtime": 1780058674.391735,
+    "ast_hash": "93652bd6cede8b6d929d4a716713060f",
+    "semantic_hash": "93652bd6cede8b6d929d4a716713060f"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\earnings_risk.py": {
+    "mtime": 1780653020.605407,
+    "ast_hash": "790a75a0553c2277415af09ed50b15c3",
+    "semantic_hash": "790a75a0553c2277415af09ed50b15c3"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\ensemble.py": {
+    "mtime": 1780652472.590994,
+    "ast_hash": "9d721c8fbc49fb3ed30ba62017694d1e",
+    "semantic_hash": "9d721c8fbc49fb3ed30ba62017694d1e"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\explain.py": {
+    "mtime": 1780640576.020487,
+    "ast_hash": "b821d60cca7927fbe453de021bba4677",
+    "semantic_hash": "b821d60cca7927fbe453de021bba4677"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\fundamentals.py": {
+    "mtime": 1780054881.219739,
+    "ast_hash": "1c66145e29f2c99ebf8f908eee2f1c2a",
+    "semantic_hash": "1c66145e29f2c99ebf8f908eee2f1c2a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\fundamentals_pit.py": {
+    "mtime": 1780057625.0280907,
+    "ast_hash": "c215b4dd6e2ec5a922bc17ea95f97bd9",
+    "semantic_hash": "c215b4dd6e2ec5a922bc17ea95f97bd9"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\index_options_model.py": {
+    "mtime": 1780635146.5749698,
+    "ast_hash": "220a63efb376bfc5b5f1b5bcc2a1c2e6",
+    "semantic_hash": "220a63efb376bfc5b5f1b5bcc2a1c2e6"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\ml_models.py": {
+    "mtime": 1780051329.63303,
+    "ast_hash": "27026250789e1afeab4d7733c5dd7b30",
+    "semantic_hash": "27026250789e1afeab4d7733c5dd7b30"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\ranker_ltr.py": {
+    "mtime": 1780058029.8808692,
+    "ast_hash": "c589b87f9472ace097c9bc68a03862cf",
+    "semantic_hash": "c589b87f9472ace097c9bc68a03862cf"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\regime_classifier.py": {
+    "mtime": 1780639916.4274428,
+    "ast_hash": "42cc39bd5c1e6ca319b561d5f1eb63f8",
+    "semantic_hash": "42cc39bd5c1e6ca319b561d5f1eb63f8"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\regime_detector.py": {
+    "mtime": 1779687932.4430487,
+    "ast_hash": "67ff4939a393cc3a33a2faaf29a79796",
+    "semantic_hash": "67ff4939a393cc3a33a2faaf29a79796"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\sector_strength.py": {
+    "mtime": 1780639808.8485742,
+    "ast_hash": "40975837bea9b56eae22b3f712417b70",
+    "semantic_hash": "40975837bea9b56eae22b3f712417b70"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\validate_pit_fundamentals.py": {
+    "mtime": 1780057693.4009387,
+    "ast_hash": "1d6d242405a991180b222d2cfe883753",
+    "semantic_hash": "1d6d242405a991180b222d2cfe883753"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\models\\vol_forecast.py": {
+    "mtime": 1780652514.4093544,
+    "ast_hash": "39edb12194e1263c1953c01d60b82d1f",
+    "semantic_hash": "39edb12194e1263c1953c01d60b82d1f"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\angelone_connect.py": {
+    "mtime": 1779453335.2322495,
+    "ast_hash": "adaf49c033919ed1c825fe472ba1e9b0",
+    "semantic_hash": "adaf49c033919ed1c825fe472ba1e9b0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\attribution.py": {
+    "mtime": 1780641565.314521,
+    "ast_hash": "e3ef4560fce2c6b91ab481ae8a98bb23",
+    "semantic_hash": "e3ef4560fce2c6b91ab481ae8a98bb23"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\backtest_strategy.py": {
+    "mtime": 1780058702.2462268,
+    "ast_hash": "bc00426c89eb3a8e1278064028abb74f",
+    "semantic_hash": "bc00426c89eb3a8e1278064028abb74f"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\backtester.py": {
+    "mtime": 1779692154.6997814,
+    "ast_hash": "57e97ba37b99bba563724d4619c46781",
+    "semantic_hash": "57e97ba37b99bba563724d4619c46781"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\breadth.py": {
+    "mtime": 1780639785.075101,
+    "ast_hash": "62260b047b0128d7d7a9937053908e5a",
+    "semantic_hash": "62260b047b0128d7d7a9937053908e5a"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\combined_intelligence.py": {
+    "mtime": 1779451474.602381,
+    "ast_hash": "e975bc79fc3bce98e8477c08a01379ba",
+    "semantic_hash": "e975bc79fc3bce98e8477c08a01379ba"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\dashboard.py": {
+    "mtime": 1779696279.665634,
+    "ast_hash": "c977fb81f3b6354c90dcadf21dae2033",
+    "semantic_hash": "c977fb81f3b6354c90dcadf21dae2033"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\decision_engine.py": {
+    "mtime": 1780054505.9555714,
+    "ast_hash": "d55fe5a59df9f709be9568a3228eba79",
+    "semantic_hash": "d55fe5a59df9f709be9568a3228eba79"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\event_awareness.py": {
+    "mtime": 1779693088.9233732,
+    "ast_hash": "5e853df0060f44dfc152a911eba835a4",
+    "semantic_hash": "5e853df0060f44dfc152a911eba835a4"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\execution_simulator.py": {
+    "mtime": 1779694465.5733407,
+    "ast_hash": "ab5d2d7c501b834128fcb079e9d7e27f",
+    "semantic_hash": "ab5d2d7c501b834128fcb079e9d7e27f"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\fetch_data.py": {
+    "mtime": 1779450381.553095,
+    "ast_hash": "effd4adf7325664c97ff0307d7e14016",
+    "semantic_hash": "effd4adf7325664c97ff0307d7e14016"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\hallucination_control.py": {
+    "mtime": 1779692396.814161,
+    "ast_hash": "a9557a51d1723fc43d8b8baa12b4d331",
+    "semantic_hash": "a9557a51d1723fc43d8b8baa12b4d331"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\indicators.py": {
+    "mtime": 1780052471.2038987,
+    "ast_hash": "e6fdf729e614c554527ad3ab4228eb0d",
+    "semantic_hash": "e6fdf729e614c554527ad3ab4228eb0d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\intelligence.py": {
+    "mtime": 1780056528.2281191,
+    "ast_hash": "1afb4cc0a9d8b15760afb9a878af1607",
+    "semantic_hash": "1afb4cc0a9d8b15760afb9a878af1607"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\intraday.py": {
+    "mtime": 1780653414.661916,
+    "ast_hash": "19b1c818705824339bf5dba5e2de66cf",
+    "semantic_hash": "19b1c818705824339bf5dba5e2de66cf"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\intraday_regime.py": {
+    "mtime": 1780653480.7559516,
+    "ast_hash": "3a727a694e16558bfacca4f58342f593",
+    "semantic_hash": "3a727a694e16558bfacca4f58342f593"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\market_regime.py": {
+    "mtime": 1780058628.3823082,
+    "ast_hash": "024c7cdd676944b614ca601c15da3aa3",
+    "semantic_hash": "024c7cdd676944b614ca601c15da3aa3"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\model_evaluator.py": {
+    "mtime": 1779695991.8924503,
+    "ast_hash": "fd12e43ea6b083f964f7cfcd833aa8a0",
+    "semantic_hash": "fd12e43ea6b083f964f7cfcd833aa8a0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\montecarlo_risk.py": {
+    "mtime": 1780652599.36082,
+    "ast_hash": "c3e773365ed069d93dccc4a0533aaa59",
+    "semantic_hash": "c3e773365ed069d93dccc4a0533aaa59"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\chain_advanced.py": {
+    "mtime": 1780638873.9243531,
+    "ast_hash": "d0ac97c9f8f321ce281de667cf712c49",
+    "semantic_hash": "d0ac97c9f8f321ce281de667cf712c49"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\chain_live_intel.py": {
+    "mtime": 1780638521.5654702,
+    "ast_hash": "4edd3b7fea6711fbb2180bde1ae7a9ac",
+    "semantic_hash": "4edd3b7fea6711fbb2180bde1ae7a9ac"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\dealer_exposure.py": {
+    "mtime": 1780652761.283301,
+    "ast_hash": "d66417d75cb140438e79afee9333dc41",
+    "semantic_hash": "d66417d75cb140438e79afee9333dc41"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\debug_nse.py": {
+    "mtime": 1779453651.3018289,
+    "ast_hash": "cf7fb8a9d44b4267840d406e79804ab7",
+    "semantic_hash": "cf7fb8a9d44b4267840d406e79804ab7"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\futures_analyzer.py": {
+    "mtime": 1779454516.3638048,
+    "ast_hash": "7ad419934e43dd92706a9611f321819b",
+    "semantic_hash": "7ad419934e43dd92706a9611f321819b"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\greeks_engine.py": {
+    "mtime": 1779454354.1328428,
+    "ast_hash": "ab57efbf4c24db6db8bc90edc3dbb06c",
+    "semantic_hash": "ab57efbf4c24db6db8bc90edc3dbb06c"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\iv_analyzer.py": {
+    "mtime": 1779454241.101285,
+    "ast_hash": "a158241cae818868e47b14822a76c053",
+    "semantic_hash": "a158241cae818868e47b14822a76c053"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\oi_analyzer.py": {
+    "mtime": 1779454156.5616238,
+    "ast_hash": "1b1c7f293707254afba3bf9ef4f26737",
+    "semantic_hash": "1b1c7f293707254afba3bf9ef4f26737"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\options_chain.py": {
+    "mtime": 1779454055.6608074,
+    "ast_hash": "2951d4c823b6267fa7b30f5d6031bed9",
+    "semantic_hash": "2951d4c823b6267fa7b30f5d6031bed9"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\options_dashboard.py": {
+    "mtime": 1780653695.5177116,
+    "ast_hash": "0a60b99fd5a70d5474b8c9b4929a993d",
+    "semantic_hash": "0a60b99fd5a70d5474b8c9b4929a993d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\options_intelligence.py": {
+    "mtime": 1779454622.9443526,
+    "ast_hash": "02b5a263e78294483ef2ea32d18d7b28",
+    "semantic_hash": "02b5a263e78294483ef2ea32d18d7b28"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\order_flow.py": {
+    "mtime": 1780653662.989429,
+    "ast_hash": "162d8a93fb1fcae214ccc43cc13bff34",
+    "semantic_hash": "162d8a93fb1fcae214ccc43cc13bff34"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options\\strategy_selector.py": {
+    "mtime": 1780639553.357012,
+    "ast_hash": "5a337f258b603948ef2590b8881d123d",
+    "semantic_hash": "5a337f258b603948ef2590b8881d123d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options_action_engine.py": {
+    "mtime": 1780639583.3299797,
+    "ast_hash": "369456238977ad56a198bbb4780a3e55",
+    "semantic_hash": "369456238977ad56a198bbb4780a3e55"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\options_backtester.py": {
+    "mtime": 1780653254.1158962,
+    "ast_hash": "c60ad9f15d8b04c72b4e973359ee0459",
+    "semantic_hash": "c60ad9f15d8b04c72b4e973359ee0459"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\paper_trading.py": {
+    "mtime": 1780641544.546651,
+    "ast_hash": "98eba830e684d5f771391b11f11c3c76",
+    "semantic_hash": "98eba830e684d5f771391b11f11c3c76"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\patterns.py": {
+    "mtime": 1780054428.2878695,
+    "ast_hash": "f880262958b936ba000806e6cf4deeab",
+    "semantic_hash": "f880262958b936ba000806e6cf4deeab"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\portfolio_book.py": {
+    "mtime": 1780640779.5848806,
+    "ast_hash": "d707a40aaa4594e3186a95bcd93a6354",
+    "semantic_hash": "d707a40aaa4594e3186a95bcd93a6354"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\portfolio_optimizer.py": {
+    "mtime": 1780640237.3410652,
+    "ast_hash": "729355e9f5e9a79a6d8b0869a3d7cbbc",
+    "semantic_hash": "729355e9f5e9a79a6d8b0869a3d7cbbc"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\portfolio_risk.py": {
+    "mtime": 1779694093.4605603,
+    "ast_hash": "6cb90921b937dea2fd20e418d47c46bf",
+    "semantic_hash": "6cb90921b937dea2fd20e418d47c46bf"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\risk_policy.py": {
+    "mtime": 1780640199.9305117,
+    "ast_hash": "0502f2762cf2d3e5f9f251438fa1ee32",
+    "semantic_hash": "0502f2762cf2d3e5f9f251438fa1ee32"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\run_pipeline.py": {
+    "mtime": 1779450900.8175077,
+    "ast_hash": "ee02971526070af71122e5de85e2e41c",
+    "semantic_hash": "ee02971526070af71122e5de85e2e41c"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\scheduler.py": {
+    "mtime": 1779451720.2836437,
+    "ast_hash": "352488e469ebbad6dd028ae8e5756885",
+    "semantic_hash": "352488e469ebbad6dd028ae8e5756885"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\screener.py": {
+    "mtime": 1780058537.1559117,
+    "ast_hash": "06895710e597be12bafb39c92d1cd2e9",
+    "semantic_hash": "06895710e597be12bafb39c92d1cd2e9"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\slippage.py": {
+    "mtime": 1780652977.7300398,
+    "ast_hash": "504cd9cc5324ab8f714b6d483ae0197d",
+    "semantic_hash": "504cd9cc5324ab8f714b6d483ae0197d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\stops.py": {
+    "mtime": 1780640178.487806,
+    "ast_hash": "f0e8201c94a651788c06608749820aa6",
+    "semantic_hash": "f0e8201c94a651788c06608749820aa6"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\trader.py": {
+    "mtime": 1780055025.1555786,
+    "ast_hash": "0bd83a143d7a98acb69f22aff32ebb67",
+    "semantic_hash": "0bd83a143d7a98acb69f22aff32ebb67"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\pipelines\\walk_forward.py": {
+    "mtime": 1779693883.6433542,
+    "ast_hash": "70fb459ff2946ddabfc7f880630f6fc6",
+    "semantic_hash": "70fb459ff2946ddabfc7f880630f6fc6"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\test_env.py": {
+    "mtime": 1779453181.8634348,
+    "ast_hash": "97835a9b667b91c8516079a89ea8d151",
+    "semantic_hash": "97835a9b667b91c8516079a89ea8d151"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\build_features.py": {
+    "mtime": 1779698291.2660646,
+    "ast_hash": "01d2b37983b7d45361c6b15b581f5933",
+    "semantic_hash": "01d2b37983b7d45361c6b15b581f5933"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\build_labels.py": {
+    "mtime": 1779698490.9622338,
+    "ast_hash": "920aaab3c64b185320e5ded5108c611d",
+    "semantic_hash": "920aaab3c64b185320e5ded5108c611d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\build_walk_forward_dataset.py": {
+    "mtime": 1779722928.100008,
+    "ast_hash": "6efcfd01ef0e6de40221ee0f45aa40b0",
+    "semantic_hash": "6efcfd01ef0e6de40221ee0f45aa40b0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\collect_intraday.py": {
+    "mtime": 1780490509.536679,
+    "ast_hash": "f18206e2a25343699b3f1593c4e0cabb",
+    "semantic_hash": "f18206e2a25343699b3f1593c4e0cabb"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\collect_option_chain.py": {
+    "mtime": 1780635586.010597,
+    "ast_hash": "9db6ef2eac2e6581b39ca96f3577ad0c",
+    "semantic_hash": "9db6ef2eac2e6581b39ca96f3577ad0c"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\dataset_builder.py": {
+    "mtime": 1779451648.448038,
+    "ast_hash": "4ba3ddf44a3b8c08e7863ab8fcc08967",
+    "semantic_hash": "4ba3ddf44a3b8c08e7863ab8fcc08967"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\fetch_fundamentals.py": {
+    "mtime": 1780052924.3891108,
+    "ast_hash": "0dd5669ea13718d1b53637bbf81c892b",
+    "semantic_hash": "0dd5669ea13718d1b53637bbf81c892b"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\fetch_fundamentals_pit.py": {
+    "mtime": 1780057498.0564046,
+    "ast_hash": "9bb68fb8dd43ec875da36a37aa88c5f8",
+    "semantic_hash": "9bb68fb8dd43ec875da36a37aa88c5f8"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\fetch_historical.py": {
+    "mtime": 1779697995.4705546,
+    "ast_hash": "c307a499582a86b9af9d1d718adbda98",
+    "semantic_hash": "c307a499582a86b9af9d1d718adbda98"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\fetch_universe.py": {
+    "mtime": 1780052090.3746839,
+    "ast_hash": "877f9ad63fee18a23fabe6603412e09d",
+    "semantic_hash": "877f9ad63fee18a23fabe6603412e09d"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\prepare_colab.py": {
+    "mtime": 1779723812.3141224,
+    "ast_hash": "c5ea9a9377280df475b5f0b67ee9eeb3",
+    "semantic_hash": "c5ea9a9377280df475b5f0b67ee9eeb3"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\training\\validate_dataset.py": {
+    "mtime": 1779723308.9338493,
+    "ast_hash": "9f53c9fe1acf75fbc2db7bc9556c536e",
+    "semantic_hash": "9f53c9fe1acf75fbc2db7bc9556c536e"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\web\\app.js": {
+    "mtime": 1781760889.944948,
+    "ast_hash": "2bd844fc3ae6efd723582b64c61d8971",
+    "semantic_hash": "2bd844fc3ae6efd723582b64c61d8971"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\requirements.txt": {
+    "mtime": 1781759621.2632136,
+    "ast_hash": "83f63217b47d62d29eedcb034ac66eb7",
+    "semantic_hash": "83f63217b47d62d29eedcb034ac66eb7"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\docs\\AGENTIC_OS.md": {
+    "mtime": 1780921289.463751,
+    "ast_hash": "0b39097d595a80edc97d53f62cc3f0a0",
+    "semantic_hash": "0b39097d595a80edc97d53f62cc3f0a0"
+  },
+  "C:\\Users\\KetanMohite\\OneDrive - INTELLINUM\\Desktop\\git\\allGit\\trading-ai\\docs\\DEPLOY.md": {
+    "mtime": 1780930946.0658543,
+    "ast_hash": "074b10471805b3a0c1d15868813962bb",
+    "semantic_hash": "074b10471805b3a0c1d15868813962bb"
+  }
+}

@@ -29,25 +29,30 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from api.router import route, _silent
+from api import auth
+from aos import user_wallet as uw
 
 app = FastAPI(title="Trading-AI", version="1.0",
               description="NSE equity + NIFTY/BANKNIFTY options intelligence")
 
-# CORS lockdown: in production set ALLOWED_ORIGINS to your frontend origin(s),
-# comma-separated (e.g. "https://app.example.com"). Defaults to localhost for
-# dev. Never ship "*" with credentials in production.
-_origins = os.getenv("ALLOWED_ORIGINS",
-                     "http://localhost:3000,http://127.0.0.1:5500").split(",")
+# CORS: in production set ALLOWED_ORIGINS to your frontend origin(s),
+# comma-separated (e.g. "https://app.example.com"). For local dev any
+# localhost/127.0.0.1 port is always allowed via the regex below, so serving the
+# static frontend on any port (5500, 5601, 8080, …) works without configuration.
+# Tokens are sent in the Authorization header (not cookies), so allowing any
+# local port carries no credential-leak risk.
+_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in _origins if o.strip()],
+    allow_origins=_origins,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Tiny TTL cache so repeated identical queries don't re-hit NSE.
@@ -152,6 +157,132 @@ def wallet_tick():
     from aos.sim_wallet import tick, status
     _silent(tick)
     return _silent(status)
+
+
+# ── Auth (multi-user) ─────────────────────────────────
+class Credentials(BaseModel):
+    email: str
+    password: str
+
+@app.post("/auth/signup")
+def auth_signup(body: Credentials):
+    try:
+        return auth.signup(body.email, body.password)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+@app.post("/auth/login")
+def auth_login(body: Credentials):
+    try:
+        return auth.login(body.email, body.password)
+    except ValueError as e:
+        raise HTTPException(401, str(e))
+
+@app.get("/auth/me")
+def auth_me(user: dict = Depends(auth.current_user)):
+    return user
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
+
+@app.post("/auth/change-password")
+def auth_change_password(body: PasswordChange, user: dict = Depends(auth.current_user)):
+    try:
+        return auth.change_password(user["id"], body.old_password, body.new_password)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+# ── Per-user paper trading (auth required) ────────────
+class TradeSpec(BaseModel):
+    segment: str                       # options | futures | equity
+    underlying: str | None = None      # NIFTY | BANKNIFTY (options/futures)
+    symbol: str | None = None          # stock symbol (equity)
+    leg: str | None = None             # CE | PE (options)
+    strike: int | None = None          # options strike (default ATM)
+    side: str | None = None            # long | short (futures/equity)
+    lots: int | None = None
+    qty: int | None = None
+    entry: float | None = None
+    stop: float | None = None
+    target: float | None = None
+    reason: str | None = None
+
+class DepositAmt(BaseModel):
+    amount: float
+
+@app.get("/me/wallet")
+def me_wallet(user: dict = Depends(auth.current_user)):
+    """Wallet, live equity, open positions (ticked on read) and trade history."""
+    return _silent(uw.status, user["id"])
+
+@app.post("/me/wallet/deposit")
+def me_deposit(body: DepositAmt, user: dict = Depends(auth.current_user)):
+    return _silent(uw.deposit, user["id"], body.amount)
+
+@app.post("/me/trade")
+def me_trade(body: TradeSpec, user: dict = Depends(auth.current_user)):
+    spec = {k: v for k, v in body.model_dump().items() if v is not None}
+    return _silent(uw.open_trade, user["id"], spec)
+
+@app.post("/me/trade/{trade_id}/close")
+def me_trade_close(trade_id: str, user: dict = Depends(auth.current_user)):
+    return _silent(uw.close_trade, user["id"], trade_id)
+
+@app.get("/me/history")
+def me_history(user: dict = Depends(auth.current_user)):
+    """All trades the user has taken (any status), newest first — for the
+    date-grouped history page."""
+    return {"trades": _silent(uw.history_full, user["id"])}
+
+@app.post("/me/trade/{trade_id}/explain")
+def me_trade_explain(trade_id: str, user: dict = Depends(auth.current_user)):
+    """AI explanation of why a trade was taken (cached after first call)."""
+    return _silent(uw.explain_trade, user["id"], trade_id)
+
+
+# ── Market data: candles + best recommendation ────────
+@app.get("/candles/{symbol}")
+def candles_ep(symbol: str, interval: str = "5m", period: str = "1d"):
+    from api.market import candles
+    return _cached(f"candles::{symbol.upper()}::{interval}::{period}",
+                   lambda: _silent(candles, symbol, interval, period))
+
+@app.get("/recommendation")
+def recommendation_ep(user: dict = Depends(auth.current_user)):
+    from api.market import recommendation
+    bal = _silent(uw.get_wallet, user["id"]).get("balance", 10_000)
+    return _cached("reco", lambda: _silent(recommendation, bal))
+
+
+# ── Admin (owner only) ────────────────────────────────
+@app.get("/admin/users")
+def admin_users(user: dict = Depends(auth.admin_only)):
+    return {"users": auth.list_users()}
+
+class RoleChange(BaseModel):
+    role: str
+
+@app.post("/admin/users/{uid}/role")
+def admin_set_role(uid: int, body: RoleChange, user: dict = Depends(auth.admin_only)):
+    if uid == user["id"] and body.role != "admin":
+        raise HTTPException(400, "you cannot remove your own admin access")
+    try:
+        return {"ok": True, "user": auth.set_role(uid, body.role)}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+@app.get("/admin/overview")
+def admin_overview(user: dict = Depends(auth.admin_only)):
+    """Every user's wallet + open positions — the owner's bird's-eye view."""
+    out = []
+    for u in auth.list_users():
+        st = _silent(uw.status, u["id"], do_tick=False)
+        out.append({"user": u, "wallet": st.get("wallet"),
+                    "live_equity": st.get("live_equity"),
+                    "open_trades": st.get("open_trades", [])})
+    return {"overview": out}
 
 
 if __name__ == "__main__":
