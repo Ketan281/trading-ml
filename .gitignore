@@ -12,6 +12,9 @@ logs/
 *.bin
 *.safetensors
 
+# ── User data (contains hashed passwords + trades — never commit) ──
+data/users.db
+
 # ── Runtime state (regenerated on the server; do NOT commit) ──
 data/aos/
 data/agents/
