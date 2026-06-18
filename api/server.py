@@ -117,6 +117,43 @@ def screen_ep():
     return _cached("screen", lambda: _silent(screen))
 
 
+# ── Autonomous paper-trading wallet ───────────────────
+class Deposit(BaseModel):
+    amount: float
+
+@app.get("/wallet")
+def wallet_status():
+    """Wallet balance, live equity, today's trade + P&L series (for the chart),
+    and trade history. Paper money only — no profit guarantee."""
+    from aos.sim_wallet import status
+    return _silent(status)
+
+@app.post("/wallet/deposit")
+def wallet_deposit(body: Deposit):
+    from aos.sim_wallet import deposit
+    return _silent(deposit, body.amount)
+
+@app.post("/wallet/reset")
+def wallet_reset():
+    from aos.sim_wallet import reset
+    return {"wallet": _silent(reset)}
+
+@app.post("/wallet/trade/start")
+def wallet_trade_start():
+    """Pick + open today's intraday call (idempotent — once per day). Normally
+    the scheduler calls this at the open; exposed for manual trigger/testing."""
+    from aos.sim_wallet import start_daily_trade
+    return _silent(start_daily_trade)
+
+@app.post("/wallet/tick")
+def wallet_tick():
+    """Advance the open trade against the live price (records a P&L point,
+    exits on stop/target/square-off). Normally the scheduler ticks this."""
+    from aos.sim_wallet import tick, status
+    _silent(tick)
+    return _silent(status)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=False)

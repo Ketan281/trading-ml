@@ -93,6 +93,16 @@ def job_retrain():
     from infra.retrain_pipeline import run
     r = run(); return {"promoted": r.get("promoted"), "verdict": r.get("verdict")}
 
+def job_wallet_open():
+    from aos.sim_wallet import start_daily_trade
+    r = start_daily_trade()
+    return {"status": r.get("status"), "symbol": (r.get("trade") or {}).get("symbol")}
+
+def job_wallet_tick():
+    from aos.sim_wallet import tick
+    s = tick(); t = s.get("active_trade") or {}
+    return {"trade_status": t.get("status"), "points": len(t.get("pnl_series", []))}
+
 
 # ── schedule definitions ──────────────────────────────
 # kind: 'daily' (at HH:MM), 'interval' (every N min), 'weekly' (weekday@HH:MM)
@@ -104,6 +114,9 @@ JOBS = {
     "postmarket": {"fn": job_postmarket, "kind": "daily",    "at": "16:00", "wkday": True},
     "metalearn":  {"fn": job_metalearn,  "kind": "daily",    "at": "18:00"},
     "retrain":    {"fn": job_retrain,    "kind": "weekly",   "weekday": 5, "at": "07:00"},
+    # Autonomous paper-trading wallet: open one call after the open, tick it live.
+    "wallet_open": {"fn": job_wallet_open, "kind": "daily",    "at": "09:25", "wkday": True},
+    "wallet_tick": {"fn": job_wallet_tick, "kind": "interval", "every_min": 1, "market": True},
 }
 
 
