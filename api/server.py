@@ -641,15 +641,46 @@ def admin_overview(user: dict = Depends(auth.admin_only)):
                     "open_trades": st.get("open_trades", [])})
     return {"overview": out}
 
+@app.get("/admin/learning")
+def admin_learning_status(user: dict = Depends(auth.admin_only)):
+    """Self-learning system status: policy, lessons, signal outcomes."""
+    from aos.meta_learning import load_policy
+    from aos import memory as mem
+    policy = _silent(load_policy)
+    stats = _silent(mem.stats)
+    lessons = _silent(mem.recent_lessons, 5)
+    return {
+        "policy": policy or {"status": "not yet trained"},
+        "memory_stats": stats or {},
+        "recent_lessons": lessons or [],
+        "last_learning_run": str(_learning_ran_today) if _learning_ran_today else None,
+    }
+
+@app.post("/admin/learning/run")
+def admin_trigger_learning(user: dict = Depends(auth.admin_only)):
+    """Manually trigger the self-learning cycle (post-market review + meta-learn)."""
+    from aos.postmarket import review
+    from aos.meta_learning import learn
+    r = review()
+    p = learn()
+    return {
+        "postmarket": {"trades": r.get("n_trades", 0), "lessons": len(r.get("lessons", []))},
+        "meta_learning": p,
+    }
+
 
 # ── Background ML auto-trading loop ──────────────────
 _ml_log = logging.getLogger("ml_auto")
+_learning_ran_today = None
 
 def _ml_loop():
     """Every 60 seconds, tick all ML-mode users, auto-open trades in both
     Indian and Forex markets simultaneously, and manage the portfolio.
+    After market close (16:00–18:00 IST), runs the self-learning cycle once:
+    post-market review → meta-learning policy update.
     Runs in a daemon thread — dies with the process."""
-    from datetime import time as dtime
+    global _learning_ran_today
+    from datetime import time as dtime, datetime as _dt
     while True:
         time.sleep(60)
         try:
@@ -658,6 +689,25 @@ def _ml_loop():
                 _ml_log.info("ML auto-traded: %s", results)
         except Exception as e:
             _ml_log.warning("ML loop error: %s", e)
+
+        try:
+            now = _dt.now()
+            after_close = dtime(16, 0) <= now.time() <= dtime(18, 0)
+            weekday = now.weekday() < 5
+            today = now.date()
+            if after_close and weekday and _learning_ran_today != today:
+                _learning_ran_today = today
+                _ml_log.info("Running daily self-learning cycle...")
+                from aos.postmarket import review
+                r = review()
+                _ml_log.info("Post-market review: %d trades, %d lessons",
+                             r.get("n_trades", 0), len(r.get("lessons", [])))
+                from aos.meta_learning import learn
+                p = learn()
+                _ml_log.info("Meta-learning: %s (n=%d)",
+                             p.get("status"), p.get("n_outcomes", 0))
+        except Exception as e:
+            _ml_log.warning("Self-learning cycle error: %s", e)
 
 @app.on_event("startup")
 def _start_ml_loop():

@@ -46,16 +46,16 @@ LOT_SIZE       = {"NIFTY": 75, "BANKNIFTY": 35}   # update if NSE revises lots
 
 # ── Probability → action ──────────────────────────────
 def action_from_probability(prob_up):
-    if prob_up > 0.75:
+    if prob_up > 0.68:
         return {"action": "BUY_CE", "leg": "CE", "size_factor": 1.0,
                 "conviction": "high"}
-    if prob_up >= 0.60:
+    if prob_up >= 0.55:
         return {"action": "SMALL_CE", "leg": "CE", "size_factor": SMALL_FACTOR,
                 "conviction": "moderate"}
-    if prob_up > 0.40:
+    if prob_up > 0.45:
         return {"action": "NO_TRADE", "leg": None, "size_factor": 0.0,
                 "conviction": "none"}
-    if prob_up >= 0.25:
+    if prob_up >= 0.32:
         return {"action": "SMALL_PE", "leg": "PE", "size_factor": SMALL_FACTOR,
                 "conviction": "moderate"}
     return {"action": "BUY_PE", "leg": "PE", "size_factor": 1.0,
@@ -113,21 +113,42 @@ def build_trade(symbol, prob_up, ce_premium, pe_premium, atm_strike,
 
 # ── INTERIM rule-based bias (until the ML model has data) ──
 def interim_chain_bias(agg_row):
-    """A transparent, NON-ML placeholder P(up) from chain structure so the
-    engine is testable today. PCR, OI build-up and Max-Pain pull. This is NOT
-    a validated edge — it exists only to exercise the plumbing until the
-    walk-forward chain model is trained on collected history."""
+    """Rule-based P(up) from chain structure: PCR, OI build-up, Max-Pain,
+    IV skew, gamma regime, volume ratio, and OI concentration. Each signal
+    contributes independently; total range is roughly 0.10–0.90."""
     score = 0.0
+
+    # 1. PCR — high PCR (put writing) = bullish support building
     pcr = agg_row.get("pcr_oi", 1.0)
-    # High PCR (put writing) = bullish; low PCR (call writing) = bearish.
-    score += max(-0.15, min(0.15, (pcr - 1.0) * 0.3))
-    # Net OI build-up: puts adding (support) bullish, calls adding bearish.
+    score += max(-0.20, min(0.20, (pcr - 1.0) * 0.40))
+
+    # 2. Net OI build-up — puts adding (support) bullish, calls adding bearish
     net_oi = agg_row.get("pe_chg_oi", 0) - agg_row.get("ce_chg_oi", 0)
     denom = abs(agg_row.get("tot_ce_oi", 1)) + abs(agg_row.get("tot_pe_oi", 1)) + 1
-    score += max(-0.12, min(0.12, net_oi / denom * 3))
-    # Max Pain pull: price tends toward max pain near expiry.
-    mp_dist = agg_row.get("max_pain_dist_pct", 0)   # spot above MP = +ve
-    score += max(-0.08, min(0.08, -mp_dist * 0.02))
+    score += max(-0.18, min(0.18, net_oi / denom * 5))
+
+    # 3. Max Pain pull — price tends toward max pain near expiry
+    mp_dist = agg_row.get("max_pain_dist_pct", 0)
+    score += max(-0.10, min(0.10, -mp_dist * 0.04))
+
+    # 4. IV skew — steep put skew = fear = bearish bias
+    iv_skew_val = agg_row.get("iv_skew", 0)
+    if iv_skew_val:
+        score += max(-0.10, min(0.10, -iv_skew_val * 0.03))
+
+    # 5. Gamma regime — positive GEX = range (neutral), negative = trend-friendly
+    gex_sign = agg_row.get("gex_sign", 0)
+    score += 0.05 * gex_sign
+
+    # 6. Volume ratio — high put volume vs call volume = hedging = mildly bearish
+    vol_ratio = agg_row.get("vol_pcr", 0)
+    if vol_ratio:
+        score += max(-0.08, min(0.08, (vol_ratio - 1.0) * 0.15))
+
+    # 7. OI concentration — heavy OI above spot = resistance (bearish), below = support (bullish)
+    oi_imbalance = agg_row.get("oi_imbalance", 0)
+    score += max(-0.08, min(0.08, oi_imbalance * 0.15))
+
     return max(0.05, min(0.95, 0.5 + score))
 
 
@@ -163,14 +184,42 @@ def _max_pain_dist(chain):
 
 
 def chain_prob_up(chain):
-    """Derive P(up) from the LIVE chain, reusing the same interim bias formula
-    so the action engine and the collector agree on one definition."""
-    df = chain["df"]
+    """Derive P(up) from the LIVE chain using all available signals:
+    PCR, OI buildup, max pain, IV skew, gamma regime, volume, OI concentration."""
+    df, spot, atm = chain["df"], chain["spot"], chain["atm"]
     tot_ce, tot_pe = df["ce_oi"].sum(), df["pe_oi"].sum()
+    tot_ce_vol, tot_pe_vol = df["ce_vol"].sum(), df["pe_vol"].sum()
+
+    # IV skew: OTM put IV vs OTM call IV near ATM
+    otm_puts = df[df["strike"] < atm].tail(3)
+    otm_calls = df[df["strike"] > atm].head(3)
+    put_iv = otm_puts["pe_iv"].mean() if len(otm_puts) else 0
+    call_iv = otm_calls["ce_iv"].mean() if len(otm_calls) else 0
+    skew = (put_iv - call_iv) if (put_iv and call_iv) else 0
+
+    # Gamma: use pre-computed dealer GEX if available
+    try:
+        gex = gamma_exposure(chain)
+        gex_sign = 1 if gex["total_gex"] > 0 else -1
+    except Exception:
+        gex_sign = 0
+
+    # OI concentration: pe_oi below spot vs ce_oi above spot
+    below = df[df["strike"] < spot]
+    above = df[df["strike"] > spot]
+    pe_support = below["pe_oi"].sum() if len(below) else 0
+    ce_resist = above["ce_oi"].sum() if len(above) else 0
+    oi_total = pe_support + ce_resist + 1
+    oi_imbalance = (pe_support - ce_resist) / oi_total
+
     agg = {"pcr_oi": tot_pe / tot_ce if tot_ce else 1.0,
            "pe_chg_oi": df["pe_chg_oi"].sum(), "ce_chg_oi": df["ce_chg_oi"].sum(),
            "tot_ce_oi": tot_ce, "tot_pe_oi": tot_pe,
-           "max_pain_dist_pct": _max_pain_dist(chain)}
+           "max_pain_dist_pct": _max_pain_dist(chain),
+           "iv_skew": skew,
+           "gex_sign": gex_sign,
+           "vol_pcr": tot_pe_vol / tot_ce_vol if tot_ce_vol else 1.0,
+           "oi_imbalance": oi_imbalance}
     return interim_chain_bias(agg)
 
 

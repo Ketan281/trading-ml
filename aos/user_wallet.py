@@ -528,6 +528,17 @@ def _hit_exit(t, px, now):
     return None
 
 
+def _current_regime():
+    try:
+        from pipelines.market_regime import _load_index, regime_at
+        df = _load_index()
+        if df is not None:
+            return regime_at(df).get("regime", "unknown")
+    except Exception:
+        pass
+    return "unknown"
+
+
 def _close(t, w, price, reason):
     qty, entry = t["qty"], t["entry"]
     fee = (charges(t["segment"], "buy", entry, qty)["total"] +
@@ -550,6 +561,15 @@ def _close(t, w, price, reason):
         mem.record_lesson("user_wallet",
                           f"u{t['user_id']} {t['symbol']} {reason} net {ccy}{net}",
                           {"trade": t["id"]})
+        source = "forex_confluence" if is_forex else "options_engine"
+        regime = _current_regime()
+        mem.record_signal(t["symbol"], t.get("segment", "equity"), source,
+                          score=None, confidence=None, regime=regime)
+        sigs = mem.query("SELECT id FROM signals WHERE symbol=? ORDER BY id DESC LIMIT 1",
+                         (t["symbol"],))
+        if sigs:
+            mem.set_signal_outcome(sigs[0]["id"], outcome_ret=net,
+                                   outcome_label=1 if net > 0 else 0)
     except Exception:
         pass
 
@@ -669,14 +689,19 @@ def ml_users():
 
 
 def auto_open_trade(uid):
-    """Pick and open the best Indian-market trade for an ML-mode user."""
+    """Pick and open the best Indian-market trade for an ML-mode user.
+    Uses meta-learning sizing multiplier when enough history exists."""
     indian_opens = [t for t in _open_trades(uid) if t.get("segment") != "forex"]
     if indian_opens:
         return None
     w = get_wallet(uid)
     available = round(w["balance"] - _locked_margin(uid, segment_filter="indian"), 2)
     from aos.sim_wallet import pick_trade
-    plan = pick_trade(available)
+    from aos.meta_learning import sizing_multiplier
+    regime = _current_regime()
+    size_mult = sizing_multiplier("options_engine", regime)
+    adjusted_balance = round(available * size_mult, 2)
+    plan = pick_trade(adjusted_balance)
     if not plan:
         return None
     spec = {"segment": plan.get("segment", "options")}
@@ -693,7 +718,10 @@ def auto_open_trade(uid):
     if plan.get("qty") and plan.get("kind") == "equity":
         spec["qty"] = plan["qty"]
     spec["side"] = plan.get("side", "long")
-    spec["reason"] = f"[ML auto] {plan.get('reason', 'system pick')}"
+    reason = plan.get("reason", "system pick")
+    if size_mult != 1.0:
+        reason += f" [meta: ×{size_mult} sizing in {regime} regime]"
+    spec["reason"] = f"[ML auto] {reason}"
     res = open_trade(uid, spec)
     if res.get("error"):
         return None
@@ -701,23 +729,29 @@ def auto_open_trade(uid):
 
 
 def auto_open_forex_trade(uid):
-    """Pick and open the best forex trade for an ML-mode user."""
+    """Pick and open the best forex trade for an ML-mode user.
+    Uses meta-learning sizing multiplier when enough history exists."""
     forex_opens = [t for t in _open_trades(uid) if t.get("segment") == "forex"]
     if forex_opens:
         return None
     w = get_forex_wallet(uid)
     available = round(w["balance"] - _locked_margin(uid, segment_filter="forex"), 2)
     from pipelines.forex.confluence import best_trade
+    from aos.meta_learning import sizing_multiplier
+    regime = _current_regime()
+    size_mult = sizing_multiplier("forex_confluence", regime)
     sig = best_trade()
     if not sig or not sig.get("trade_plan"):
         return None
     tp = sig["trade_plan"]
+    lots = max(1, round(1 * size_mult))
     spec = {
         "segment": "forex", "pair": tp["pair"], "side": tp["direction"],
         "sl_pips": tp.get("sl_pips", 30), "tp_pips": tp.get("tp_pips", 60),
-        "lot_type": "micro", "lots": 1,
+        "lot_type": "micro", "lots": lots,
         "reason": f"[ML auto] Confluence {sig['score']:.2f} ({sig['confidence']}), "
-                  f"{sig['agreeing_timeframes']}/{sig['total_timeframes']} TFs agree.",
+                  f"{sig['agreeing_timeframes']}/{sig['total_timeframes']} TFs agree."
+                  f"{f' [meta: ×{size_mult} in {regime}]' if size_mult != 1.0 else ''}",
     }
     res = open_trade(uid, spec)
     if res.get("error"):
