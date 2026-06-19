@@ -733,6 +733,8 @@ def ml_tick_all():
     SL/target/square-off) and open new trades if flat in either market.
     Indian and Forex markets are independent — both can have open trades
     simultaneously. Called by the 60s background loop in the API server."""
+    import logging
+    log = logging.getLogger("ml_auto")
     now = datetime.now()
     from aos.sim_wallet import SQUARE_OFF
     from datetime import time as dtime
@@ -744,26 +746,24 @@ def ml_tick_all():
     for uid in all_uids:
         try:
             tick_user(uid, now)
-        except Exception:
-            pass
-        # Indian market: open a trade if user has indian ML on, market is open,
-        # and no Indian open trade exists. Does NOT block on forex trades.
+        except Exception as e:
+            log.warning("tick_user(%s) failed: %s", uid, e)
         if uid in indian_uids and indian_market_open:
             try:
                 t = auto_open_trade(uid)
                 if t:
+                    log.info("ML opened Indian trade for uid %s: %s", uid, t["symbol"])
                     results.append({"uid": uid, "market": "indian", "opened": t["symbol"]})
-            except Exception:
-                pass
-        # Forex market: open a trade if user has forex ML on and no forex open
-        # trade exists. Does NOT block on Indian trades. Forex is 24/5.
+            except Exception as e:
+                log.warning("auto_open_trade(%s) failed: %s", uid, e)
         if uid in forex_uids:
             try:
                 t = auto_open_forex_trade(uid)
                 if t:
+                    log.info("ML opened Forex trade for uid %s: %s", uid, t["symbol"])
                     results.append({"uid": uid, "market": "forex", "opened": t["symbol"]})
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("auto_open_forex_trade(%s) failed: %s", uid, e)
     return results
 
 

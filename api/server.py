@@ -425,24 +425,39 @@ class ModeChange(BaseModel):
 
 def _trigger_ml_immediately(uid, market):
     """When the user switches to ML mode, immediately open the best trade
-    instead of waiting for the next 2-minute background cycle."""
-    try:
-        from datetime import time as dtime
-        now_time = __import__("datetime").datetime.now().time()
-        opened = []
-        if market in ("indian", "both"):
-            from aos.sim_wallet import SQUARE_OFF
-            if dtime(9, 15) <= now_time <= SQUARE_OFF:
+    instead of waiting for the background cycle."""
+    from datetime import datetime as dt, time as dtime
+    from aos.sim_wallet import SQUARE_OFF
+    opened = []
+    now_time = dt.now().time()
+    if market in ("indian", "both"):
+        indian_market_open = dtime(9, 15) <= now_time <= SQUARE_OFF
+        if indian_market_open:
+            try:
                 t = uw.auto_open_trade(uid)
                 if t:
                     opened.append({"market": "indian", "symbol": t["symbol"], "trade": t})
-        if market in ("forex", "both"):
+                else:
+                    opened.append({"market": "indian", "symbol": None,
+                                   "info": "no actionable Indian trade right now"})
+            except Exception as e:
+                _ml_log.warning("ML immediate Indian trade for uid %s failed: %s", uid, e)
+                opened.append({"market": "indian", "error": str(e)})
+        else:
+            opened.append({"market": "indian", "symbol": None,
+                           "info": "Indian market is closed (09:15–15:15 IST)"})
+    if market in ("forex", "both"):
+        try:
             t = uw.auto_open_forex_trade(uid)
             if t:
                 opened.append({"market": "forex", "symbol": t["symbol"], "trade": t})
-        return opened
-    except Exception:
-        return []
+            else:
+                opened.append({"market": "forex", "symbol": None,
+                               "info": "no actionable forex setup meets confluence threshold"})
+        except Exception as e:
+            _ml_log.warning("ML immediate Forex trade for uid %s failed: %s", uid, e)
+            opened.append({"market": "forex", "error": str(e)})
+    return opened
 
 
 @app.get("/me/mode")
@@ -451,26 +466,32 @@ def me_mode(user: dict = Depends(auth.current_user)):
 
 @app.post("/me/mode")
 def me_set_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
-    result = _silent(uw.set_mode, user["id"], body.mode, body.market)
+    uid = user["id"]
+    result = _silent(uw.set_mode, uid, body.mode, body.market)
     if body.mode == "ml":
-        opened = _trigger_ml_immediately(user["id"], body.market)
-        result["auto_opened"] = opened
+        result["auto_opened"] = _trigger_ml_immediately(uid, body.market)
+    result["current_mode"] = uw.get_mode(uid)
+    result["status"] = _silent(uw.status, uid, do_tick=False)
     return result
 
 @app.post("/me/mode/indian")
 def me_set_indian_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
-    result = _silent(uw.set_mode, user["id"], body.mode, "indian")
+    uid = user["id"]
+    result = _silent(uw.set_mode, uid, body.mode, "indian")
     if body.mode == "ml":
-        opened = _trigger_ml_immediately(user["id"], "indian")
-        result["auto_opened"] = opened
+        result["auto_opened"] = _trigger_ml_immediately(uid, "indian")
+    result["current_mode"] = uw.get_mode(uid)
+    result["status"] = _silent(uw.status, uid, do_tick=False)
     return result
 
 @app.post("/me/mode/forex")
 def me_set_forex_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
-    result = _silent(uw.set_mode, user["id"], body.mode, "forex")
+    uid = user["id"]
+    result = _silent(uw.set_mode, uid, body.mode, "forex")
     if body.mode == "ml":
-        opened = _trigger_ml_immediately(user["id"], "forex")
-        result["auto_opened"] = opened
+        result["auto_opened"] = _trigger_ml_immediately(uid, "forex")
+    result["current_mode"] = uw.get_mode(uid)
+    result["status"] = _silent(uw.status, uid, do_tick=False)
     return result
 
 
