@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "../trading-ai-frontend", "run", "dev", "--", "--host", "127.0.0.1", "--port", "5174", "--strictPort"],
       "port": 5174
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "api.server:app", "--host", "127.0.0.1", "--port", "8000"],
+      "port": 8000
     }
   ]
 }

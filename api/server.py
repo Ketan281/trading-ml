@@ -260,9 +260,23 @@ def me_trade_explain(trade_id: str, user: dict = Depends(auth.current_user)):
     return _silent(uw.explain_trade, user["id"], trade_id)
 
 
+def _resolve_sse_user(request: Request):
+    """Resolve user from query-param token (EventSource can't set headers)."""
+    tok = request.query_params.get("token")
+    if not tok:
+        raise HTTPException(401, "missing token query param")
+    payload = auth.decode_token(tok)
+    if not payload:
+        raise HTTPException(401, "invalid or expired token")
+    user = auth.get_user(payload["sub"])
+    if not user:
+        raise HTTPException(401, "user not found")
+    return user
+
+
 # ── Live P&L streaming (SSE) for real-time charts ────
 @app.get("/me/live")
-async def me_live(request: Request, user: dict = Depends(auth.current_user)):
+async def me_live(request: Request):
     """Server-Sent Events stream: pushes live P&L for all open trades every
     ~2 seconds. The frontend connects with EventSource and gets a continuous
     feed of price + P&L data for charting.
@@ -272,6 +286,7 @@ async def me_live(request: Request, user: dict = Depends(auth.current_user)):
         entry, current_price, qty, gross_pnl, pnl_pct, ...}],
        indian_equity, forex_equity, timestamp}
     """
+    user = _resolve_sse_user(request)
     uid = user["id"]
 
     async def event_stream():
@@ -293,10 +308,10 @@ async def me_live(request: Request, user: dict = Depends(auth.current_user)):
 
 
 @app.get("/me/live/{trade_id}")
-async def me_live_trade(trade_id: str, request: Request,
-                        user: dict = Depends(auth.current_user)):
+async def me_live_trade(trade_id: str, request: Request):
     """SSE stream for a single trade — higher frequency (every 1s) for the
     focused live chart view."""
+    user = _resolve_sse_user(request)
     uid = user["id"]
 
     async def event_stream():
