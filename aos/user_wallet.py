@@ -39,6 +39,10 @@ from agents.brokerage import charges
 # actually takeable. Still paper money; no real funds involved.
 DEPOSIT_CAP = 2_000_000
 
+# Forex wallet: separate USD-denominated wallet for currency trading.
+FX_DEFAULT_BALANCE = 10_000.0     # $10,000 starting balance
+FX_DEPOSIT_CAP     = 100_000.0    # max $1,00,000 total deposited
+
 DB = os.path.join(ROOT, "data", "users.db")
 os.makedirs(os.path.dirname(DB), exist_ok=True)
 
@@ -68,6 +72,14 @@ def init_db():
     with _conn() as c:
         c.execute("""
             CREATE TABLE IF NOT EXISTS wallets (
+                user_id         INTEGER PRIMARY KEY,
+                balance         REAL NOT NULL,
+                total_deposited REAL NOT NULL,
+                realized_pnl    REAL NOT NULL DEFAULT 0,
+                created         TEXT NOT NULL
+            )""")
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS forex_wallets (
                 user_id         INTEGER PRIMARY KEY,
                 balance         REAL NOT NULL,
                 total_deposited REAL NOT NULL,
@@ -112,9 +124,13 @@ def init_db():
         wcols = [r[1] for r in c.execute("PRAGMA table_info(wallets)")]
         if "trade_mode" not in wcols:
             c.execute("ALTER TABLE wallets ADD COLUMN trade_mode TEXT DEFAULT 'custom'")
+        if "indian_trade_mode" not in wcols:
+            c.execute("ALTER TABLE wallets ADD COLUMN indian_trade_mode TEXT DEFAULT 'custom'")
+        if "forex_trade_mode" not in wcols:
+            c.execute("ALTER TABLE wallets ADD COLUMN forex_trade_mode TEXT DEFAULT 'custom'")
 
 
-# ── wallet ops ────────────────────────────────────────
+# ── wallet ops (Indian INR wallet) ────────────────────
 def get_wallet(uid):
     init_db()
     with _conn() as c:
@@ -137,20 +153,80 @@ def _save_wallet(w):
                   (w["balance"], w["total_deposited"], w["realized_pnl"], w["user_id"]))
 
 
-def get_mode(uid):
-    get_wallet(uid)  # ensure row exists
+# ── Forex USD wallet ─────────────────────────────────
+def get_forex_wallet(uid):
+    init_db()
     with _conn() as c:
-        row = c.execute("SELECT trade_mode FROM wallets WHERE user_id=?", (uid,)).fetchone()
-    return (row["trade_mode"] if row and row["trade_mode"] else "custom")
+        row = c.execute("SELECT * FROM forex_wallets WHERE user_id=?", (uid,)).fetchone()
+        if row is None:
+            now = datetime.now().isoformat()
+            c.execute("INSERT INTO forex_wallets (user_id, balance, total_deposited, "
+                      "realized_pnl, created) VALUES (?,?,?,0,?)",
+                      (uid, FX_DEFAULT_BALANCE, FX_DEFAULT_BALANCE, now))
+            return {"user_id": uid, "balance": FX_DEFAULT_BALANCE,
+                    "total_deposited": FX_DEFAULT_BALANCE, "realized_pnl": 0.0,
+                    "created": now, "currency": "USD"}
+    d = dict(row)
+    d["currency"] = "USD"
+    return d
 
 
-def set_mode(uid, mode):
-    if mode not in ("ml", "custom"):
-        return {"error": "mode must be 'ml' or 'custom'"}
+def _save_forex_wallet(w):
+    with _conn() as c:
+        c.execute("UPDATE forex_wallets SET balance=?, total_deposited=?, realized_pnl=? "
+                  "WHERE user_id=?",
+                  (w["balance"], w["total_deposited"], w["realized_pnl"], w["user_id"]))
+
+
+def deposit_forex(uid, amount):
+    w = get_forex_wallet(uid); amount = float(amount)
+    if amount <= 0:
+        return {"error": "amount must be positive"}
+    if w["total_deposited"] + amount > FX_DEPOSIT_CAP:
+        room = FX_DEPOSIT_CAP - w["total_deposited"]
+        return {"error": f"deposit cap ${FX_DEPOSIT_CAP:,.0f} reached — you can add at most "
+                f"${room:,.0f} more (profits can still grow the balance)."}
+    w["balance"] = round(w["balance"] + amount, 2)
+    w["total_deposited"] = round(w["total_deposited"] + amount, 2)
+    _save_forex_wallet(w)
+    return {"ok": True, "wallet": w}
+
+
+def reset_forex(uid):
+    with _conn() as c:
+        c.execute("DELETE FROM trades WHERE user_id=? AND segment='forex'", (uid,))
+        c.execute("DELETE FROM forex_wallets WHERE user_id=?", (uid,))
+    return get_forex_wallet(uid)
+
+
+# ── trade mode (separate toggles for Indian & Forex) ─
+def get_mode(uid):
     get_wallet(uid)
     with _conn() as c:
-        c.execute("UPDATE wallets SET trade_mode=? WHERE user_id=?", (mode, uid))
-    return {"ok": True, "trade_mode": mode}
+        row = c.execute("SELECT trade_mode, indian_trade_mode, forex_trade_mode "
+                        "FROM wallets WHERE user_id=?", (uid,)).fetchone()
+    return {
+        "indian_trade_mode": (row["indian_trade_mode"] if row and row["indian_trade_mode"] else "custom"),
+        "forex_trade_mode": (row["forex_trade_mode"] if row and row["forex_trade_mode"] else "custom"),
+        "trade_mode": (row["trade_mode"] if row and row["trade_mode"] else "custom"),
+    }
+
+
+def set_mode(uid, mode, market="indian"):
+    if mode not in ("ml", "custom"):
+        return {"error": "mode must be 'ml' or 'custom'"}
+    if market not in ("indian", "forex", "both"):
+        return {"error": "market must be 'indian', 'forex', or 'both'"}
+    get_wallet(uid)
+    if market == "both":
+        with _conn() as c:
+            c.execute("UPDATE wallets SET indian_trade_mode=?, forex_trade_mode=? "
+                      "WHERE user_id=?", (mode, mode, uid))
+    else:
+        col = "indian_trade_mode" if market == "indian" else "forex_trade_mode"
+        with _conn() as c:
+            c.execute(f"UPDATE wallets SET {col}=? WHERE user_id=?", (mode, uid))
+    return {"ok": True, "market": market, "trade_mode": mode}
 
 
 def deposit(uid, amount):
@@ -169,7 +245,7 @@ def deposit(uid, amount):
 
 def reset(uid):
     with _conn() as c:
-        c.execute("DELETE FROM trades WHERE user_id=?", (uid,))
+        c.execute("DELETE FROM trades WHERE user_id=? AND segment!='forex'", (uid,))
         c.execute("DELETE FROM wallets WHERE user_id=?", (uid,))
     return get_wallet(uid)
 
@@ -219,9 +295,15 @@ def _history(uid, limit=60):
     return [_row_to_trade(r) for r in rows]
 
 
-def _locked_margin(uid):
-    """Capital tied up in currently-open trades (paper margin)."""
-    return sum(t["cost"] for t in _open_trades(uid))
+def _locked_margin(uid, segment_filter=None):
+    """Capital tied up in currently-open trades (paper margin).
+    segment_filter: 'forex' for forex-only, 'indian' for non-forex, None for all."""
+    trades = _open_trades(uid)
+    if segment_filter == "forex":
+        trades = [t for t in trades if t.get("segment") == "forex"]
+    elif segment_filter == "indian":
+        trades = [t for t in trades if t.get("segment") != "forex"]
+    return sum(t["cost"] for t in trades)
 
 
 # ── live price for a trade ────────────────────────────
@@ -244,11 +326,16 @@ def open_trade(uid, spec):
                  optional lots (else max affordable). Always long the option.
       futures  — index NIFTY/BANKNIFTY, side long/short, optional lots.
       equity   — intraday equity, symbol, side long/short, optional qty + levels.
+      forex    — currency pair, side buy/sell. Uses the separate USD forex wallet.
     """
     init_db()
-    w = get_wallet(uid)
-    available = round(w["balance"] - _locked_margin(uid), 2)
     seg = (spec.get("segment") or "").lower()
+    if seg == "forex":
+        w = get_forex_wallet(uid)
+        available = round(w["balance"] - _locked_margin(uid, segment_filter="forex"), 2)
+    else:
+        w = get_wallet(uid)
+        available = round(w["balance"] - _locked_margin(uid, segment_filter="indian"), 2)
     try:
         if seg in ("options", "option"):
             plan = _plan_option(spec, available)
@@ -449,13 +536,22 @@ def _close(t, w, price, reason):
     t.update({"status": "closed", "exit_price": round(price, 2), "exit_reason": reason,
               "fees": round(fee), "net_pnl": net})
     t["analysis"] = _analysis(t)
-    w["balance"] = round(w["balance"] + net, 2)
+    # Profit-only rule: only positive P&L increases the wallet balance.
+    # Losses are recorded but do not reduce the balance — capital is protected.
+    if net > 0:
+        w["balance"] = round(w["balance"] + net, 2)
     w["realized_pnl"] = round(w.get("realized_pnl", 0) + net, 2)
-    _save_trade(t); _save_wallet(w)
+    is_forex = t.get("segment") == "forex"
+    _save_trade(t)
+    if is_forex:
+        _save_forex_wallet(w)
+    else:
+        _save_wallet(w)
     try:
         from aos import memory as mem
+        ccy = "$" if is_forex else "₹"
         mem.record_lesson("user_wallet",
-                          f"u{t['user_id']} {t['symbol']} {reason} net ₹{net}",
+                          f"u{t['user_id']} {t['symbol']} {reason} net {ccy}{net}",
                           {"trade": t["id"]})
     except Exception:
         pass
@@ -465,7 +561,8 @@ def tick_user(uid, now=None):
     """Advance every open trade against its live price (records a P&L point,
     auto-exits on stop/target/square-off). Returns the open trades."""
     now = now or datetime.now()
-    w = get_wallet(uid)
+    w_indian = get_wallet(uid)
+    w_forex = get_forex_wallet(uid)
     for t in _open_trades(uid):
         px = _live_price(t)
         if px is None:
@@ -474,6 +571,7 @@ def tick_user(uid, now=None):
         t["pnl_series"].append([now.strftime("%H:%M:%S"), round(px, 2), round(gross, 1)])
         reason = _hit_exit(t, px, now)
         if reason:
+            w = w_forex if t.get("segment") == "forex" else w_indian
             _close(t, w, px, reason)
         else:
             with _conn() as c:
@@ -495,7 +593,7 @@ def close_trade(uid, trade_id, price=None):
     px = price if price is not None else _live_price(t)
     if px is None:
         return {"error": "could not read a live price to close at"}
-    w = get_wallet(uid)
+    w = get_forex_wallet(uid) if t.get("segment") == "forex" else get_wallet(uid)
     _close(t, w, px, "manual")
     return {"status": "closed", "trade": t}
 
@@ -551,24 +649,35 @@ def explain_trade(uid, trade_id):
     return {"ai_why": prose, "cached": False}
 
 
-# ── ML auto-trading ──────────────────────────────────
-def ml_users():
-    """All user IDs with trade_mode='ml'."""
+# ── ML auto-trading (dual market) ────────────────────
+def ml_indian_users():
+    """All user IDs with indian_trade_mode='ml'."""
     init_db()
     with _conn() as c:
-        rows = c.execute("SELECT user_id FROM wallets WHERE trade_mode='ml'").fetchall()
+        rows = c.execute("SELECT user_id FROM wallets WHERE indian_trade_mode='ml'").fetchall()
     return [r["user_id"] for r in rows]
 
 
+def ml_forex_users():
+    """All user IDs with forex_trade_mode='ml'."""
+    init_db()
+    with _conn() as c:
+        rows = c.execute("SELECT user_id FROM wallets WHERE forex_trade_mode='ml'").fetchall()
+    return [r["user_id"] for r in rows]
+
+
+def ml_users():
+    """Legacy compat: all user IDs with any ML mode enabled."""
+    return list(set(ml_indian_users() + ml_forex_users()))
+
+
 def auto_open_trade(uid):
-    """Pick and open the best trade for an ML-mode user (one at a time).
-    Returns the trade dict on success, None if no trade available or already
-    has an open position."""
-    opens = _open_trades(uid)
-    if opens:
-        return None  # already has a position — let it ride
+    """Pick and open the best Indian-market trade for an ML-mode user."""
+    indian_opens = [t for t in _open_trades(uid) if t.get("segment") != "forex"]
+    if indian_opens:
+        return None
     w = get_wallet(uid)
-    available = round(w["balance"] - _locked_margin(uid), 2)
+    available = round(w["balance"] - _locked_margin(uid, segment_filter="indian"), 2)
     from aos.sim_wallet import pick_trade
     plan = pick_trade(available)
     if not plan:
@@ -594,24 +703,67 @@ def auto_open_trade(uid):
     return res.get("trade")
 
 
+def auto_open_forex_trade(uid):
+    """Pick and open the best forex trade for an ML-mode user."""
+    forex_opens = [t for t in _open_trades(uid) if t.get("segment") == "forex"]
+    if forex_opens:
+        return None
+    w = get_forex_wallet(uid)
+    available = round(w["balance"] - _locked_margin(uid, segment_filter="forex"), 2)
+    from pipelines.forex.confluence import best_trade
+    sig = best_trade()
+    if not sig or not sig.get("trade_plan"):
+        return None
+    tp = sig["trade_plan"]
+    spec = {
+        "segment": "forex", "pair": tp["pair"], "side": tp["direction"],
+        "sl_pips": tp.get("sl_pips", 30), "tp_pips": tp.get("tp_pips", 60),
+        "lot_type": "micro", "lots": 1,
+        "reason": f"[ML auto] Confluence {sig['score']:.2f} ({sig['confidence']}), "
+                  f"{sig['agreeing_timeframes']}/{sig['total_timeframes']} TFs agree.",
+    }
+    res = open_trade(uid, spec)
+    if res.get("error"):
+        return None
+    return res.get("trade")
+
+
 def ml_tick_all():
     """Run one cycle for every ML-mode user: tick open trades (auto-closes on
-    SL/target/square-off) and open a new trade if flat. Called by the background
-    loop in the API server."""
+    SL/target/square-off) and open new trades if flat in either market.
+    Indian and Forex markets are independent — both can have open trades
+    simultaneously. Called by the 60s background loop in the API server."""
     now = datetime.now()
     from aos.sim_wallet import SQUARE_OFF
     from datetime import time as dtime
-    market_open = dtime(9, 15) <= now.time() <= SQUARE_OFF
+    indian_market_open = dtime(9, 15) <= now.time() <= SQUARE_OFF
+    indian_uids = set(ml_indian_users())
+    forex_uids = set(ml_forex_users())
+    all_uids = indian_uids | forex_uids
     results = []
-    for uid in ml_users():
+    for uid in all_uids:
         try:
             tick_user(uid, now)
-            if market_open:
-                t = auto_open_trade(uid)
-                if t:
-                    results.append({"uid": uid, "opened": t["symbol"]})
         except Exception:
             pass
+        # Indian market: open a trade if user has indian ML on, market is open,
+        # and no Indian open trade exists. Does NOT block on forex trades.
+        if uid in indian_uids and indian_market_open:
+            try:
+                t = auto_open_trade(uid)
+                if t:
+                    results.append({"uid": uid, "market": "indian", "opened": t["symbol"]})
+            except Exception:
+                pass
+        # Forex market: open a trade if user has forex ML on and no forex open
+        # trade exists. Does NOT block on Indian trades. Forex is 24/5.
+        if uid in forex_uids:
+            try:
+                t = auto_open_forex_trade(uid)
+                if t:
+                    results.append({"uid": uid, "market": "forex", "opened": t["symbol"]})
+            except Exception:
+                pass
     return results
 
 
@@ -621,16 +773,31 @@ def status(uid, do_tick=True):
         try:
             tick_user(uid)
         except Exception:
-            pass  # never let a price-fetch failure break the dashboard
+            pass
     w = get_wallet(uid)
+    fw = get_forex_wallet(uid)
     opens = _open_trades(uid)
-    unreal = 0.0
-    for t in opens:
-        if t["pnl_series"]:
-            unreal += t["pnl_series"][-1][2]
-    return {"wallet": w, "live_equity": round(w["balance"] + unreal, 2),
-            "unrealized": round(unreal, 1), "open_trades": opens,
-            "history": _history(uid), "trade_mode": get_mode(uid)}
+    indian_opens = [t for t in opens if t.get("segment") != "forex"]
+    forex_opens = [t for t in opens if t.get("segment") == "forex"]
+    indian_unreal = sum(t["pnl_series"][-1][2] for t in indian_opens if t["pnl_series"])
+    forex_unreal = sum(t["pnl_series"][-1][2] for t in forex_opens if t["pnl_series"])
+    modes = get_mode(uid)
+    return {
+        "indian_wallet": {**w, "currency": "INR"},
+        "forex_wallet": fw,
+        "wallet": w,
+        "live_equity": round(w["balance"] + indian_unreal, 2),
+        "forex_live_equity": round(fw["balance"] + forex_unreal, 2),
+        "unrealized": round(indian_unreal, 1),
+        "forex_unrealized": round(forex_unreal, 1),
+        "open_trades": opens,
+        "indian_open_trades": indian_opens,
+        "forex_open_trades": forex_opens,
+        "history": _history(uid),
+        "trade_mode": modes,
+        "indian_trade_mode": modes["indian_trade_mode"],
+        "forex_trade_mode": modes["forex_trade_mode"],
+    }
 
 
 # Ensure tables + migrations are applied whenever this module is imported (e.g.

@@ -24,6 +24,8 @@ to keep repeated queries snappy.
 import os
 import sys
 import time
+import json
+import asyncio
 import threading
 import logging
 
@@ -31,8 +33,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from api.router import route, _silent
@@ -166,6 +169,9 @@ class Credentials(BaseModel):
     email: str
     password: str
 
+class GoogleToken(BaseModel):
+    id_token: str
+
 @app.post("/auth/signup")
 def auth_signup(body: Credentials):
     try:
@@ -177,6 +183,15 @@ def auth_signup(body: Credentials):
 def auth_login(body: Credentials):
     try:
         return auth.login(body.email, body.password)
+    except ValueError as e:
+        raise HTTPException(401, str(e))
+
+@app.post("/auth/google")
+def auth_google(body: GoogleToken):
+    """Sign up or log in with a Google account (Gmail). Send the Google ID
+    token from the frontend; the server verifies it and returns a JWT."""
+    try:
+        return auth.google_auth(body.id_token)
     except ValueError as e:
         raise HTTPException(401, str(e))
 
@@ -245,17 +260,218 @@ def me_trade_explain(trade_id: str, user: dict = Depends(auth.current_user)):
     return _silent(uw.explain_trade, user["id"], trade_id)
 
 
-# ── Trade mode (ML auto / custom manual) ─────────────
+# ── Live P&L streaming (SSE) for real-time charts ────
+@app.get("/me/live")
+async def me_live(request: Request, user: dict = Depends(auth.current_user)):
+    """Server-Sent Events stream: pushes live P&L for all open trades every
+    ~2 seconds. The frontend connects with EventSource and gets a continuous
+    feed of price + P&L data for charting.
+
+    Each SSE event is a JSON object:
+      {indian_wallet, forex_wallet, trades: [{id, symbol, segment, side,
+        entry, current_price, qty, gross_pnl, pnl_pct, ...}],
+       indian_equity, forex_equity, timestamp}
+    """
+    uid = user["id"]
+
+    async def event_stream():
+        while True:
+            if await request.is_disconnected():
+                break
+            try:
+                data = _build_live_snapshot(uid)
+                yield f"data: {json.dumps(data, default=str)}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            await asyncio.sleep(2)
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.get("/me/live/{trade_id}")
+async def me_live_trade(trade_id: str, request: Request,
+                        user: dict = Depends(auth.current_user)):
+    """SSE stream for a single trade — higher frequency (every 1s) for the
+    focused live chart view."""
+    uid = user["id"]
+
+    async def event_stream():
+        while True:
+            if await request.is_disconnected():
+                break
+            try:
+                data = _build_trade_snapshot(uid, trade_id)
+                if data.get("error"):
+                    yield f"data: {json.dumps(data)}\n\n"
+                    break
+                yield f"data: {json.dumps(data, default=str)}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            await asyncio.sleep(1)
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _build_live_snapshot(uid):
+    """Tick all open trades and return a real-time snapshot for the SSE stream."""
+    from datetime import datetime as dt
+    try:
+        uw.tick_user(uid)
+    except Exception:
+        pass
+    w = uw.get_wallet(uid)
+    fw = uw.get_forex_wallet(uid)
+    opens = uw._open_trades(uid)
+    trades_out = []
+    indian_unreal = 0.0
+    forex_unreal = 0.0
+    for t in opens:
+        last_px = t["pnl_series"][-1][1] if t["pnl_series"] else t["entry"]
+        last_pnl = t["pnl_series"][-1][2] if t["pnl_series"] else 0.0
+        pnl_pct = round((last_pnl / t["cost"]) * 100, 2) if t["cost"] else 0
+        is_forex = t.get("segment") == "forex"
+        ccy = "$" if is_forex else "₹"
+        if is_forex:
+            forex_unreal += last_pnl
+        else:
+            indian_unreal += last_pnl
+        trades_out.append({
+            "id": t["id"], "symbol": t["symbol"], "segment": t["segment"],
+            "kind": t["kind"], "side": t["side"],
+            "entry": t["entry"], "current_price": last_px,
+            "qty": t["qty"], "lots": t.get("lots"),
+            "stop": t["stop"], "target": t["target"],
+            "gross_pnl": last_pnl, "pnl_pct": pnl_pct,
+            "currency": ccy,
+            "pnl_series": t["pnl_series"][-60:],
+            "opened_at": t["opened_at"],
+        })
+    return {
+        "indian_wallet": {"balance": w["balance"], "currency": "INR"},
+        "forex_wallet": {"balance": fw["balance"], "currency": "USD"},
+        "indian_equity": round(w["balance"] + indian_unreal, 2),
+        "forex_equity": round(fw["balance"] + forex_unreal, 2),
+        "trades": trades_out,
+        "timestamp": dt.now().isoformat(),
+    }
+
+
+def _build_trade_snapshot(uid, trade_id):
+    """Single-trade live snapshot for focused chart view."""
+    from datetime import datetime as dt
+    with uw._conn() as c:
+        row = c.execute("SELECT * FROM trades WHERE id=? AND user_id=?",
+                        (trade_id, uid)).fetchone()
+    if not row:
+        return {"error": "trade not found"}
+    t = uw._row_to_trade(row)
+    if t["status"] != "open":
+        return {"error": f"trade is {t['status']}", "trade": t}
+    px = uw._live_price(t)
+    if px is not None:
+        gross = uw._signed_gross(t, px)
+        t["pnl_series"].append([dt.now().strftime("%H:%M:%S"), round(px, 2), round(gross, 1)])
+        with uw._conn() as c:
+            c.execute("UPDATE trades SET pnl_series=? WHERE id=?",
+                      (json.dumps(t["pnl_series"]), t["id"]))
+    last_px = t["pnl_series"][-1][1] if t["pnl_series"] else t["entry"]
+    last_pnl = t["pnl_series"][-1][2] if t["pnl_series"] else 0
+    is_forex = t.get("segment") == "forex"
+    return {
+        "id": t["id"], "symbol": t["symbol"], "segment": t["segment"],
+        "side": t["side"], "entry": t["entry"], "current_price": last_px,
+        "qty": t["qty"], "stop": t["stop"], "target": t["target"],
+        "gross_pnl": last_pnl,
+        "pnl_pct": round((last_pnl / t["cost"]) * 100, 2) if t["cost"] else 0,
+        "currency": "$" if is_forex else "₹",
+        "pnl_series": t["pnl_series"],
+        "opened_at": t["opened_at"],
+        "timestamp": dt.now().isoformat(),
+    }
+
+
+# ── Forex wallet (USD, separate from Indian INR wallet) ─
+@app.get("/me/forex-wallet")
+def me_forex_wallet(user: dict = Depends(auth.current_user)):
+    fw = _silent(uw.get_forex_wallet, user["id"])
+    forex_opens = [t for t in _silent(uw.status, user["id"]).get("forex_open_trades", [])
+                   if t.get("segment") == "forex"]
+    forex_unreal = sum(t["pnl_series"][-1][2] for t in forex_opens if t.get("pnl_series"))
+    return {"wallet": fw, "live_equity": round(fw["balance"] + forex_unreal, 2),
+            "unrealized": round(forex_unreal, 1), "open_trades": forex_opens}
+
+@app.post("/me/forex-wallet/deposit")
+def me_forex_deposit(body: DepositAmt, user: dict = Depends(auth.current_user)):
+    return _silent(uw.deposit_forex, user["id"], body.amount)
+
+@app.post("/me/forex-wallet/reset")
+def me_forex_reset(user: dict = Depends(auth.current_user)):
+    return {"wallet": _silent(uw.reset_forex, user["id"])}
+
+
+# ── Trade mode (separate toggles for Indian & Forex) ─
 class ModeChange(BaseModel):
-    mode: str  # "ml" or "custom"
+    mode: str       # "ml" or "custom"
+    market: str = "indian"  # "indian" or "forex"
+
+
+def _trigger_ml_immediately(uid, market):
+    """When the user switches to ML mode, immediately open the best trade
+    instead of waiting for the next 2-minute background cycle."""
+    try:
+        from datetime import time as dtime
+        now_time = __import__("datetime").datetime.now().time()
+        opened = []
+        if market in ("indian", "both"):
+            from aos.sim_wallet import SQUARE_OFF
+            if dtime(9, 15) <= now_time <= SQUARE_OFF:
+                t = uw.auto_open_trade(uid)
+                if t:
+                    opened.append({"market": "indian", "symbol": t["symbol"], "trade": t})
+        if market in ("forex", "both"):
+            t = uw.auto_open_forex_trade(uid)
+            if t:
+                opened.append({"market": "forex", "symbol": t["symbol"], "trade": t})
+        return opened
+    except Exception:
+        return []
+
 
 @app.get("/me/mode")
 def me_mode(user: dict = Depends(auth.current_user)):
-    return {"trade_mode": uw.get_mode(user["id"])}
+    return uw.get_mode(user["id"])
 
 @app.post("/me/mode")
 def me_set_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
-    return _silent(uw.set_mode, user["id"], body.mode)
+    result = _silent(uw.set_mode, user["id"], body.mode, body.market)
+    if body.mode == "ml":
+        opened = _trigger_ml_immediately(user["id"], body.market)
+        result["auto_opened"] = opened
+    return result
+
+@app.post("/me/mode/indian")
+def me_set_indian_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
+    result = _silent(uw.set_mode, user["id"], body.mode, "indian")
+    if body.mode == "ml":
+        opened = _trigger_ml_immediately(user["id"], "indian")
+        result["auto_opened"] = opened
+    return result
+
+@app.post("/me/mode/forex")
+def me_set_forex_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
+    result = _silent(uw.set_mode, user["id"], body.mode, "forex")
+    if body.mode == "ml":
+        opened = _trigger_ml_immediately(user["id"], "forex")
+        result["auto_opened"] = opened
+    return result
 
 
 # ── Market data: candles + best recommendation ────────
@@ -345,11 +561,12 @@ def admin_overview(user: dict = Depends(auth.admin_only)):
 _ml_log = logging.getLogger("ml_auto")
 
 def _ml_loop():
-    """Every 2 minutes, tick all ML-mode users and auto-open trades during
-    market hours. Runs in a daemon thread — dies with the process."""
+    """Every 60 seconds, tick all ML-mode users, auto-open trades in both
+    Indian and Forex markets simultaneously, and manage the portfolio.
+    Runs in a daemon thread — dies with the process."""
     from datetime import time as dtime
     while True:
-        time.sleep(120)
+        time.sleep(60)
         try:
             results = uw.ml_tick_all()
             if results:
@@ -361,7 +578,7 @@ def _ml_loop():
 def _start_ml_loop():
     t = threading.Thread(target=_ml_loop, daemon=True, name="ml-auto-trader")
     t.start()
-    _ml_log.info("ML auto-trading background loop started")
+    _ml_log.info("ML auto-trading background loop started (60s interval)")
 
 
 if __name__ == "__main__":

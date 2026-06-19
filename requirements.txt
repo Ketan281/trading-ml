@@ -10,6 +10,8 @@ fastapi
 uvicorn[standard]
 pydantic
 PyJWT
+google-auth
+google-auth-httplib2
 # optional: only needed for LLM narration/prose of decisions
 ollama
 # optional (research / DL comparison only; large). Uncomment to enable:

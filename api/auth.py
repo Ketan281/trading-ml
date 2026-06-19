@@ -9,6 +9,9 @@ the system.
     each with its own random salt.
   • Sessions are stateless JWT bearer tokens (PyJWT), 7-day expiry, signed with
     JWT_SECRET (env; random per-process fallback for dev).
+  • Google OAuth: users can sign up / log in with a Google ID token. The token
+    is verified against Google's public keys (google-auth library). A verified
+    Google user is upserted with auth_provider='google' and no password hash.
   • Admin is the OWNER only: a signup whose email equals ADMIN_EMAIL
     (default ketanmohite8307@gmail.com) is granted role="admin". Everyone else
     is role="user".
@@ -24,6 +27,7 @@ import time
 import sqlite3
 import hashlib
 import secrets
+import logging
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +46,9 @@ JWT_ALGO = "HS256"
 TOKEN_TTL = 7 * 24 * 3600          # 7 days
 PBKDF2_ROUNDS = 200_000
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+_auth_log = logging.getLogger("auth")
+
 
 # ── DB ────────────────────────────────────────────────
 def _conn():
@@ -55,13 +62,20 @@ def init_db():
     with _conn() as c:
         c.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                email      TEXT UNIQUE NOT NULL,
-                pwd_hash   TEXT NOT NULL,
-                pwd_salt   TEXT NOT NULL,
-                role       TEXT NOT NULL DEFAULT 'user',
-                created_at TEXT NOT NULL
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                email         TEXT UNIQUE NOT NULL,
+                pwd_hash      TEXT NOT NULL,
+                pwd_salt      TEXT NOT NULL,
+                role          TEXT NOT NULL DEFAULT 'user',
+                created_at    TEXT NOT NULL
             )""")
+        cols = [r[1] for r in c.execute("PRAGMA table_info(users)")]
+        if "auth_provider" not in cols:
+            c.execute("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'email'")
+        if "display_name" not in cols:
+            c.execute("ALTER TABLE users ADD COLUMN display_name TEXT")
+        if "avatar_url" not in cols:
+            c.execute("ALTER TABLE users ADD COLUMN avatar_url TEXT")
 
 
 # ── password hashing ──────────────────────────────────
@@ -93,8 +107,15 @@ def decode_token(token):
 
 # ── user ops ──────────────────────────────────────────
 def _public(row):
-    return {"id": row["id"], "email": row["email"], "role": row["role"],
-            "created_at": row["created_at"]}
+    d = {"id": row["id"], "email": row["email"], "role": row["role"],
+         "created_at": row["created_at"]}
+    try:
+        d["auth_provider"] = row["auth_provider"] or "email"
+        d["display_name"] = row["display_name"]
+        d["avatar_url"] = row["avatar_url"]
+    except (IndexError, KeyError):
+        d["auth_provider"] = "email"
+    return d
 
 
 def signup(email, password):
@@ -170,6 +191,85 @@ def set_role(uid, role):
         if cur.rowcount == 0:
             raise ValueError("user not found")
     return get_user(uid)
+
+
+# ── Google OAuth ─────────────────────────────────────
+def _verify_google_token(id_token_str):
+    """Verify a Google ID token and return the claims (email, name, picture).
+    Uses google-auth if available, falls back to manual JWT decode against
+    Google's public keys."""
+    try:
+        from google.oauth2 import id_token as g_id_token
+        from google.auth.transport import requests as g_requests
+        claims = g_id_token.verify_oauth2_token(
+            id_token_str, g_requests.Request(), GOOGLE_CLIENT_ID)
+        return claims
+    except ImportError:
+        pass
+    # Fallback: decode the JWT without google-auth (for dev environments).
+    # Google tokens are RS256-signed; we verify the issuer + audience manually
+    # using PyJWT + Google's JWKS.
+    try:
+        import urllib.request, json as _json
+        jwks_url = "https://www.googleapis.com/oauth2/v3/certs"
+        jwks_data = _json.loads(urllib.request.urlopen(jwks_url, timeout=5).read())
+        from jwt import PyJWKSet
+        keyset = PyJWKSet.from_dict(jwks_data)
+        header = jwt.get_unverified_header(id_token_str)
+        key = None
+        for k in keyset.keys:
+            if k.key_id == header.get("kid"):
+                key = k; break
+        if not key:
+            raise ValueError("no matching Google signing key")
+        claims = jwt.decode(id_token_str, key.key,
+                            algorithms=["RS256"],
+                            audience=GOOGLE_CLIENT_ID,
+                            issuer=["accounts.google.com", "https://accounts.google.com"])
+        return claims
+    except Exception as e:
+        raise ValueError(f"Google token verification failed: {e}")
+
+
+def google_auth(id_token_str):
+    """Sign up or log in a user via Google OAuth. Returns {token, user}."""
+    if not GOOGLE_CLIENT_ID:
+        raise ValueError("Google OAuth is not configured — set GOOGLE_CLIENT_ID env var")
+    claims = _verify_google_token(id_token_str)
+    email = claims.get("email", "").lower().strip()
+    if not email or not claims.get("email_verified"):
+        raise ValueError("Google account email is not verified")
+    display_name = claims.get("name", "")
+    avatar_url = claims.get("picture", "")
+    init_db()
+    with _conn() as c:
+        row = c.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+    if row:
+        try:
+            with _conn() as c:
+                c.execute("UPDATE users SET display_name=?, avatar_url=?, auth_provider='google' "
+                          "WHERE email=?", (display_name, avatar_url, email))
+        except Exception:
+            pass
+        user = _public(row)
+        user["display_name"] = display_name
+        user["avatar_url"] = avatar_url
+        return {"token": make_token(user), "user": user}
+    role = "admin" if email == ADMIN_EMAIL else "user"
+    sentinel_hash, sentinel_salt = _hash_pw(secrets.token_hex(32))
+    now = datetime.now(timezone.utc).isoformat()
+    with _conn() as c:
+        cur = c.execute(
+            "INSERT INTO users (email, pwd_hash, pwd_salt, role, created_at, "
+            "auth_provider, display_name, avatar_url) VALUES (?,?,?,?,?,?,?,?)",
+            (email, sentinel_hash, sentinel_salt, role, now,
+             "google", display_name, avatar_url))
+        uid = cur.lastrowid
+    user = {"id": uid, "email": email, "role": role, "created_at": now,
+            "auth_provider": "google", "display_name": display_name,
+            "avatar_url": avatar_url}
+    _auth_log.info("Google signup: %s", email)
+    return {"token": make_token(user), "user": user}
 
 
 # ── FastAPI dependencies ──────────────────────────────

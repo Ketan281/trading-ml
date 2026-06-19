@@ -352,6 +352,161 @@ def support_resistance(df, lookback=100):
             "signal": "neutral", "name": "S/R Levels"}
 
 
+# ── Additional momentum / volatility / structure ─────
+
+def roc(df, period=12):
+    """Rate of Change — momentum oscillator."""
+    c = df["Close"]
+    if len(c) <= period:
+        return {"value": 0, "signal": "neutral", "name": "ROC"}
+    val = float((c.iloc[-1] / c.iloc[-period] - 1) * 100)
+    sig = "bullish" if val > 1.0 else ("bearish" if val < -1.0 else "neutral")
+    return {"value": round(val, 3), "signal": sig, "name": "ROC"}
+
+
+def mfi(df, period=14):
+    """Money Flow Index — volume-weighted RSI (overbought >80, oversold <20)."""
+    tp = (df["High"] + df["Low"] + df["Close"]) / 3
+    mf = tp * df["Volume"].replace(0, 1)
+    pos_mf = pd.Series(0.0, index=df.index)
+    neg_mf = pd.Series(0.0, index=df.index)
+    delta = tp.diff()
+    pos_mf[delta > 0] = mf[delta > 0]
+    neg_mf[delta < 0] = mf[delta < 0]
+    pos_sum = pos_mf.rolling(period).sum()
+    neg_sum = neg_mf.rolling(period).sum()
+    ratio = pos_sum / (neg_sum + 1e-10)
+    val = float(100 - 100 / (1 + ratio.iloc[-1]))
+    if val < 20:
+        sig = "bullish"
+    elif val > 80:
+        sig = "bearish"
+    else:
+        sig = "neutral"
+    return {"value": round(val, 2), "signal": sig, "name": "MFI"}
+
+
+def donchian_channel(df, period=20):
+    """Donchian Channel — breakout bands (price at upper = bullish breakout)."""
+    upper = df["High"].rolling(period).max()
+    lower = df["Low"].rolling(period).min()
+    mid = (upper + lower) / 2
+    p = df["Close"].iloc[-1]
+    uv, lv, mv = float(upper.iloc[-1]), float(lower.iloc[-1]), float(mid.iloc[-1])
+    if p >= uv:
+        sig = "bullish"
+    elif p <= lv:
+        sig = "bearish"
+    else:
+        sig = "neutral"
+    return {"value": {"upper": round(uv, 5), "middle": round(mv, 5),
+                      "lower": round(lv, 5)},
+            "signal": sig, "name": "Donchian Channel"}
+
+
+def trix(df, period=15):
+    """TRIX — triple-smoothed EMA rate of change, trend confirmation."""
+    c = df["Close"]
+    e1 = c.ewm(span=period, adjust=False).mean()
+    e2 = e1.ewm(span=period, adjust=False).mean()
+    e3 = e2.ewm(span=period, adjust=False).mean()
+    trix_line = e3.pct_change() * 100
+    val = float(trix_line.iloc[-1]) if not np.isnan(trix_line.iloc[-1]) else 0
+    prev = float(trix_line.iloc[-2]) if len(trix_line) > 1 and not np.isnan(trix_line.iloc[-2]) else 0
+    if val > 0 and val > prev:
+        sig = "bullish"
+    elif val < 0 and val < prev:
+        sig = "bearish"
+    else:
+        sig = "neutral"
+    return {"value": round(val, 5), "signal": sig, "name": "TRIX"}
+
+
+def dema(df, period=21):
+    """Double EMA — faster trend indicator, less lag than single EMA."""
+    c = df["Close"]
+    e = c.ewm(span=period, adjust=False).mean()
+    de = 2 * e - e.ewm(span=period, adjust=False).mean()
+    p = c.iloc[-1]
+    dv = float(de.iloc[-1])
+    sig = "bullish" if p > dv else ("bearish" if p < dv else "neutral")
+    return {"value": round(dv, 5), "signal": sig, "name": "DEMA"}
+
+
+def chaikin_volatility(df, period=10, roc_period=10):
+    """Chaikin Volatility — rate of change of high-low spread EMA."""
+    hl = df["High"] - df["Low"]
+    hl_ema = hl.ewm(span=period, adjust=False).mean()
+    if len(hl_ema) <= roc_period:
+        return {"value": 0, "signal": "neutral", "name": "Chaikin Volatility"}
+    val = float((hl_ema.iloc[-1] / hl_ema.iloc[-roc_period] - 1) * 100)
+    if val > 5:
+        sig = "bullish"
+    elif val < -5:
+        sig = "bearish"
+    else:
+        sig = "neutral"
+    return {"value": round(val, 3), "signal": sig, "name": "Chaikin Volatility"}
+
+
+def ultimate_oscillator(df, p1=7, p2=14, p3=28):
+    """Ultimate Oscillator — multi-period weighted momentum."""
+    high, low, close = df["High"], df["Low"], df["Close"]
+    bp = close - pd.concat([low, close.shift()], axis=1).min(axis=1)
+    tr = pd.concat([high - low, (high - close.shift()).abs(),
+                    (low - close.shift()).abs()], axis=1).max(axis=1)
+    a1 = bp.rolling(p1).sum() / (tr.rolling(p1).sum() + 1e-10)
+    a2 = bp.rolling(p2).sum() / (tr.rolling(p2).sum() + 1e-10)
+    a3 = bp.rolling(p3).sum() / (tr.rolling(p3).sum() + 1e-10)
+    uo = float(100 * (4 * a1.iloc[-1] + 2 * a2.iloc[-1] + a3.iloc[-1]) / 7)
+    if uo < 30:
+        sig = "bullish"
+    elif uo > 70:
+        sig = "bearish"
+    else:
+        sig = "neutral"
+    return {"value": round(uo, 2), "signal": sig, "name": "Ultimate Oscillator"}
+
+
+def parabolic_sar(df, af_start=0.02, af_max=0.2):
+    """Parabolic SAR — trend-following stop-and-reverse system."""
+    high, low, close = df["High"].values, df["Low"].values, df["Close"].values
+    n = len(df)
+    if n < 3:
+        return {"value": 0, "signal": "neutral", "name": "Parabolic SAR"}
+    sar = np.zeros(n)
+    trend = np.ones(n, dtype=int)
+    af = af_start
+    ep = high[0]
+    sar[0] = low[0]
+    for i in range(1, n):
+        sar[i] = sar[i-1] + af * (ep - sar[i-1])
+        if trend[i-1] == 1:
+            if low[i] < sar[i]:
+                trend[i] = -1
+                sar[i] = ep
+                ep = low[i]
+                af = af_start
+            else:
+                trend[i] = 1
+                if high[i] > ep:
+                    ep = high[i]
+                    af = min(af + af_start, af_max)
+        else:
+            if high[i] > sar[i]:
+                trend[i] = 1
+                sar[i] = ep
+                ep = high[i]
+                af = af_start
+            else:
+                trend[i] = -1
+                if low[i] < ep:
+                    ep = low[i]
+                    af = min(af + af_start, af_max)
+    sig = "bullish" if trend[-1] == 1 else "bearish"
+    return {"value": round(float(sar[-1]), 5), "signal": sig, "name": "Parabolic SAR"}
+
+
 # ── Candlestick patterns ─────────────────────────────
 
 def candle_patterns(df):
@@ -393,11 +548,18 @@ def candle_patterns(df):
 # ── Master function ──────────────────────────────────
 
 ALL_INDICATORS = [
-    ema_crossover, adx, supertrend, ichimoku,
-    rsi, macd, stochastic, cci, williams_r, momentum,
-    atr, bollinger_bands, keltner_channel,
+    # Trend
+    ema_crossover, adx, supertrend, ichimoku, dema, parabolic_sar,
+    # Momentum
+    rsi, macd, stochastic, cci, williams_r, momentum, roc, mfi,
+    ultimate_oscillator, trix,
+    # Volatility
+    atr, bollinger_bands, keltner_channel, donchian_channel, chaikin_volatility,
+    # Volume
     obv, vwap,
+    # Support / Resistance
     pivot_points, fibonacci_retracement, support_resistance,
+    # Patterns
     candle_patterns,
 ]
 
