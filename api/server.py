@@ -33,7 +33,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -199,6 +199,10 @@ def auth_google(body: GoogleToken):
 def auth_me(user: dict = Depends(auth.current_user)):
     return user
 
+@app.get("/auth/config")
+def auth_config():
+    return {"google_client_id": auth.GOOGLE_CLIENT_ID or None}
+
 class PasswordChange(BaseModel):
     old_password: str
     new_password: str
@@ -333,6 +337,51 @@ async def me_live_trade(trade_id: str, request: Request):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ── WebSocket for real-time P&L (replaces SSE polling) ─
+@app.websocket("/ws/live")
+async def ws_live(websocket: WebSocket):
+    tok = websocket.query_params.get("token")
+    if not tok:
+        await websocket.close(code=1008)
+        return
+    payload = auth.decode_token(tok)
+    if not payload:
+        await websocket.close(code=1008)
+        return
+    user = auth.get_user(payload["sub"])
+    if not user:
+        await websocket.close(code=1008)
+        return
+    uid = user["id"]
+    await websocket.accept()
+    try:
+        while True:
+            try:
+                data = _build_live_snapshot(uid)
+                await websocket.send_json(data)
+            except Exception as e:
+                await websocket.send_json({"error": str(e)})
+            await asyncio.sleep(2)
+    except (WebSocketDisconnect, Exception):
+        pass
+
+
+# ── Equity intraday recommendation ─────────────────────
+@app.get("/equity/recommendation")
+def equity_recommendation(user: dict = Depends(auth.current_user)):
+    from api.market import recommendation
+    from pipelines.screener import screen
+    bal = _silent(uw.get_wallet, user["id"]).get("balance", 10_000)
+    reco = _cached("equity_reco", lambda: _silent(recommendation, bal))
+    screener = _cached("screen", lambda: _silent(screen))
+    top_picks = []
+    if screener and isinstance(screener, dict):
+        picks = screener.get("picks") or screener.get("stocks") or []
+        if isinstance(picks, list):
+            top_picks = picks[:5]
+    return {"recommendation": reco, "screener_picks": top_picks}
 
 
 def _build_live_snapshot(uid):
