@@ -536,10 +536,7 @@ def _close(t, w, price, reason):
     t.update({"status": "closed", "exit_price": round(price, 2), "exit_reason": reason,
               "fees": round(fee), "net_pnl": net})
     t["analysis"] = _analysis(t)
-    # Profit-only rule: only positive P&L increases the wallet balance.
-    # Losses are recorded but do not reduce the balance — capital is protected.
-    if net > 0:
-        w["balance"] = round(w["balance"] + net, 2)
+    w["balance"] = round(w["balance"] + net, 2)
     w["realized_pnl"] = round(w.get("realized_pnl", 0) + net, 2)
     is_forex = t.get("segment") == "forex"
     _save_trade(t)
