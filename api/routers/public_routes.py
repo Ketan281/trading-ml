@@ -110,6 +110,24 @@ def recommendation_ep(user: dict = Depends(auth.current_user)):
     return cached("reco", lambda: _silent(recommendation, balance))
 
 
+# ── Multi-segment recommendations ──────────────────────
+@router.get("/recommendations")
+def recommendations_ep(user: dict = Depends(auth.current_user)):
+    from api.recommendations import segment_recommendations
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    return cached("reco_multi", lambda: _silent(segment_recommendations, balance), ttl=120)
+
+
+@router.get("/recommendations/allocate")
+def allocate_ep(user: dict = Depends(auth.current_user)):
+    from api.recommendations import segment_recommendations, allocate_capital
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    data = cached("reco_multi", lambda: _silent(segment_recommendations, balance), ttl=120)
+    if not data:
+        return {"allocation": {}, "balance": balance}
+    return {"allocation": allocate_capital(balance, data), "balance": balance}
+
+
 @router.get("/forex/pairs")
 def forex_pairs():
     from pipelines.forex.data import list_pairs

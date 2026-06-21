@@ -1,0 +1,211 @@
+"""
+Multi-segment recommendation engine.
+
+Returns per-segment best picks (intraday equity, options, swing) with
+confidence scores, plus a capital allocator that distributes budget
+across segments proportional to confidence.
+"""
+
+import os
+import sys
+import time
+import traceback
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+
+def _safe(fn, *a, **kw):
+    try:
+        return fn(*a, **kw)
+    except Exception:
+        traceback.print_exc()
+        return None
+
+
+def _equity_intraday_picks(balance=100_000):
+    """Top intraday equity picks from the screener, sorted by conviction."""
+    from pipelines.screener import screen
+    rep = _safe(screen)
+    if not rep:
+        return []
+    picks = []
+    for c in (rep.get("actionable", []) + rep.get("watchlist", []))[:20]:
+        entry = c.get("price")
+        stop = c.get("stop_loss")
+        target = c.get("target")
+        conv = c.get("conviction", 0)
+        if not entry or not stop:
+            continue
+        try:
+            entry = float(str(entry).replace(",", "").split("-")[-1])
+            stop = float(str(stop).replace(",", ""))
+            target = float(str(target).replace(",", "")) if target else entry * 1.03
+        except (ValueError, TypeError):
+            continue
+        if stop >= entry:
+            continue
+        risk = entry - stop
+        rr = round((target - entry) / risk, 2) if risk > 0 else 0
+        grade = c.get("grade", "—")
+        picks.append({
+            "segment": "equity_intraday",
+            "symbol": c["symbol"],
+            "action": "BUY",
+            "entry": round(entry, 2),
+            "stop": round(stop, 2),
+            "target": round(target, 2),
+            "confidence": round(conv, 1),
+            "grade": grade,
+            "reward_risk": rr,
+            "trend": c.get("trend", "—"),
+            "rsi": round(c.get("rsi", 0), 1),
+            "pattern": c.get("pattern", "—"),
+            "entry_signal": c.get("entry_signal", "wait"),
+            "reason": f"{c['symbol']} — grade {grade}, conviction {conv:.0f}%, "
+                      f"R:R {rr}:1, {c.get('pattern', 'no pattern')}",
+        })
+    picks.sort(key=lambda x: x["confidence"], reverse=True)
+    return picks
+
+
+def _options_picks(capital=100_000):
+    """Best options picks for NIFTY and BANKNIFTY."""
+    from pipelines.options_action_engine import live_trade_plan
+    picks = []
+    for sym in ("BANKNIFTY", "NIFTY"):
+        plan = _safe(live_trade_plan, sym, capital)
+        if not plan or plan.get("error") or plan.get("note"):
+            continue
+        conf_map = {"high": 85, "moderate": 60, "none": 0}
+        conf = conf_map.get(plan.get("conviction", "none"), 0)
+        prob = plan.get("prob_up", 0.5)
+        directional_strength = abs(prob - 0.5) * 200
+        effective_conf = round((conf * 0.6 + directional_strength * 0.4), 1)
+        picks.append({
+            "segment": "options",
+            "symbol": plan.get("instrument", sym),
+            "underlying": sym,
+            "action": plan.get("action", "NO_TRADE"),
+            "entry": plan.get("entry_premium", 0),
+            "stop": plan.get("stop_premium", 0),
+            "target": plan.get("target_premium", 0),
+            "confidence": effective_conf,
+            "prob_up": round(prob, 3),
+            "conviction": plan.get("conviction", "none"),
+            "lots": plan.get("lots", 0),
+            "qty": plan.get("qty", 0),
+            "capital_deployed": plan.get("capital_deployed", 0),
+            "max_loss": plan.get("max_loss", 0),
+            "reward_risk": plan.get("reward_risk", 0),
+            "strike": plan.get("instrument", "").split()[-2] if " " in plan.get("instrument", "") else "—",
+            "leg": plan.get("action", "").replace("BUY_", "").replace("SMALL_", ""),
+            "regime_alignment": plan.get("regime_alignment", ""),
+            "reason": f"{plan.get('instrument', sym)} — {plan.get('conviction', '')} conviction, "
+                      f"P(up) {prob:.1%}, R:R {plan.get('reward_risk', 0):.1f}:1",
+        })
+    picks.sort(key=lambda x: x["confidence"], reverse=True)
+    return picks
+
+
+def _swing_picks(balance=100_000):
+    """Swing / positional delivery picks from the screener — for multi-day holds."""
+    from pipelines.screener import screen
+    rep = _safe(screen)
+    if not rep:
+        return []
+    picks = []
+    for c in rep.get("actionable", [])[:15]:
+        entry = c.get("price")
+        stop = c.get("stop_loss")
+        target = c.get("target")
+        conv = c.get("conviction", 0)
+        quality = c.get("quality", 0)
+        if not entry or not stop:
+            continue
+        try:
+            entry = float(str(entry).replace(",", "").split("-")[-1])
+            stop = float(str(stop).replace(",", ""))
+            target = float(str(target).replace(",", "")) if target else entry * 1.06
+        except (ValueError, TypeError):
+            continue
+        if stop >= entry:
+            continue
+        risk = entry - stop
+        rr = round((target - entry) / risk, 2) if risk > 0 else 0
+        swing_conv = conv * 0.6 + quality * 0.4 if quality else conv
+        grade = c.get("grade", "—")
+        if grade in ("C", "AVOID") or conv < 40:
+            continue
+        picks.append({
+            "segment": "swing",
+            "symbol": c["symbol"],
+            "action": "BUY",
+            "entry": round(entry, 2),
+            "stop": round(stop, 2),
+            "target": round(target, 2),
+            "confidence": round(swing_conv, 1),
+            "grade": grade,
+            "quality_score": round(quality, 1) if quality else None,
+            "reward_risk": rr,
+            "trend": c.get("trend", "—"),
+            "pattern": c.get("pattern", "—"),
+            "holding_period": "2–10 days",
+            "reason": f"{c['symbol']} — grade {grade}, quality {quality:.0f}, "
+                      f"conviction {swing_conv:.0f}%, R:R {rr}:1 (swing/delivery)",
+        })
+    picks.sort(key=lambda x: x["confidence"], reverse=True)
+    return picks
+
+
+def segment_recommendations(balance=100_000):
+    """Fetch best picks across all segments. Returns per-segment sorted lists."""
+    equity = _safe(_equity_intraday_picks, balance) or []
+    options = _safe(_options_picks, balance) or []
+    swing = _safe(_swing_picks, balance) or []
+    return {
+        "equity_intraday": equity,
+        "options": options,
+        "swing": swing,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "best_per_segment": {
+            "equity_intraday": equity[0] if equity else None,
+            "options": options[0] if options else None,
+            "swing": swing[0] if swing else None,
+        },
+    }
+
+
+def allocate_capital(balance, segments_data):
+    """
+    Divide capital across segments proportional to confidence of the best
+    pick in each. Zero-confidence segments get nothing.
+
+    Returns: {segment: {allocation_pct, amount, pick}}
+    """
+    best = segments_data.get("best_per_segment", {})
+    scores = {}
+    for seg, pick in best.items():
+        if pick and pick.get("confidence", 0) > 0:
+            scores[seg] = pick["confidence"]
+    total_conf = sum(scores.values()) or 1
+    allocation = {}
+    for seg, conf in scores.items():
+        pct = round(conf / total_conf * 100, 1)
+        amt = round(balance * conf / total_conf, 2)
+        allocation[seg] = {
+            "allocation_pct": pct,
+            "amount": amt,
+            "confidence": conf,
+            "pick": best[seg],
+        }
+    for seg in ("equity_intraday", "options", "swing"):
+        if seg not in allocation:
+            allocation[seg] = {
+                "allocation_pct": 0,
+                "amount": 0,
+                "confidence": 0,
+                "pick": None,
+            }
+    return allocation
