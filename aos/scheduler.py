@@ -6,13 +6,15 @@ crashes (idempotent jobs + persisted last-run + state on disk), logs
 everything, and catches up on jobs missed during downtime.
 
 JOBS
-  premarket   daily 08:30 (wkday)   global+regime+breadth briefing
-  deliberate  every 15m, mkt hours  committee considers a NEW trade (orchestrator)
-  manage      every 2m,  mkt hours  tick open positions → stops/targets/booking
-  monitor     every 60m             health dashboard; logs WARN/ALERT
-  postmarket  daily 16:00 (wkday)   self-review → lessons
-  metalearn   daily 18:00           re-learn the signal×regime policy
-  retrain     weekly Sat 07:00      walk-forward retrain (promote-if-better)
+  premarket    daily 08:30 (wkday)   global+regime+breadth briefing
+  deliberate   every 15m, mkt hours  committee considers a NEW trade
+  manage       every 2m,  mkt hours  tick open positions → stops/targets/booking
+  user_ml_tick every 1m,  weekdays   tick ML-mode user books + auto-open setups
+  precompute   every 5m,  mkt hours  warm API caches
+  monitor      every 60m             health dashboard; logs WARN/ALERT
+  postmarket   daily 16:00 (wkday)   self-review → lessons
+  metalearn    daily 18:00           re-learn the signal×regime policy
+  retrain      weekly Sat 07:00      walk-forward retrain (promote-if-better)
 
 Recovery: last_run.json tracks success; on start, any daily job whose time has
 already passed today (and didn't run) is run once (catch-up). Every job is
@@ -93,6 +95,16 @@ def job_retrain():
     from infra.retrain_pipeline import run
     r = run(); return {"promoted": r.get("promoted"), "verdict": r.get("verdict")}
 
+def job_precompute():
+    from api.precompute import run_precompute
+    run_precompute()
+    return {"status": "warmed"}
+
+def job_user_ml_tick():
+    from aos import user_wallet as uw
+    results = uw.ml_tick_all()
+    return {"opened": len(results), "events": results[:10]}
+
 def job_wallet_open():
     from aos.sim_wallet import start_daily_trade
     r = start_daily_trade()
@@ -110,6 +122,8 @@ JOBS = {
     "premarket":  {"fn": job_premarket,  "kind": "daily",    "at": "08:30", "wkday": True},
     "deliberate": {"fn": job_deliberate, "kind": "interval", "every_min": 15, "market": True},
     "manage":     {"fn": job_manage,     "kind": "interval", "every_min": 2,  "market": True},
+    "user_ml_tick": {"fn": job_user_ml_tick, "kind": "interval", "every_min": 1, "wkday": True},
+    "precompute": {"fn": job_precompute, "kind": "interval", "every_min": 5, "market": True},
     "monitor":    {"fn": job_monitor,    "kind": "interval", "every_min": 60},
     "postmarket": {"fn": job_postmarket, "kind": "daily",    "at": "16:00", "wkday": True},
     "metalearn":  {"fn": job_metalearn,  "kind": "daily",    "at": "18:00"},
@@ -132,6 +146,11 @@ def _save_last(d):
     json.dump(d, open(LAST_RUN, "w"), indent=2)
 
 
+def last_run(name=None):
+    data = _load_last()
+    return data.get(name) if name else data
+
+
 def market_open(now=None):
     now = now or datetime.now()
     return now.weekday() < 5 and MARKET_OPEN <= now.time() <= MARKET_CLOSE
@@ -144,13 +163,13 @@ def _hhmm(s):
 def is_due(name, now, last):
     j = JOBS[name]; lr = last.get(name)
     last_dt = datetime.fromisoformat(lr) if lr else None
+    if j.get("wkday") and now.weekday() >= 5:
+        return False
     if j.get("market") and not market_open(now):
         return False
     if j["kind"] == "interval":
         return last_dt is None or (now - last_dt).total_seconds() >= j["every_min"] * 60
     if j["kind"] == "daily":
-        if j.get("wkday") and now.weekday() >= 5:
-            return False
         if now.time() < _hhmm(j["at"]):
             return False
         return last_dt is None or last_dt.date() < now.date()    # once per day

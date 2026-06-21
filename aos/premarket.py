@@ -12,7 +12,7 @@ REAL sections (computed from data we have):
   • sector_rotation  leading vs lagging sectors
 
 HONEST STUBS (no free feed — flagged, never fabricated):
-  • macro_events · rbi_sebi · fii_dii · news_sentiment
+  • macro_events · rbi_sebi · fii_dii · event_awareness
   These return {status:"no_feed"} with a note so a data source can be wired in
   without changing the contract. We do NOT invent these numbers.
 """
@@ -108,11 +108,10 @@ def run_premarket(enable_llm=False):
         "global_markets": gm,
         "volatility": vol,
         "sector_rotation": sect,
-        "macro_events": _no_feed("Macro economic calendar (CPI/Fed/RBI policy)",
-                                 "economic-calendar API"),
-        "rbi_sebi": _no_feed("RBI/SEBI announcements", "regulator RSS / news API"),
         "fii_dii": _no_feed("FII/DII cash flows", "NSE provisional / paid feed"),
-        "news_sentiment": _no_feed("News sentiment summary", "news + NLP feed"),
+        "event_awareness": _safe(lambda: __import__("pipelines.event_awareness",
+                                  fromlist=["build_event_context"]).build_event_context(),
+                                 {"event_risk": "unknown"}),
     }
 
     # Deterministic summary (no LLM numbers).
@@ -148,6 +147,6 @@ if __name__ == "__main__":
           f"({v['vol_direction']}) | pctile {v['regime_vol_pctile']}")
     print(f"  Leaders   : {b['sector_rotation'].get('leaders')}")
     print(f"  Laggards  : {b['sector_rotation'].get('laggards')}")
-    print(f"  No-feed   : macro / rbi_sebi / fii_dii / news_sentiment (flagged)")
+    print(f"  No-feed   : macro / rbi_sebi / fii_dii / event_awareness (flagged)")
     print(f"\n  SUMMARY: {b['summary']}")
     print(f"\n  Saved → {path}")

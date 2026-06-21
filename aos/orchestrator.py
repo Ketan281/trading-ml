@@ -25,7 +25,7 @@ if ROOT not in sys.path:
 
 from aos.base import APPROVE, REJECT, NEUTRAL, VETO
 from aos.agents import (
-    MarketIntelligenceAgent, NewsSentimentAgent, QuantDecisionAgent,
+    MarketIntelligenceAgent, EventAwarenessAgent, QuantDecisionAgent,
     OptionsStrategyAgent, PortfolioManagerAgent, RiskOfficerAgent,
     TradeExecutionAgent)
 from aos import memory as mem
@@ -45,7 +45,7 @@ class Orchestrator:
         reports = []
 
         # Round 1 — intelligence
-        for A in (MarketIntelligenceAgent, NewsSentimentAgent,
+        for A in (MarketIntelligenceAgent, EventAwarenessAgent,
                   QuantDecisionAgent, OptionsStrategyAgent):
             reports.append(A().run(ctx, self.enable_llm))
         # Round 2 — proposal
@@ -98,8 +98,9 @@ class Orchestrator:
         if v.get("market_intel") == REJECT and v.get("quant") == APPROVE:
             out.append("Quant wants to BUY into a risk-off regime that Market "
                        "Intelligence rejects — trading against the trend.")
-        if v.get("news_sentiment") == REJECT and v.get("quant") == APPROVE:
-            out.append("Positive quant signal contradicted by negative sentiment.")
+        if v.get("event_awareness") == REJECT and v.get("quant") == APPROVE:
+            out.append("Quant signal conflicts with high-impact event risk — "
+                       "calendar says reduce exposure.")
         if v.get("risk_officer") == VETO and v.get("quant") == APPROVE:
             out.append("Risk Officer vetoed a setup the Quant agent approved.")
         return out
@@ -107,9 +108,20 @@ class Orchestrator:
     def _conviction(self, ctx, conflicts, vote_of):
         v = {r.agent: r.vote for r in vote_of}
         base = float((ctx.get("candidate") or {}).get("conviction") or 50.0)
-        # Penalise trading against the regime / unresolved conflicts.
         if v.get("market_intel") == REJECT:
             base *= 0.80
+        if v.get("event_awareness") == REJECT:
+            base *= 0.60
+        elif v.get("event_awareness") == NEUTRAL:
+            base *= 0.85
+        ec = ctx.get("event_context", {})
+        ps = ec.get("position_size", "full")
+        if ps == "avoid":
+            base = 0.0
+        elif ps == "quarter":
+            base *= 0.50
+        elif ps == "half":
+            base *= 0.75
         if conflicts:
             base *= 0.90
         return round(max(0.0, min(100.0, base)), 1)
@@ -125,12 +137,20 @@ class Orchestrator:
     # ── persistence to Trade Memory ─────────────────────
     def _persist(self, decision, reports, ctx):
         market = ctx.get("market", {})
+        ec = ctx.get("event_context", {})
+        evidence = {**market}
+        if ec:
+            evidence["event_risk"] = ec.get("event_risk")
+            evidence["is_event_day"] = ec.get("is_event_day")
+            evidence["position_size"] = ec.get("position_size")
+            evidence["alerts"] = ec.get("alerts", [])
         mem.record_regime(market.get("regime"), market.get("breadth_score"),
-                          market.get("vol_pctile"), market.get("top_sectors"))
+                          market.get("vol_pctile"), market.get("top_sectors"),
+                          extra={"event_context": ec} if ec else None)
         did = mem.record_decision(
             decision["symbol"], decision["asset"], decision["proposed_action"],
             decision["final_action"], decision["conviction"], decision["regime"],
-            decision["vetoed"], decision["veto_reason"], evidence=market)
+            decision["vetoed"], decision["veto_reason"], evidence=evidence)
         mem.record_reports(did, decision["reports"])
         cand = ctx.get("candidate")
         if cand:

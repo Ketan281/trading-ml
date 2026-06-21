@@ -3,7 +3,7 @@ The nine agents — each wraps a REAL quantitative engine and returns an
 AgentReport whose numbers come only from that engine (never the LLM).
 
   MarketIntelligenceAgent  regime + breadth + sector rotation
-  NewsSentimentAgent       sentiment (honest stub until a news feed is wired)
+  EventAwarenessAgent      calendar events, RBI/Fed/budget risk, results season
   QuantDecisionAgent       the proven equity ranker / screener → a candidate
   OptionsStrategyAgent     options dashboard → directional/structure call
   PortfolioManagerAgent    sizes the candidate within wallet + regime budget
@@ -58,18 +58,41 @@ class MarketIntelligenceAgent(Agent):
 
 
 # 2 ──────────────────────────────────────────────────────
-class NewsSentimentAgent(Agent):
-    name = "news_sentiment"; role = "News & Sentiment"
+class EventAwarenessAgent(Agent):
+    name = "event_awareness"; role = "Event & Calendar Risk"
 
     def analyze(self, ctx):
-        # HONEST: no news/sentiment feed is connected. We return a neutral
-        # score and flag it, rather than inventing sentiment (which would
-        # violate the no-fabrication rule). Wire a feed here to activate.
-        ev = {"sentiment": 0.0, "source": "none",
-              "note": "no news API connected — neutral assumed"}
+        from pipelines.event_awareness import build_event_context
+        ec = _safe(build_event_context, {})
+        risk = ec.get("event_risk", "normal")
+        is_event_day = ec.get("is_event_day", False)
+        pos_size = ec.get("position_size", "full")
+        ctx["event_context"] = ec
         ctx["sentiment"] = 0.0
-        return AgentReport(self.name, self.role, vote=NEUTRAL, confidence=None,
-                           evidence=ev, flags=["no_news_feed"])
+
+        if risk == "extreme" or pos_size == "avoid":
+            vote = REJECT
+            confidence = 0.95
+        elif risk == "high" or pos_size == "quarter":
+            vote = REJECT
+            confidence = 0.75
+        elif risk == "elevated" or pos_size == "half":
+            vote = NEUTRAL
+            confidence = 0.50
+        else:
+            vote = APPROVE
+            confidence = 0.60
+
+        flags = []
+        if is_event_day:
+            flags.append("event_day")
+        if ec.get("results_season", {}).get("in_results_season"):
+            flags.append("results_season")
+        if ec.get("alerts"):
+            flags.extend(ec["alerts"][:2])
+
+        return AgentReport(self.name, self.role, vote=vote, confidence=confidence,
+                           evidence=ec, flags=flags)
 
 
 # 3 ──────────────────────────────────────────────────────
@@ -259,7 +282,7 @@ class ModelImprovementAgent(Agent):
         return AgentReport(self.name, self.role, vote=vote, evidence=ev, flags=flags)
 
 
-ALL_AGENTS = [MarketIntelligenceAgent, NewsSentimentAgent, QuantDecisionAgent,
+ALL_AGENTS = [MarketIntelligenceAgent, EventAwarenessAgent, QuantDecisionAgent,
               OptionsStrategyAgent, PortfolioManagerAgent, RiskOfficerAgent,
               TradeExecutionAgent, TradeReviewAgent, ModelImprovementAgent]
 

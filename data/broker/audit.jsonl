@@ -1,0 +1,5 @@
+{"action": "open", "symbol": "NIFTY", "segment": "options", "side": "long", "qty": 50, "price": 250.0, "stop_loss": 0, "target": 0, "uid": 1, "reason": "", "mode": "paper", "broker": "paper", "ts": "2026-06-21T23:42:18.193781", "result": "filled", "broker_order_id": "PAPER-70ae2dd2", "filled_price": 250.0, "error": ""}
+{"action": "close", "broker_order_id": "PAPER-70ae2dd2", "symbol": "", "qty": 50, "price": 260.0, "reason": "target", "uid": 0, "mode": "paper", "broker": "paper", "ts": "2026-06-21T23:42:18.196952", "result": "filled", "filled_price": 260.0, "error": ""}
+{"action": "kill_switch_tripped", "reason": "test", "ts": "2026-06-21T23:42:18.198788"}
+{"action": "open", "symbol": "NIFTY", "segment": "options", "side": "long", "qty": 50, "price": 250.0, "stop_loss": 0, "target": 0, "uid": 0, "reason": "", "mode": "paper", "broker": "paper", "ts": "2026-06-21T23:42:18.201829", "result": "blocked_kill_switch"}
+{"action": "kill_switch_reset", "ts": "2026-06-21T23:42:18.204643"}

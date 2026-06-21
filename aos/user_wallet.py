@@ -7,8 +7,9 @@ This module gives every signed-up user their OWN paper wallet and lets them
 priced by the same live engines. Storage is SQLite (data/users.db — the same
 file the auth user table lives in) so a user and their book share one place.
 
-HONEST FRAMING (unchanged): paper money only, no broker, no profit guarantee.
-Quant/option engines produce every price; nothing here places a real order.
+All trade opens/closes pass through the broker.ExecutionGate boundary.
+TRADING_MODE=paper (default) preserves exact current behavior (instant fills).
+TRADING_MODE=live routes orders through the configured broker adapter.
 
 Reuse: live pricing, lot sizes, stop/target percentages and the won/lost
 analysis text are imported from aos.sim_wallet; fees come from
@@ -114,13 +115,23 @@ def init_db():
                 pnl_series  TEXT,
                 reason      TEXT,
                 analysis    TEXT,
-                ai_why      TEXT
+                ai_why      TEXT,
+                decision_id INTEGER,
+                regime      TEXT,
+                conviction  REAL,
+                signal_source TEXT,
+                broker_order_id TEXT
             )""")
         c.execute("CREATE INDEX IF NOT EXISTS idx_trades_user ON trades(user_id, status)")
         # Migrations for pre-existing tables.
         cols = [r[1] for r in c.execute("PRAGMA table_info(trades)")]
         if "ai_why" not in cols:
             c.execute("ALTER TABLE trades ADD COLUMN ai_why TEXT")
+        for col, typ in [("decision_id", "INTEGER"), ("regime", "TEXT"),
+                         ("conviction", "REAL"), ("signal_source", "TEXT"),
+                         ("broker_order_id", "TEXT")]:
+            if col not in cols:
+                c.execute(f"ALTER TABLE trades ADD COLUMN {col} {typ}")
         wcols = [r[1] for r in c.execute("PRAGMA table_info(wallets)")]
         if "trade_mode" not in wcols:
             c.execute("ALTER TABLE wallets ADD COLUMN trade_mode TEXT DEFAULT 'custom'")
@@ -128,6 +139,19 @@ def init_db():
             c.execute("ALTER TABLE wallets ADD COLUMN indian_trade_mode TEXT DEFAULT 'custom'")
         if "forex_trade_mode" not in wcols:
             c.execute("ALTER TABLE wallets ADD COLUMN forex_trade_mode TEXT DEFAULT 'custom'")
+        if "trading_mode" not in wcols:
+            c.execute("ALTER TABLE wallets ADD COLUMN trading_mode TEXT DEFAULT 'paper'")
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS broker_config (
+                user_id     INTEGER PRIMARY KEY,
+                broker      TEXT NOT NULL DEFAULT 'angelone',
+                api_key     TEXT,
+                client_id   TEXT,
+                password    TEXT,
+                totp_secret TEXT,
+                configured  INTEGER NOT NULL DEFAULT 0,
+                updated_at  TEXT
+            )""")
 
 
 # ── wallet ops (Indian INR wallet) ────────────────────
@@ -229,6 +253,71 @@ def set_mode(uid, mode, market="indian"):
     return {"ok": True, "market": market, "trade_mode": mode}
 
 
+def get_trading_mode(uid):
+    get_wallet(uid)
+    with _conn() as c:
+        row = c.execute("SELECT trading_mode FROM wallets WHERE user_id=?", (uid,)).fetchone()
+    return (row["trading_mode"] if row and row["trading_mode"] else "paper")
+
+
+def set_trading_mode(uid, mode):
+    if mode not in ("paper", "live"):
+        return {"error": "mode must be 'paper' or 'live'"}
+    if mode == "live":
+        cfg = get_broker_config(uid)
+        if not cfg.get("configured"):
+            return {"error": "configure your broker account before switching to live"}
+    get_wallet(uid)
+    with _conn() as c:
+        c.execute("UPDATE wallets SET trading_mode=? WHERE user_id=?", (mode, uid))
+    return {"ok": True, "trading_mode": mode}
+
+
+def get_broker_config(uid):
+    init_db()
+    with _conn() as c:
+        row = c.execute("SELECT * FROM broker_config WHERE user_id=?", (uid,)).fetchone()
+    if not row:
+        return {"user_id": uid, "broker": "angelone", "configured": False,
+                "has_api_key": False, "has_client_id": False,
+                "has_password": False, "has_totp": False}
+    return {
+        "user_id": uid, "broker": row["broker"],
+        "configured": bool(row["configured"]),
+        "has_api_key": bool(row["api_key"]),
+        "has_client_id": bool(row["client_id"]),
+        "client_id_display": row["client_id"][:2] + "***" if row["client_id"] else None,
+        "has_password": bool(row["password"]),
+        "has_totp": bool(row["totp_secret"]),
+        "updated_at": row["updated_at"],
+    }
+
+
+def save_broker_config(uid, api_key, client_id, password, totp_secret):
+    init_db()
+    now = datetime.now().isoformat()
+    configured = 1 if all([api_key, client_id, password, totp_secret]) else 0
+    with _conn() as c:
+        c.execute("""INSERT INTO broker_config (user_id, broker, api_key, client_id,
+                     password, totp_secret, configured, updated_at)
+                     VALUES (?,?,?,?,?,?,?,?)
+                     ON CONFLICT(user_id) DO UPDATE SET
+                     api_key=excluded.api_key, client_id=excluded.client_id,
+                     password=excluded.password, totp_secret=excluded.totp_secret,
+                     configured=excluded.configured, updated_at=excluded.updated_at""",
+                  (uid, "angelone", api_key, client_id, password, totp_secret,
+                   configured, now))
+    return {"ok": True, "configured": bool(configured)}
+
+
+def delete_broker_config(uid):
+    init_db()
+    with _conn() as c:
+        c.execute("DELETE FROM broker_config WHERE user_id=?", (uid,))
+        c.execute("UPDATE wallets SET trading_mode='paper' WHERE user_id=?", (uid,))
+    return {"ok": True, "trading_mode": "paper"}
+
+
 def deposit(uid, amount):
     w = get_wallet(uid); amount = float(amount)
     if amount <= 0:
@@ -255,7 +344,7 @@ _TRADE_COLS = ["id", "user_id", "date", "segment", "kind", "side", "symbol",
                "chart_symbol", "underlying", "strike", "leg", "qty", "lots",
                "entry", "stop", "target", "cost", "status", "opened_at",
                "exit_price", "exit_reason", "fees", "net_pnl", "pnl_series",
-               "reason", "analysis"]
+               "reason", "analysis", "broker_order_id"]
 
 
 def _insert_trade(t):
@@ -270,9 +359,10 @@ def _save_trade(t):
     with _conn() as c:
         c.execute(
             "UPDATE trades SET status=?, exit_price=?, exit_reason=?, fees=?, "
-            "net_pnl=?, pnl_series=?, analysis=? WHERE id=?",
+            "net_pnl=?, pnl_series=?, analysis=?, broker_order_id=? WHERE id=?",
             (t["status"], t["exit_price"], t["exit_reason"], t["fees"], t["net_pnl"],
-             json.dumps(t["pnl_series"]), t["analysis"], t["id"]))
+             json.dumps(t["pnl_series"]), t["analysis"],
+             t.get("broker_order_id"), t["id"]))
 
 
 def _row_to_trade(row):
@@ -350,15 +440,37 @@ def open_trade(uid, spec):
     except _PlanError as e:
         return {"error": str(e)}
 
+    regime = _current_regime()
+    source = _signal_source(seg, plan.get("reason", ""))
+    decision_id, signal_id, conviction = _record_lineage(
+        plan.get("symbol", "?"), seg, regime, source, plan.get("reason", ""))
+
+    from broker.executor import get_executor
+    gate = get_executor()
+    result = gate.open(
+        symbol=plan.get("symbol", "?"), segment=seg,
+        side=plan.get("side", "long"), qty=plan.get("qty", 0),
+        price=plan.get("entry", 0), stop_loss=plan.get("stop", 0),
+        target=plan.get("target", 0), uid=uid,
+        reason=plan.get("reason", ""))
+    if result.error:
+        return {"error": f"execution blocked: {result.error}"}
+    if result.filled_price and result.filled_price != plan.get("entry"):
+        plan["entry"] = result.filled_price
+
     plan.update({
         "id": str(uuid.uuid4())[:8], "user_id": uid, "date": date.today().isoformat(),
         "status": "open", "opened_at": datetime.now().isoformat(), "pnl_series": "[]",
         "exit_price": None, "exit_reason": None, "fees": None, "net_pnl": None,
         "analysis": None,
+        "decision_id": decision_id, "regime": regime,
+        "conviction": conviction, "signal_source": source,
+        "broker_order_id": result.broker_order_id,
     })
     _insert_trade(plan)
     plan["pnl_series"] = []
-    return {"status": "opened", "trade": plan}
+    return {"status": "opened", "trade": plan, "decision_id": decision_id,
+            "broker_order_id": result.broker_order_id}
 
 
 class _PlanError(Exception):
@@ -539,8 +651,52 @@ def _current_regime():
     return "unknown"
 
 
+def _signal_source(segment, reason=""):
+    if "forex" in (segment or ""):
+        return "forex_confluence"
+    if "[ML auto]" in reason:
+        return "ml_auto"
+    if "Manual" in reason:
+        return "manual"
+    return "options_engine"
+
+
+def _record_lineage(symbol, segment, regime, source, reason):
+    """Record a signal + decision in Trade Memory and return (decision_id, signal_id, conviction)."""
+    try:
+        from aos import memory as mem
+        conviction = 50.0
+        signal_id = mem.record_signal(
+            symbol, segment, source, score=None, confidence=None,
+            regime=regime, sentiment=None, snapshot={"reason": reason})
+        decision_id = mem.record_decision(
+            symbol, segment, "BUY", "BUY", conviction, regime,
+            vetoed=False, veto_reason=None,
+            evidence={"source": source, "signal_id": signal_id, "reason": reason})
+        mem.record_trade(decision_id, symbol, segment, "long",
+                         0, 0, 0, None, status="open")
+        return decision_id, signal_id, conviction
+    except Exception:
+        return None, None, 50.0
+
+
 def _close(t, w, price, reason):
     qty, entry = t["qty"], t["entry"]
+
+    from broker.executor import get_executor
+    gate = get_executor()
+    broker_oid = t.get("broker_order_id", "")
+    if broker_oid:
+        ex_result = gate.close(broker_oid, qty, price, reason=reason,
+                               uid=t.get("user_id", 0), symbol=t.get("symbol", ""))
+        if ex_result.error and gate.is_live():
+            import logging
+            logging.getLogger("user_wallet").warning(
+                "broker close failed for %s: %s — closing paper side anyway",
+                t["id"], ex_result.error)
+        if ex_result.filled_price:
+            price = ex_result.filled_price
+
     fee = (charges(t["segment"], "buy", entry, qty)["total"] +
            charges(t["segment"], "sell", price, qty)["total"])
     net = round(_signed_gross(t, price) - fee, 2)
@@ -558,15 +714,16 @@ def _close(t, w, price, reason):
     try:
         from aos import memory as mem
         ccy = "$" if is_forex else "₹"
+        did = t.get("decision_id")
         mem.record_lesson("user_wallet",
                           f"u{t['user_id']} {t['symbol']} {reason} net {ccy}{net}",
-                          {"trade": t["id"]})
-        source = "forex_confluence" if is_forex else "options_engine"
-        regime = _current_regime()
-        mem.record_signal(t["symbol"], t.get("segment", "equity"), source,
-                          score=None, confidence=None, regime=regime)
-        sigs = mem.query("SELECT id FROM signals WHERE symbol=? ORDER BY id DESC LIMIT 1",
-                         (t["symbol"],))
+                          {"trade": t["id"], "decision_id": did})
+        if did:
+            mem.close_trade(did, net, round(fee), reason)
+        sig_source = t.get("signal_source") or _signal_source(t.get("segment", ""), "")
+        sigs = mem.query(
+            "SELECT id FROM signals WHERE symbol=? AND source=? AND outcome_ret IS NULL "
+            "ORDER BY id DESC LIMIT 1", (t["symbol"], sig_source))
         if sigs:
             mem.set_signal_outcome(sigs[0]["id"], outcome_ret=net,
                                    outcome_label=1 if net > 0 else 0)
@@ -576,11 +733,25 @@ def _close(t, w, price, reason):
 
 def tick_user(uid, now=None):
     """Advance every open trade against its live price (records a P&L point,
-    auto-exits on stop/target/square-off). Returns the open trades."""
+    auto-exits on stop/target/square-off). In live mode, syncs with broker
+    position state first. Returns the open trades."""
     now = now or datetime.now()
     w_indian = get_wallet(uid)
     w_forex = get_forex_wallet(uid)
+
+    from broker.executor import get_executor
+    gate = get_executor()
+    is_live = gate.is_live()
+
     for t in _open_trades(uid):
+        if is_live and t.get("broker_order_id"):
+            pos = gate.sync_position(t["broker_order_id"])
+            if pos.status == "closed":
+                w = w_forex if t.get("segment") == "forex" else w_indian
+                exit_px = pos.avg_price if pos.avg_price else _live_price(t) or t["entry"]
+                _close(t, w, exit_px, "broker_closed")
+                continue
+
         px = _live_price(t)
         if px is None:
             continue
