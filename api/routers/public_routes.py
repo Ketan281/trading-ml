@@ -118,6 +118,19 @@ def recommendations_ep(user: dict = Depends(auth.current_user)):
     return cached("reco_multi", lambda: _silent(segment_recommendations, balance), ttl=120)
 
 
+@router.get("/market-intel")
+def market_intel_ep():
+    from pipelines.market_intel import market_context
+    return cached("market_intel", lambda: _silent(market_context, "NIFTY"), ttl=120)
+
+
+@router.get("/market-intel/{symbol}")
+def stock_intel_ep(symbol: str):
+    from pipelines.market_intel import stock_context
+    return cached(f"stock_intel_{symbol.upper()}",
+                  lambda: _silent(stock_context, symbol.upper()), ttl=120)
+
+
 @router.get("/recommendations/allocate")
 def allocate_ep(user: dict = Depends(auth.current_user)):
     from api.recommendations import segment_recommendations, allocate_capital

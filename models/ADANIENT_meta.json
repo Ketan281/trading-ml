@@ -1,0 +1,46 @@
+{
+  "symbol": "ADANIENT",
+  "xgb_cv": 0.3717,
+  "baseline": 0.4603,
+  "edge": -0.0886,
+  "trained": "2026-06-22T10:29:05.436577",
+  "data_range": "2012-05-22 -> 2026-04-30",
+  "total_rows": 3433,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4106,
+      "rf": 0.435,
+      "baseline": 0.4431,
+      "edge": -0.0325,
+      "train_rows": 888,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3546,
+      "rf": 0.3705,
+      "baseline": 0.5378,
+      "edge": -0.1833,
+      "train_rows": 982,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.35,
+      "rf": 0.4375,
+      "baseline": 0.4,
+      "edge": -0.05,
+      "train_rows": 1483,
+      "test_rows": 80
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

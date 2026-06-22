@@ -1,0 +1,55 @@
+{
+  "symbol": "POWERGRID",
+  "xgb_cv": 0.3943,
+  "baseline": 0.3776,
+  "edge": 0.0167,
+  "trained": "2026-06-22T09:38:08.694641",
+  "data_range": "2007-11-02 -> 2026-06-05",
+  "total_rows": 4583,
+  "era_results": [
+    {
+      "era": "GFC_era",
+      "train": "2006-2010",
+      "test": 2011,
+      "xgb": 0.435,
+      "rf": 0.4268,
+      "baseline": 0.3821,
+      "edge": 0.0528,
+      "train_rows": 778,
+      "test_rows": 246
+    },
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3252,
+      "rf": 0.3008,
+      "baseline": 0.4309,
+      "edge": -0.1057,
+      "train_rows": 983,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3546,
+      "rf": 0.3307,
+      "baseline": 0.4143,
+      "edge": -0.0598,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4623,
+      "rf": 0.4623,
+      "baseline": 0.283,
+      "edge": 0.1792,
+      "train_rows": 1487,
+      "test_rows": 106
+    }
+  ]
+}

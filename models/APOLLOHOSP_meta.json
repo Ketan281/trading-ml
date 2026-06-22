@@ -1,0 +1,24 @@
+{
+  "symbol": "APOLLOHOSP",
+  "xgb_cv": 0.5426,
+  "baseline": 0.5106,
+  "edge": 0.0319,
+  "trained": "2026-06-22T10:29:18.555238",
+  "data_range": "2020-09-15 -> 2026-05-20",
+  "total_rows": 1405,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5426,
+      "rf": 0.3936,
+      "baseline": 0.5106,
+      "edge": 0.0319,
+      "train_rows": 1311,
+      "test_rows": 94
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

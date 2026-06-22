@@ -18,16 +18,26 @@ DATASET_DIR  = os.path.join(ROOT, "data",
 os.makedirs(DATASET_DIR, exist_ok=True)
 
 # ── Walk Forward Windows ──────────────────────────────
+# 20-year walk-forward: train on multi-year blocks, test on unseen future.
+# Each window validates that the model generalises across different market
+# regimes (2008 crash, 2011 correction, 2016 demonetisation, 2020 COVID,
+# 2022 rate hikes, 2025 current market).
 WINDOWS = [
-    {"train_end": 2018, "test_year": 2019},
-    {"train_end": 2019, "test_year": 2020},
-    {"train_end": 2020, "test_year": 2021},
-    {"train_end": 2021, "test_year": 2022},
-    {"train_end": 2022, "test_year": 2023},
-    {"train_end": 2023, "test_year": 2024},
+    # Epoch 1: Pre-GFC through GFC recovery → test post-recovery
+    {"train_start": 2006, "train_end": 2010, "test_year": 2011},
+    # Epoch 2: Post-GFC bull run → test demonetisation year
+    {"train_start": 2012, "train_end": 2015, "test_year": 2016},
+    # Epoch 3: Post-demo through COVID → test COVID recovery
+    {"train_start": 2016, "train_end": 2019, "test_year": 2020},
+    # Epoch 4: COVID + bull run + rate hikes → test current market
+    {"train_start": 2020, "train_end": 2025, "test_year": 2026},
+    # Expanding windows (cumulative knowledge, newest test)
+    {"train_start": 2006, "train_end": 2020, "test_year": 2021},
+    {"train_start": 2006, "train_end": 2022, "test_year": 2023},
+    {"train_start": 2006, "train_end": 2024, "test_year": 2025},
 ]
 
-TRAIN_START = 2014
+TRAIN_START = 2006
 
 # ── Symbols ───────────────────────────────────────────
 INDEX_SYMBOLS = ["NIFTY", "BANKNIFTY"]
@@ -424,13 +434,14 @@ def build_ideal_response(name, date,
 def build_window_dataset(window,
                           symbols=None,
                           max_samples=5000):
+    train_start = window.get("train_start", TRAIN_START)
     train_end  = window["train_end"]
     test_year  = window["test_year"]
     symbols    = symbols or ALL_SYMBOLS
 
     print(f"\n  {'─' * 55}")
     print(
-        f"  Window: Train {TRAIN_START}-{train_end}"
+        f"  Window: Train {train_start}-{train_end}"
         f" | Test {test_year}"
     )
     print(f"  {'─' * 55}")
@@ -446,11 +457,11 @@ def build_window_dataset(window,
 
         # Training period
         train_feat = features[
-            (features.index.year >= TRAIN_START) &
+            (features.index.year >= train_start) &
             (features.index.year <= train_end)
         ]
         train_lbl  = labels[
-            (labels.index.year >= TRAIN_START) &
+            (labels.index.year >= train_start) &
             (labels.index.year <= train_end)
         ]
 
@@ -557,7 +568,7 @@ def build_window_dataset(window,
     # Save window dataset
     window_dir = os.path.join(
         DATASET_DIR,
-        f"window_{TRAIN_START}_{train_end}"
+        f"window_{train_start}_{train_end}"
         f"_test_{test_year}"
     )
     os.makedirs(window_dir, exist_ok=True)
@@ -614,6 +625,7 @@ def build_window_dataset(window,
         "window_dir"    : window_dir,
         "train_samples" : len(train_samples),
         "test_samples"  : len(test_samples),
+        "train_start"   : train_start,
         "train_end"     : train_end,
         "test_year"     : test_year,
         "stats"         : stats
@@ -720,7 +732,7 @@ def build_all_windows():
 
     for r in all_results:
         label = (
-            f"{TRAIN_START}-{r['train_end']}"
+            f"{r.get('train_start', TRAIN_START)}-{r['train_end']}"
             f" → Test {r['test_year']}"
         )
         print(
@@ -743,8 +755,9 @@ def build_all_windows():
     print(f"  {DATASET_DIR}/")
 
     for r in all_results:
+        ts = r.get('train_start', TRAIN_START)
         folder = (
-            f"window_{TRAIN_START}"
+            f"window_{ts}"
             f"_{r['train_end']}"
             f"_test_{r['test_year']}/"
         )
@@ -766,7 +779,7 @@ def preview_sample():
     # Load first window
     window_dir = os.path.join(
         DATASET_DIR,
-        f"window_{TRAIN_START}_2018_test_2019"
+        f"window_2006_2010_test_2011"
     )
     train_path = os.path.join(
         window_dir, "train.jsonl"

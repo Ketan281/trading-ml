@@ -769,7 +769,12 @@ def tick_user(uid, now=None):
 
 
 def close_trade(uid, trade_id, price=None):
-    """Manual square-off of one open trade at the live (or given) price."""
+    """Manual square-off of one open trade at the live (or given) price.
+
+    ML Auto mode: after closing, if the user's mode is ML auto for the
+    relevant market, the system automatically picks the next best
+    recommendation respecting portfolio risk limits.
+    """
     with _conn() as c:
         row = c.execute("SELECT * FROM trades WHERE id=? AND user_id=?",
                         (trade_id, uid)).fetchone()
@@ -781,9 +786,35 @@ def close_trade(uid, trade_id, price=None):
     px = price if price is not None else _live_price(t)
     if px is None:
         return {"error": "could not read a live price to close at"}
-    w = get_forex_wallet(uid) if t.get("segment") == "forex" else get_wallet(uid)
+    is_forex = t.get("segment") == "forex"
+    w = get_forex_wallet(uid) if is_forex else get_wallet(uid)
     _close(t, w, px, "manual")
-    return {"status": "closed", "trade": t}
+
+    replacement = None
+    try:
+        modes = get_mode(uid)
+        market_key = "forex_trade_mode" if is_forex else "indian_trade_mode"
+        if modes.get(market_key) == "ml_auto":
+            from aos.sim_wallet import SQUARE_OFF
+            from datetime import time as dtime
+            now = datetime.now()
+            if is_forex:
+                rep = auto_open_forex_trade(uid)
+                if rep:
+                    replacement = rep
+            else:
+                indian_market_open = dtime(9, 15) <= now.time() <= SQUARE_OFF
+                if indian_market_open:
+                    rep = auto_open_trade(uid)
+                    if rep:
+                        replacement = rep
+    except Exception:
+        pass
+
+    result = {"status": "closed", "trade": t}
+    if replacement:
+        result["auto_replacement"] = replacement
+    return result
 
 
 # ── history + AI "why this trade" ─────────────────────
@@ -859,40 +890,132 @@ def ml_users():
     return list(set(ml_indian_users() + ml_forex_users()))
 
 
+def _pick_best_recommendation(uid, balance):
+    """Use the unified intelligence-backed recommendation engine to find
+    the best trade. Falls back to the simple pick_trade if the engine fails.
+
+    The recommendation engine combines:
+    - FII/DII flows, PCR, intermarket context (macro)
+    - Volume profile, delivery %, accumulation/distribution (institutional)
+    - Support/resistance, Fibonacci, Camarilla pivots (levels)
+    - 30 candlestick patterns + 20 fundamental parameters (base)
+    - Sector rotation, market regime, event calendar (context)
+
+    All factors are fused into a single confidence % — that's what the user sees.
+    """
+    try:
+        from api.recommendations import segment_recommendations
+        reco = segment_recommendations(balance)
+        if not reco:
+            raise ValueError("empty")
+        all_picks = []
+        for seg in ("equity_intraday", "options", "swing"):
+            picks = reco.get(seg, [])
+            if picks:
+                all_picks.extend(picks)
+        if not all_picks:
+            raise ValueError("no picks")
+        all_picks.sort(key=lambda p: p.get("confidence", 0), reverse=True)
+
+        held_symbols = {t["symbol"] for t in _open_trades(uid)}
+        for pick in all_picks:
+            if pick["symbol"] in held_symbols:
+                continue
+            if pick.get("confidence", 0) < 30:
+                continue
+            return pick
+        return None
+    except Exception:
+        pass
+    from aos.sim_wallet import pick_trade
+    return pick_trade(balance)
+
+
+def _reco_to_spec(pick):
+    """Convert a recommendation pick dict to a trade spec for open_trade()."""
+    seg = pick.get("segment", "equity_intraday")
+    spec = {}
+    if seg == "options":
+        spec["segment"] = "options"
+        spec["underlying"] = pick.get("underlying", "NIFTY")
+        leg = pick.get("leg", "CE")
+        spec["leg"] = leg
+        if pick.get("strike") and pick["strike"] != "—":
+            try:
+                spec["strike"] = int(pick["strike"])
+            except (ValueError, TypeError):
+                pass
+        if pick.get("lots"):
+            spec["lots"] = pick["lots"]
+        spec["side"] = "long"
+    elif seg == "swing":
+        spec["segment"] = "equity_delivery"
+        spec["symbol"] = pick["symbol"]
+        spec["side"] = "long"
+        if pick.get("entry"):
+            spec["entry"] = pick["entry"]
+        if pick.get("stop"):
+            spec["stop"] = pick["stop"]
+        if pick.get("target"):
+            spec["target"] = pick["target"]
+    else:
+        spec["segment"] = "equity"
+        spec["symbol"] = pick["symbol"]
+        spec["side"] = "long"
+    return spec
+
+
 def auto_open_trade(uid):
     """Pick and open the best Indian-market trade for an ML-mode user.
-    Uses meta-learning sizing multiplier when enough history exists."""
+
+    Uses the full intelligence-backed recommendation engine:
+    FII/DII · PCR · intermarket · volume profile · S/R · 30 patterns ·
+    20 fundamentals · sector rotation · regime · event calendar.
+
+    Respects portfolio risk: skips if already holding the same symbol,
+    applies meta-learning sizing, and enforces minimum confidence threshold.
+    """
     indian_opens = [t for t in _open_trades(uid) if t.get("segment") != "forex"]
     if indian_opens:
         return None
     w = get_wallet(uid)
     available = round(w["balance"] - _locked_margin(uid, segment_filter="indian"), 2)
-    from aos.sim_wallet import pick_trade
     from aos.meta_learning import sizing_multiplier
     regime = _current_regime()
     size_mult = sizing_multiplier("options_engine", regime)
     adjusted_balance = round(available * size_mult, 2)
-    plan = pick_trade(adjusted_balance)
-    if not plan:
+
+    pick = _pick_best_recommendation(uid, adjusted_balance)
+    if not pick:
         return None
-    spec = {"segment": plan.get("segment", "options")}
-    if plan.get("underlying"):
-        spec["underlying"] = plan["underlying"]
-    if plan.get("leg"):
-        spec["leg"] = plan["leg"]
-    if plan.get("strike"):
-        spec["strike"] = plan["strike"]
-    if plan.get("lots"):
-        spec["lots"] = plan["lots"]
-    if plan.get("symbol") and plan.get("kind") == "equity":
-        spec["symbol"] = plan["symbol"]
-    if plan.get("qty") and plan.get("kind") == "equity":
-        spec["qty"] = plan["qty"]
-    spec["side"] = plan.get("side", "long")
-    reason = plan.get("reason", "system pick")
-    if size_mult != 1.0:
-        reason += f" [meta: ×{size_mult} sizing in {regime} regime]"
-    spec["reason"] = f"[ML auto] {reason}"
+
+    if isinstance(pick, dict) and pick.get("segment"):
+        spec = _reco_to_spec(pick)
+        reason = pick.get("reason", "system pick")
+        conf = pick.get("confidence", 0)
+        if size_mult != 1.0:
+            reason += f" [meta: ×{size_mult} sizing in {regime} regime]"
+        spec["reason"] = f"[ML auto] {reason} (confidence {conf:.0f}%)"
+    else:
+        spec = {"segment": pick.get("segment", "options")}
+        if pick.get("underlying"):
+            spec["underlying"] = pick["underlying"]
+        if pick.get("leg"):
+            spec["leg"] = pick["leg"]
+        if pick.get("strike"):
+            spec["strike"] = pick["strike"]
+        if pick.get("lots"):
+            spec["lots"] = pick["lots"]
+        if pick.get("symbol") and pick.get("kind") == "equity":
+            spec["symbol"] = pick["symbol"]
+        if pick.get("qty") and pick.get("kind") == "equity":
+            spec["qty"] = pick["qty"]
+        spec["side"] = pick.get("side", "long")
+        reason = pick.get("reason", "system pick")
+        if size_mult != 1.0:
+            reason += f" [meta: ×{size_mult} sizing in {regime} regime]"
+        spec["reason"] = f"[ML auto] {reason}"
+
     res = open_trade(uid, spec)
     if res.get("error"):
         return None

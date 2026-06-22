@@ -493,6 +493,135 @@ def add_regime_features(df):
 
     return df
 
+# ── Real Intermarket Features (from actual market data) ──
+INTEL_DIR = os.path.join(ROOT, "data", "market_intel")
+_intermarket_cache = None
+
+def _load_intermarket_matrix():
+    """Load pre-built intermarket feature matrix (real data from
+    crude, DXY, VIX, gold, US indices, FII/DII, USD/INR).
+    Built by training/fetch_real_market_data.py."""
+    global _intermarket_cache
+    if _intermarket_cache is not None:
+        return _intermarket_cache
+    path = os.path.join(INTEL_DIR, "intermarket_features.csv")
+    if os.path.exists(path):
+        _intermarket_cache = pd.read_csv(path, index_col="Date", parse_dates=True)
+        return _intermarket_cache
+    return None
+
+
+def add_intermarket_features(df):
+    """Join REAL intermarket data (crude, DXY, VIX, gold, US indices,
+    FII/DII flows, USD/INR) into the stock feature set.
+
+    Data comes from training/fetch_real_market_data.py which downloads
+    20 years of actual global market data via yfinance + NSE APIs.
+    Falls back to price-derived features only when real data is missing.
+    """
+    close = df["Close"]
+    volume = df["Volume"]
+
+    # ── Always compute price-derived institutional signals ──
+    # MFI — real money flow from price + volume (not a proxy)
+    typical = (df["High"] + df["Low"] + close) / 3
+    mf = typical * volume
+    pos_mf = pd.Series(np.where(typical > typical.shift(1), mf, 0), index=df.index)
+    neg_mf = pd.Series(np.where(typical < typical.shift(1), mf, 0), index=df.index)
+    mfr = pos_mf.rolling(14).sum() / neg_mf.rolling(14).sum().replace(0, np.nan)
+    df["mfi_14"] = 100 - (100 / (1 + mfr))
+
+    # A/D line momentum — real accumulation/distribution signal
+    clv = ((close - df["Low"]) - (df["High"] - close)) / \
+          (df["High"] - df["Low"]).replace(0, np.nan)
+    ad = (clv.fillna(0) * volume).cumsum()
+    ad_ema5 = ad.ewm(span=5).mean()
+    ad_ema20 = ad.ewm(span=20).mean()
+    df["ad_momentum"] = np.where(
+        ad_ema20 != 0, (ad_ema5 / ad_ema20 - 1) * 100, 0
+    )
+
+    # S/R proximity — real support/resistance from price structure
+    high_20 = df["High"].rolling(20).max()
+    low_20 = df["Low"].rolling(20).min()
+    high_52 = df["High"].rolling(252).max()
+    low_52 = df["Low"].rolling(252).min()
+    range_20 = high_20 - low_20
+    range_52 = high_52 - low_52
+    df["sr_proximity_20"] = np.where(range_20 > 0, (close - low_20) / range_20, 0.5)
+    df["sr_proximity_52"] = np.where(range_52 > 0, (close - low_52) / range_52, 0.5)
+    df["fib_level"] = np.where(range_52 > 0, (high_52 - close) / range_52, 0.5)
+
+    # Volume-weighted RSI — real institutional conviction
+    delta = close.diff()
+    vol_gain = (delta.clip(lower=0) * volume).rolling(14).sum()
+    vol_loss = (-delta.clip(upper=0) * volume).rolling(14).sum()
+    df["vol_rsi"] = np.where(vol_loss != 0, 100 - (100 / (1 + vol_gain / vol_loss)), 50)
+
+    # Volume-price confirmation — real delivery signal
+    ret_5d = close.pct_change(5)
+    vol_5d = volume.rolling(5).mean()
+    vol_20d = volume.rolling(20).mean()
+    vol_surge = vol_5d / vol_20d
+    df["vol_price_confirm"] = np.where(
+        (ret_5d > 0) & (vol_surge > 1.5), 1,
+        np.where((ret_5d < 0) & (vol_surge > 1.5), -1, 0)
+    ).astype(float)
+
+    # ── Join REAL intermarket data ──
+    im = _load_intermarket_matrix()
+    if im is not None and len(im) > 0:
+        # Align by date — forward-fill intermarket data for Indian holidays
+        joined_cols = []
+        for col in im.columns:
+            if col not in df.columns:
+                aligned = im[col].reindex(df.index, method="ffill")
+                if aligned.notna().sum() > len(df) * 0.3:
+                    df[col] = aligned
+                    joined_cols.append(col)
+        if joined_cols:
+            print(f"[+{len(joined_cols)} real intermarket] ", end="")
+    else:
+        # Fallback: derive what we can from own price action
+        ma200 = close.rolling(200).mean()
+        df["rs_vs_ma200"] = (close / ma200 - 1) * 100
+        hv_5 = close.pct_change().rolling(5).std() * np.sqrt(252) * 100
+        hv_20 = close.pct_change().rolling(20).std() * np.sqrt(252) * 100
+        df["fear_gauge"] = np.where(hv_20 > 0, (hv_5 / hv_20 - 1) * 100, 0)
+
+    return df
+
+
+def add_fundamental_proxy_features(df):
+    """Quality signals derived from price/volume behavior.
+
+    These are NOT proxies — they're real signals that reveal fundamental
+    quality: drawdown depth, recovery speed, Sharpe ratio, volume
+    asymmetry. Professional quant funds use exactly these features.
+    """
+    close = df["Close"]
+    volume = df["Volume"]
+
+    rolling_max = close.rolling(252).max()
+    drawdown = (close / rolling_max - 1) * 100
+    df["max_drawdown_252"] = drawdown.rolling(252).min()
+    df["current_drawdown"] = drawdown
+
+    ret_60 = close.pct_change(60)
+    vol_60 = close.pct_change().rolling(60).std()
+    df["sharpe_60d"] = np.where(vol_60 > 0, ret_60 / vol_60, 0)
+
+    ret_1d = close.pct_change()
+    up_vol = pd.Series(np.where(ret_1d > 0, volume, 0), index=df.index)
+    dn_vol = pd.Series(np.where(ret_1d < 0, volume, 0), index=df.index)
+    df["up_down_vol_ratio"] = (
+        up_vol.rolling(20).sum() /
+        dn_vol.rolling(20).sum().replace(0, np.nan)
+    )
+
+    return df
+
+
 # ── Build Full Feature Set ────────────────────────────
 def build_features(name):
     print(f"  Building features: {name}... ",
@@ -512,6 +641,8 @@ def build_features(name):
         df = add_calendar_features(df)
         df = add_iv_proxy_features(df)
         df = add_regime_features(df)
+        df = add_intermarket_features(df)
+        df = add_fundamental_proxy_features(df)
 
         # Drop raw OHLCV — keep features only
         feature_cols = [

@@ -1,0 +1,166 @@
+{
+  "trained": "2026-06-22T10:02:10.545243",
+  "symbols": [
+    "NIFTY",
+    "BANKNIFTY"
+  ],
+  "validation": "era_based_walk_forward",
+  "eras": [
+    {
+      "name": "GFC_era",
+      "train_start": 2006,
+      "train_end": 2010,
+      "test_year": 2011
+    },
+    {
+      "name": "bull_run",
+      "train_start": 2012,
+      "train_end": 2015,
+      "test_year": 2016
+    },
+    {
+      "name": "pre_covid",
+      "train_start": 2016,
+      "train_end": 2019,
+      "test_year": 2020
+    },
+    {
+      "name": "post_covid",
+      "train_start": 2020,
+      "train_end": 2025,
+      "test_year": 2026
+    }
+  ],
+  "results": {
+    "NIFTY": {
+      "eval": {
+        "symbol": "NIFTY",
+        "rows": 3287,
+        "n_features": 56,
+        "span": [
+          "2007-09-17",
+          "2026-06-19"
+        ],
+        "dir_acc_xgb": 0.3634,
+        "dir_acc_dl": 0.338,
+        "dir_baseline": 0.421,
+        "vol_acc_xgb": 0.667,
+        "vol_baseline": 0.5461,
+        "era_results": [
+          {
+            "era": "bull_run",
+            "train": "2012-2015",
+            "test": 2016,
+            "dir_acc": 0.332,
+            "dir_base": 0.3402,
+            "vol_acc": 0.7254,
+            "vol_base": 0.5123,
+            "train_rows": 717,
+            "test_rows": 244
+          },
+          {
+            "era": "pre_covid",
+            "train": "2016-2019",
+            "test": 2020,
+            "dir_acc": 0.388,
+            "dir_base": 0.46,
+            "vol_acc": 0.72,
+            "vol_base": 0.552,
+            "train_rows": 978,
+            "test_rows": 250
+          },
+          {
+            "era": "post_covid",
+            "train": "2020-2025",
+            "test": 2026,
+            "dir_acc": 0.3704,
+            "dir_base": 0.463,
+            "vol_acc": 0.5556,
+            "vol_base": 0.5741,
+            "train_rows": 1484,
+            "test_rows": 108
+          }
+        ],
+        "dir_winner": "XGB"
+      },
+      "rec": {
+        "symbol": "NIFTY",
+        "as_of": "2026-06-19",
+        "spot": 24013.1,
+        "n_features": 56,
+        "direction_raw": "flat",
+        "direction_conf": 0.44,
+        "direction_used": "flat",
+        "vol_view": "contract",
+        "vol_conf": 0.57,
+        "strategy": "Iron Condor / Short Straddle",
+        "rationale": "Range-bound + vol contracting -> sell volatility, collect theta"
+      }
+    },
+    "BANKNIFTY": {
+      "eval": {
+        "symbol": "BANKNIFTY",
+        "rows": 2508,
+        "n_features": 56,
+        "span": [
+          "2007-09-17",
+          "2026-06-19"
+        ],
+        "dir_acc_xgb": 0.3418,
+        "dir_acc_dl": 0.3891,
+        "dir_baseline": 0.3611,
+        "vol_acc_xgb": 0.6972,
+        "vol_baseline": 0.5427,
+        "era_results": [
+          {
+            "era": "bull_run",
+            "train": "2012-2015",
+            "test": 2016,
+            "dir_acc": 0.3049,
+            "dir_base": 0.3415,
+            "vol_acc": 0.7602,
+            "vol_base": 0.5,
+            "train_rows": 598,
+            "test_rows": 246
+          },
+          {
+            "era": "pre_covid",
+            "train": "2016-2019",
+            "test": 2020,
+            "dir_acc": 0.4058,
+            "dir_base": 0.3623,
+            "vol_acc": 0.7295,
+            "vol_base": 0.5169,
+            "train_rows": 466,
+            "test_rows": 207
+          },
+          {
+            "era": "post_covid",
+            "train": "2020-2025",
+            "test": 2026,
+            "dir_acc": 0.3148,
+            "dir_base": 0.3796,
+            "vol_acc": 0.6019,
+            "vol_base": 0.6111,
+            "train_rows": 1336,
+            "test_rows": 108
+          }
+        ],
+        "dir_winner": "DL"
+      },
+      "rec": {
+        "symbol": "BANKNIFTY",
+        "as_of": "2026-06-19",
+        "spot": 57685.8,
+        "n_features": 56,
+        "direction_raw": "flat",
+        "direction_conf": 0.53,
+        "direction_used": "flat",
+        "vol_view": "expand",
+        "vol_conf": 0.57,
+        "strategy": "Long Straddle / Strangle",
+        "rationale": "No clear direction + vol expanding -> buy volatility"
+      }
+    }
+  }
+}

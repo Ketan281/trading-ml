@@ -1,0 +1,208 @@
+{
+  "date": "2026-06-22T09:51:02.328247",
+  "total": 50,
+  "success": [
+    {
+      "symbol": "NIFTY",
+      "time_sec": 31.6
+    },
+    {
+      "symbol": "BANKNIFTY",
+      "time_sec": 25.0
+    },
+    {
+      "symbol": "RELIANCE",
+      "time_sec": 48.3
+    },
+    {
+      "symbol": "TCS",
+      "time_sec": 43.6
+    },
+    {
+      "symbol": "HDFCBANK",
+      "time_sec": 41.1
+    },
+    {
+      "symbol": "INFY",
+      "time_sec": 43.9
+    },
+    {
+      "symbol": "ICICIBANK",
+      "time_sec": 41.7
+    },
+    {
+      "symbol": "ITC",
+      "time_sec": 44.8
+    },
+    {
+      "symbol": "SBIN",
+      "time_sec": 26.0
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "time_sec": 25.4
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "time_sec": 25.8
+    },
+    {
+      "symbol": "LT",
+      "time_sec": 25.8
+    },
+    {
+      "symbol": "AXISBANK",
+      "time_sec": 32.5
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "time_sec": 18.7
+    },
+    {
+      "symbol": "MARUTI",
+      "time_sec": 29.1
+    },
+    {
+      "symbol": "TITAN",
+      "time_sec": 19.7
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "time_sec": 43.2
+    },
+    {
+      "symbol": "HCLTECH",
+      "time_sec": 22.2
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "time_sec": 25.7
+    },
+    {
+      "symbol": "WIPRO",
+      "time_sec": 28.6
+    },
+    {
+      "symbol": "NTPC",
+      "time_sec": 28.7
+    },
+    {
+      "symbol": "POWERGRID",
+      "time_sec": 25.6
+    },
+    {
+      "symbol": "ONGC",
+      "time_sec": 18.9
+    },
+    {
+      "symbol": "TATASTEEL",
+      "time_sec": 16.2
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "time_sec": 21.1
+    },
+    {
+      "symbol": "HINDALCO",
+      "time_sec": 25.7
+    },
+    {
+      "symbol": "DRREDDY",
+      "time_sec": 25.0
+    },
+    {
+      "symbol": "CIPLA",
+      "time_sec": 28.2
+    },
+    {
+      "symbol": "DIVISLAB",
+      "time_sec": 25.8
+    },
+    {
+      "symbol": "ADANIENT",
+      "time_sec": 25.9
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "time_sec": 22.3
+    },
+    {
+      "symbol": "COALINDIA",
+      "time_sec": 18.7
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "time_sec": 25.5
+    },
+    {
+      "symbol": "TECHM",
+      "time_sec": 21.4
+    },
+    {
+      "symbol": "GRASIM",
+      "time_sec": 23.6
+    },
+    {
+      "symbol": "EICHERMOT",
+      "time_sec": 23.1
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "time_sec": 21.9
+    },
+    {
+      "symbol": "BPCL",
+      "time_sec": 22.7
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "time_sec": 23.5
+    },
+    {
+      "symbol": "BRITANNIA",
+      "time_sec": 21.8
+    },
+    {
+      "symbol": "APOLLOHOSP",
+      "time_sec": 20.5
+    },
+    {
+      "symbol": "TATACONSUM",
+      "time_sec": 18.3
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "time_sec": 18.9
+    },
+    {
+      "symbol": "UPL",
+      "time_sec": 29.6
+    },
+    {
+      "symbol": "SBILIFE",
+      "time_sec": 22.1
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "time_sec": 20.9
+    },
+    {
+      "symbol": "PIDILITIND",
+      "time_sec": 44.6
+    },
+    {
+      "symbol": "VEDL",
+      "time_sec": 93.2
+    },
+    {
+      "symbol": "NESTLEIND",
+      "time_sec": 43.5
+    },
+    {
+      "symbol": "ULTRACEMCO",
+      "time_sec": 51.0
+    }
+  ],
+  "failed": [],
+  "skipped": []
+}

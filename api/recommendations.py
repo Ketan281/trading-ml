@@ -24,9 +24,22 @@ def _safe(fn, *a, **kw):
         return None
 
 
+def _get_market_context():
+    """Fetch macro/institutional market context overlay."""
+    from pipelines.market_intel import market_context
+    return _safe(market_context, "NIFTY") or {"conviction_multiplier": 1.0, "overall": "unknown"}
+
+
+def _get_stock_context(symbol):
+    """Fetch per-stock institutional signal overlay."""
+    from pipelines.market_intel import stock_context
+    return _safe(stock_context, symbol) or {"conviction_multiplier": 1.0, "read": "unavailable"}
+
+
 def _equity_intraday_picks(balance=100_000):
     """Top intraday equity picks from the screener, sorted by conviction."""
     from pipelines.screener import screen
+    mkt = _get_market_context()
     rep = _safe(screen)
     if not rep:
         return []
@@ -49,6 +62,9 @@ def _equity_intraday_picks(balance=100_000):
         risk = entry - stop
         rr = round((target - entry) / risk, 2) if risk > 0 else 0
         grade = c.get("grade", "—")
+        stk_ctx = _get_stock_context(c["symbol"])
+        adj_conv = conv * mkt.get("conviction_multiplier", 1.0) * stk_ctx.get("conviction_multiplier", 1.0)
+        adj_conv = min(99, max(0, adj_conv))
         picks.append({
             "segment": "equity_intraday",
             "symbol": c["symbol"],
@@ -56,15 +72,20 @@ def _equity_intraday_picks(balance=100_000):
             "entry": round(entry, 2),
             "stop": round(stop, 2),
             "target": round(target, 2),
-            "confidence": round(conv, 1),
+            "confidence": round(adj_conv, 1),
+            "raw_conviction": round(conv, 1),
             "grade": grade,
             "reward_risk": rr,
             "trend": c.get("trend", "—"),
             "rsi": round(c.get("rsi", 0), 1),
             "pattern": c.get("pattern", "—"),
             "entry_signal": c.get("entry_signal", "wait"),
-            "reason": f"{c['symbol']} — grade {grade}, conviction {conv:.0f}%, "
-                      f"R:R {rr}:1, {c.get('pattern', 'no pattern')}",
+            "market_context": mkt.get("overall", "—"),
+            "stock_signal": stk_ctx.get("read", "—"),
+            "reason": f"{c['symbol']} — grade {grade}, conviction {adj_conv:.0f}% "
+                      f"(raw {conv:.0f}% × market {mkt.get('overall', '?')} × "
+                      f"{stk_ctx.get('read', '?')}), R:R {rr}:1, "
+                      f"{c.get('pattern', 'no pattern')}",
         })
     picks.sort(key=lambda x: x["confidence"], reverse=True)
     return picks
@@ -73,6 +94,7 @@ def _equity_intraday_picks(balance=100_000):
 def _options_picks(capital=100_000):
     """Best options picks for NIFTY and BANKNIFTY."""
     from pipelines.options_action_engine import live_trade_plan
+    mkt = _get_market_context()
     picks = []
     for sym in ("BANKNIFTY", "NIFTY"):
         plan = _safe(live_trade_plan, sym, capital)
@@ -83,6 +105,8 @@ def _options_picks(capital=100_000):
         prob = plan.get("prob_up", 0.5)
         directional_strength = abs(prob - 0.5) * 200
         effective_conf = round((conf * 0.6 + directional_strength * 0.4), 1)
+        adj_conf = effective_conf * mkt.get("conviction_multiplier", 1.0)
+        adj_conf = min(99, max(0, adj_conf))
         picks.append({
             "segment": "options",
             "symbol": plan.get("instrument", sym),
@@ -91,7 +115,8 @@ def _options_picks(capital=100_000):
             "entry": plan.get("entry_premium", 0),
             "stop": plan.get("stop_premium", 0),
             "target": plan.get("target_premium", 0),
-            "confidence": effective_conf,
+            "confidence": round(adj_conf, 1),
+            "raw_confidence": effective_conf,
             "prob_up": round(prob, 3),
             "conviction": plan.get("conviction", "none"),
             "lots": plan.get("lots", 0),
@@ -102,8 +127,10 @@ def _options_picks(capital=100_000):
             "strike": plan.get("instrument", "").split()[-2] if " " in plan.get("instrument", "") else "—",
             "leg": plan.get("action", "").replace("BUY_", "").replace("SMALL_", ""),
             "regime_alignment": plan.get("regime_alignment", ""),
-            "reason": f"{plan.get('instrument', sym)} — {plan.get('conviction', '')} conviction, "
-                      f"P(up) {prob:.1%}, R:R {plan.get('reward_risk', 0):.1f}:1",
+            "market_context": mkt.get("overall", "—"),
+            "reason": f"{plan.get('instrument', sym)} — {plan.get('conviction', '')} conviction "
+                      f"({adj_conf:.0f}%), P(up) {prob:.1%}, R:R {plan.get('reward_risk', 0):.1f}:1, "
+                      f"market {mkt.get('overall', '?')}",
         })
     picks.sort(key=lambda x: x["confidence"], reverse=True)
     return picks
@@ -112,6 +139,7 @@ def _options_picks(capital=100_000):
 def _swing_picks(balance=100_000):
     """Swing / positional delivery picks from the screener — for multi-day holds."""
     from pipelines.screener import screen
+    mkt = _get_market_context()
     rep = _safe(screen)
     if not rep:
         return []
@@ -138,6 +166,9 @@ def _swing_picks(balance=100_000):
         grade = c.get("grade", "—")
         if grade in ("C", "AVOID") or conv < 40:
             continue
+        stk_ctx = _get_stock_context(c["symbol"])
+        adj_conv = swing_conv * mkt.get("conviction_multiplier", 1.0) * stk_ctx.get("conviction_multiplier", 1.0)
+        adj_conv = min(99, max(0, adj_conv))
         picks.append({
             "segment": "swing",
             "symbol": c["symbol"],
@@ -145,15 +176,20 @@ def _swing_picks(balance=100_000):
             "entry": round(entry, 2),
             "stop": round(stop, 2),
             "target": round(target, 2),
-            "confidence": round(swing_conv, 1),
+            "confidence": round(adj_conv, 1),
+            "raw_conviction": round(swing_conv, 1),
             "grade": grade,
             "quality_score": round(quality, 1) if quality else None,
             "reward_risk": rr,
             "trend": c.get("trend", "—"),
             "pattern": c.get("pattern", "—"),
             "holding_period": "2–10 days",
+            "market_context": mkt.get("overall", "—"),
+            "stock_signal": stk_ctx.get("read", "—"),
             "reason": f"{c['symbol']} — grade {grade}, quality {quality:.0f}, "
-                      f"conviction {swing_conv:.0f}%, R:R {rr}:1 (swing/delivery)",
+                      f"conviction {adj_conv:.0f}% (raw {swing_conv:.0f}% × "
+                      f"market {mkt.get('overall', '?')} × {stk_ctx.get('read', '?')}), "
+                      f"R:R {rr}:1 (swing/delivery)",
         })
     picks.sort(key=lambda x: x["confidence"], reverse=True)
     return picks
@@ -161,6 +197,7 @@ def _swing_picks(balance=100_000):
 
 def segment_recommendations(balance=100_000):
     """Fetch best picks across all segments. Returns per-segment sorted lists."""
+    mkt = _get_market_context()
     equity = _safe(_equity_intraday_picks, balance) or []
     options = _safe(_options_picks, balance) or []
     swing = _safe(_swing_picks, balance) or []
@@ -168,6 +205,15 @@ def segment_recommendations(balance=100_000):
         "equity_intraday": equity,
         "options": options,
         "swing": swing,
+        "market_context": {
+            "overall": mkt.get("overall", "unknown"),
+            "composite_score": mkt.get("composite_score", 0),
+            "conviction_multiplier": mkt.get("conviction_multiplier", 1.0),
+            "signals": {
+                name: {"score": sig.get("score", 0), "read": sig.get("read", "")}
+                for name, sig in mkt.get("signals", {}).items()
+            },
+        },
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "best_per_segment": {
             "equity_intraday": equity[0] if equity else None,

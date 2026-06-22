@@ -51,44 +51,99 @@ def _reward_risk(action, price, stop, target):
     return reward / risk
 
 
+# ── market intelligence overlay (lazy, cached per call) ──
+_intel_cache = {}
+
+def _fetch_intel(symbol):
+    """Fetch market + stock intelligence. Cached for the process lifetime
+    of one screening run so we don't hit APIs per-candidate."""
+    if symbol in _intel_cache:
+        return _intel_cache[symbol]
+    try:
+        from pipelines.market_intel import market_context, stock_context
+        mkt = market_context("NIFTY")
+        stk = stock_context(symbol)
+    except Exception:
+        mkt = {"conviction_multiplier": 1.0, "signals": {}, "composite_score": 0}
+        stk = {"conviction_multiplier": 1.0, "signals": {}}
+    _intel_cache[symbol] = (mkt, stk)
+    return mkt, stk
+
+
+def _intel_score(signals, key, default=0.5):
+    """Extract a normalised 0..1 score from an intel signals dict.
+    Raw intel scores are in [-1, +1]; we map to [0, 1]."""
+    sig = signals.get(key, {})
+    raw = sig.get("score", 0) if isinstance(sig, dict) else 0
+    return max(0, min(1, (raw + 1) / 2)) if raw else default
+
+
 # ── confluence scoring (the judgment) ─────────────────
 def _conviction(c, rr):
     """0–100 conviction from how many independent edges align.
-    Each component contributes its weight × a 0..1 quality."""
+
+    Factors (weights sum to 1.0):
+      Technical (40%): rank 12%, trigger 10%, trend 8%, momentum 5%, patterns 5%
+      Fundamental (15%): quality score from 20 parameters
+      Market intel (25%): FII/DII 8%, PCR 6%, intermarket 5%, volume/delivery 6%
+      Risk/execution (15%): R:R 7%, liquidity 4%, S/R proximity 4%
+      Sentiment (5%): news/event awareness
+    """
     rsi   = _num(c.get("rsi")) or 50.0
     qual  = _num(c.get("quality"))
     trend = c.get("trend", "sideways")
     trig  = c.get("entry_signal") == "trigger"
     ctx   = c.get("pattern_context", "mid")
     turn  = _num(c.get("turnover_cr")) or 0.0
-    score = _num(c.get("rank_score")) or 0.5     # ranker prob ~0.5..0.6
+    score = _num(c.get("rank_score")) or 0.5
+    sym   = c.get("symbol", "NIFTY")
+
+    mkt, stk = _fetch_intel(sym)
+    mkt_signals = mkt.get("signals", {})
+    stk_signals = stk.get("signals", {})
 
     parts = {}
-    # Relative-strength rank (model prob is compressed; stretch it).
-    parts["rank"]    = (min(max((score - 0.50) / 0.12, 0), 1), 0.22)
-    # Fundamental quality (0..100 → 0..1); neutral 0.5 if unknown.
-    parts["quality"] = ((qual / 100.0) if qual is not None else 0.5, 0.18)
-    # Fresh, confirmed entry trigger.
-    parts["trigger"] = (1.0 if trig else 0.0, 0.18)
-    # Trend alignment with the trade direction.
+
+    # ── Technical analysis (40%) ──
+    parts["rank"]     = (min(max((score - 0.50) / 0.12, 0), 1), 0.12)
+    parts["trigger"]  = (1.0 if trig else 0.0, 0.10)
     aligned = ((c.get("action") == "buy"  and trend == "uptrend") or
                (c.get("action") == "sell" and trend == "downtrend"))
     against = ((c.get("action") == "buy"  and trend == "downtrend") or
                (c.get("action") == "sell" and trend == "uptrend"))
-    parts["trend"]   = (1.0 if aligned else (0.0 if against else 0.5), 0.15)
-    # Momentum health: for longs, 45–65 is the sweet spot; >70 overbought.
+    parts["trend"]    = (1.0 if aligned else (0.0 if against else 0.5), 0.08)
     if c.get("action") == "buy":
         rsi_q = 1.0 if 45 <= rsi <= 65 else (0.4 if rsi < 45 else 0.2)
     elif c.get("action") == "sell":
         rsi_q = 1.0 if 35 <= rsi <= 55 else (0.4 if rsi > 55 else 0.2)
     else:
         rsi_q = 0.5
-    parts["momentum"] = (rsi_q, 0.10)
-    # Reward:risk.
+    parts["momentum"] = (rsi_q, 0.05)
+    pat_score = _num(c.get("pattern_score")) or 0
+    pat_q = max(0, min(1, (pat_score + 1) / 2))
+    parts["patterns"] = (pat_q, 0.05)
+
+    # ── Fundamental quality (15%) — 20 parameters via models/fundamentals.py ──
+    parts["quality"]  = ((qual / 100.0) if qual is not None else 0.5, 0.15)
+
+    # ── Market intelligence (25%) — FII/DII, PCR, intermarket, volume/delivery ──
+    parts["fii_dii"]      = (_intel_score(mkt_signals, "fii_dii"), 0.08)
+    parts["pcr"]          = (_intel_score(mkt_signals, "pcr"), 0.06)
+    parts["intermarket"]  = (_intel_score(mkt_signals, "intermarket"), 0.05)
+    delivery_q = _intel_score(stk_signals, "delivery", 0.5)
+    volume_q   = _intel_score(stk_signals, "volume_profile", 0.5)
+    parts["volume_delivery"] = ((delivery_q * 0.5 + volume_q * 0.5), 0.06)
+
+    # ── Risk / execution (15%) — R:R, liquidity, S/R proximity ──
     rr_q = 0.0 if rr is None else min(max((rr - 1.0) / 2.0, 0), 1)
-    parts["rr"]       = (rr_q, 0.10)
-    # Liquidity comfort.
-    parts["liquidity"] = (min(turn / GOOD_TURNOVER_CR, 1.0), 0.07)
+    parts["rr"]        = (rr_q, 0.07)
+    parts["liquidity"] = (min(turn / GOOD_TURNOVER_CR, 1.0), 0.04)
+    sr_q = _intel_score(stk_signals, "support_resistance", 0.5)
+    parts["sr_proximity"] = (sr_q, 0.04)
+
+    # ── News / sentiment (5%) ──
+    news_q = _intel_score(mkt_signals, "sentiment", 0.5)
+    parts["sentiment"] = (news_q, 0.05)
 
     total = sum(q * w for q, w in parts.values())
     return round(total * 100, 1), {k: round(q, 2) for k, (q, w) in parts.items()}
@@ -102,6 +157,7 @@ def _red_flags(c, rr):
     trend = c.get("trend", "sideways")
     act   = c.get("action")
     ctx   = c.get("pattern_context", "mid")
+    sym   = c.get("symbol", "NIFTY")
 
     flags, vetoes = [], []
     if act == "buy" and trend == "downtrend":
@@ -120,6 +176,24 @@ def _red_flags(c, rr):
         flags.append(f"weak business quality (Q{qual:.0f})")
     if turn < 2.0:
         flags.append(f"thin liquidity (₹{turn:.1f} cr/day)")
+
+    # Intelligence-layer flags
+    try:
+        mkt, stk = _fetch_intel(sym)
+        mkt_signals = mkt.get("signals", {})
+        stk_signals = stk.get("signals", {})
+        fii = mkt_signals.get("fii_dii", {})
+        if isinstance(fii, dict) and fii.get("score", 0) < -0.6 and act == "buy":
+            flags.append("heavy FII selling — institutional headwind")
+        pcr = mkt_signals.get("pcr", {})
+        if isinstance(pcr, dict) and pcr.get("score", 0) < -0.5 and act == "buy":
+            flags.append(f"low PCR ({pcr.get('read', 'bearish')}) — options sentiment negative")
+        delivery = stk_signals.get("delivery", {})
+        if isinstance(delivery, dict) and delivery.get("score", 0) < -0.5:
+            flags.append("distribution detected — smart money likely selling")
+    except Exception:
+        pass
+
     return flags, vetoes
 
 
@@ -235,6 +309,10 @@ def _rationale(c, grade, conviction, rr, comp, flags, vetoes):
     if comp.get("trigger", 0) >= 1:  edges.append(f"fresh {pat} trigger")
     if comp.get("trend", 0) >= 1:    edges.append(f"with the {trend}")
     if rr is not None and rr >= MIN_RR: edges.append(f"{rr:.1f}:1 reward:risk")
+    if comp.get("fii_dii", 0) >= 0.7: edges.append("FII flows supportive")
+    if comp.get("pcr", 0) >= 0.7:     edges.append("PCR favourable")
+    if comp.get("volume_delivery", 0) >= 0.7: edges.append("accumulation detected")
+    if comp.get("sr_proximity", 0) >= 0.7: edges.append("near support")
     if edges:
         bits.append("Edges aligned: " + ", ".join(edges) + ".")
     bits.append(f"Conviction {conviction}/100.")

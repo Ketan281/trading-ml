@@ -72,8 +72,8 @@ SYMBOLS = {
 }
 
 # ── Date Range ────────────────────────────────────────
-START_DATE = "2014-01-01"
-END_DATE   = "2024-12-31"
+START_DATE = "2006-01-01"
+END_DATE   = "2026-06-22"
 
 # ── Fetch Single Symbol ───────────────────────────────
 def fetch_symbol(name, ticker,

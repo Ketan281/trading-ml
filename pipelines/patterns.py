@@ -8,14 +8,20 @@ patterns and, crucially, reads them IN CONTEXT (a hammer only counts after a
 pulldown; an engulfing only counts at the right location), then decides
 whether a clean entry trigger has actually fired on the most recent bars.
 
-The 15 patterns
+The 28 patterns
 ---------------
 Single  : 1 Hammer  2 Inverted Hammer  3 Shooting Star  4 Hanging Man
-          5 Doji    6 Marubozu
-Double  : 7 Bullish Engulfing  8 Bearish Engulfing  9 Bullish Harami
-          10 Bearish Harami    11 Piercing Line      12 Dark Cloud Cover
-Triple  : 13 Morning Star  14 Evening Star
-          15 Three White Soldiers / Three Black Crows
+          5 Doji  6 Dragonfly Doji  7 Gravestone Doji  8 Long-legged Doji
+          9 Marubozu  10 Spinning Top
+          11 Bullish Belt Hold  12 Bearish Belt Hold
+Double  : 13 Bullish Engulfing  14 Bearish Engulfing  15 Bullish Harami
+          16 Bearish Harami  17 Piercing Line  18 Dark Cloud Cover
+          19 Tweezer Top  20 Tweezer Bottom
+          21 Bullish Kicker  22 Bearish Kicker
+Triple  : 23 Morning Star  24 Evening Star
+          25 Three White Soldiers  26 Three Black Crows
+          27 Three Inside Up  28 Three Inside Down
+          29 Bullish Abandoned Baby  30 Bearish Abandoned Baby
 
 Output (detect_patterns):
     {
@@ -71,12 +77,25 @@ def _single(o, h, l, c, prior):
     # Doji — indecision; bias by context
     if body <= DOJI_BODY * rng:
         d = 1 if prior == "down" else (-1 if prior == "up" else 0)
-        out.append(("Doji", d, 0.3))
+        # Dragonfly Doji — long lower shadow, no upper shadow
+        if lo >= 2 * rng * DOJI_BODY and up <= rng * DOJI_BODY:
+            out.append(("Dragonfly Doji", 1 if prior == "down" else 0, 0.65))
+        # Gravestone Doji — long upper shadow, no lower shadow
+        elif up >= 2 * rng * DOJI_BODY and lo <= rng * DOJI_BODY:
+            out.append(("Gravestone Doji", -1 if prior == "up" else 0, 0.65))
+        # Long-legged Doji — long shadows both sides
+        elif up >= rng * 0.3 and lo >= rng * 0.3:
+            out.append(("Long-legged Doji", d, 0.4))
+        else:
+            out.append(("Doji", d, 0.3))
         return out
     # Marubozu — strong continuation
     if body >= MARUBOZU * rng:
         out.append(("Marubozu", 1 if _bull(o, c) else -1, 0.7))
         return out
+    # Spinning Top — small body, shadows on both sides
+    if body <= 0.3 * rng and up >= 0.3 * rng and lo >= 0.3 * rng:
+        out.append(("Spinning Top", 0, 0.2))
     # Long-lower-wick family
     if lo >= LONG_WICK * body and up <= body:
         if prior == "down":
@@ -89,6 +108,11 @@ def _single(o, h, l, c, prior):
             out.append(("Shooting Star", -1, 0.7))    # bearish reversal
         elif prior == "down":
             out.append(("Inverted Hammer", 1, 0.6))   # bullish reversal
+    # Belt Hold — opens at extreme, closes near opposite extreme
+    if _bull(o, c) and lo <= 0.05 * rng and body >= 0.6 * rng and prior == "down":
+        out.append(("Bullish Belt Hold", 1, 0.55))
+    elif not _bull(o, c) and up <= 0.05 * rng and body >= 0.6 * rng and prior == "up":
+        out.append(("Bearish Belt Hold", -1, 0.55))
     return out
 
 
@@ -113,6 +137,18 @@ def _double(po, ph, pl, pc, o, h, l, c, prior):
             out.append(("Piercing Line", 1, 0.7))
         if _bull(po, pc) and (not _bull(o, c)) and o > ph and po < c < pc and c < pmid:
             out.append(("Dark Cloud Cover", -1, 0.7))
+    # Tweezer Top / Bottom — same high or same low
+    prng = (ph - pl) or 1e-9
+    rng = (h - l) or 1e-9
+    if abs(pl - l) <= 0.002 * l and prior == "down":
+        out.append(("Tweezer Bottom", 1, 0.6))
+    if abs(ph - h) <= 0.002 * h and prior == "up":
+        out.append(("Tweezer Top", -1, 0.6))
+    # Kicker — gap + opposite direction (very strong)
+    if (not _bull(po, pc)) and _bull(o, c) and o > po:
+        out.append(("Bullish Kicker", 1, 0.9))
+    if _bull(po, pc) and (not _bull(o, c)) and o < po:
+        out.append(("Bearish Kicker", -1, 0.9))
     return out
 
 
@@ -133,6 +169,20 @@ def _triple(c2o, c2h, c2l, c2c, c1o, c1h, c1l, c1c, o, h, l, c):
         out.append(("Three White Soldiers", 1, 0.85))
     if downs and c1c < c2c and c < c1c:
         out.append(("Three Black Crows", -1, 0.85))
+    # Three Inside Up / Down (harami + confirmation)
+    if (not _bull(c2o, c2c)) and _bull(c1o, c1c) and c1o >= c2c and c1c <= c2o:
+        if _bull(o, c) and c > c2o:
+            out.append(("Three Inside Up", 1, 0.8))
+    if _bull(c2o, c2c) and (not _bull(c1o, c1c)) and c1o <= c2c and c1c >= c2o:
+        if (not _bull(o, c)) and c < c2o:
+            out.append(("Three Inside Down", -1, 0.8))
+    # Abandoned Baby (gap + doji + gap)
+    if (not _bull(c2o, c2c)) and b1 <= 0.1 * (c1h - c1l + 1e-9):
+        if c1h < c2l and o > c1h and _bull(o, c):
+            out.append(("Bullish Abandoned Baby", 1, 0.9))
+    if _bull(c2o, c2c) and b1 <= 0.1 * (c1h - c1l + 1e-9):
+        if c1l > c2h and o < c1l and (not _bull(o, c)):
+            out.append(("Bearish Abandoned Baby", -1, 0.9))
     return out
 
 
