@@ -1,0 +1,46 @@
+{
+  "symbol": "BBTC",
+  "xgb_cv": 0.4335,
+  "baseline": 0.4581,
+  "edge": -0.0246,
+  "trained": "2026-06-22T10:46:18.807529",
+  "data_range": "2014-01-29 -> 2026-05-14",
+  "total_rows": 3030,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4634,
+      "rf": 0.4512,
+      "baseline": 0.4715,
+      "edge": -0.0081,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3705,
+      "rf": 0.3745,
+      "baseline": 0.5139,
+      "edge": -0.1434,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4667,
+      "rf": 0.5222,
+      "baseline": 0.3889,
+      "edge": 0.0778,
+      "train_rows": 1487,
+      "test_rows": 90
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

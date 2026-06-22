@@ -1,0 +1,35 @@
+{
+  "symbol": "BALRAMCHIN",
+  "xgb_cv": 0.4209,
+  "baseline": 0.4794,
+  "edge": -0.0584,
+  "trained": "2026-06-22T10:45:03.978471",
+  "data_range": "2016-11-16 -> 2026-05-15",
+  "total_rows": 2348,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4462,
+      "rf": 0.4422,
+      "baseline": 0.4422,
+      "edge": 0.004,
+      "train_rows": 770,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3956,
+      "rf": 0.3846,
+      "baseline": 0.5165,
+      "edge": -0.1209,
+      "train_rows": 1487,
+      "test_rows": 91
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

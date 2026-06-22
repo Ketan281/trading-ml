@@ -1,0 +1,24 @@
+{
+  "symbol": "SYRMA",
+  "xgb_cv": 0.2874,
+  "baseline": 0.5862,
+  "edge": -0.2989,
+  "trained": "2026-06-22T13:44:14.562688",
+  "data_range": "2023-11-02 -> 2026-05-11",
+  "total_rows": 618,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2874,
+      "rf": 0.2529,
+      "baseline": 0.5862,
+      "edge": -0.2989,
+      "train_rows": 531,
+      "test_rows": 87
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

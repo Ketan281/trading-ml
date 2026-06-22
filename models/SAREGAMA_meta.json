@@ -1,0 +1,24 @@
+{
+  "symbol": "SAREGAMA",
+  "xgb_cv": 0.3705,
+  "baseline": 0.251,
+  "edge": 0.1195,
+  "trained": "2026-06-22T11:40:40.288765",
+  "data_range": "2017-10-25 -> 2025-02-10",
+  "total_rows": 1754,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3705,
+      "rf": 0.3147,
+      "baseline": 0.251,
+      "edge": 0.1195,
+      "train_rows": 536,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

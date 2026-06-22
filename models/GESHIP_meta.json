@@ -1,0 +1,35 @@
+{
+  "symbol": "GESHIP",
+  "xgb_cv": 0.3746,
+  "baseline": 0.514,
+  "edge": -0.1394,
+  "trained": "2026-06-22T10:58:12.208481",
+  "data_range": "2016-08-12 -> 2026-05-14",
+  "total_rows": 2408,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3825,
+      "rf": 0.4542,
+      "baseline": 0.4502,
+      "edge": -0.0677,
+      "train_rows": 831,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3667,
+      "rf": 0.3333,
+      "baseline": 0.5778,
+      "edge": -0.2111,
+      "train_rows": 1487,
+      "test_rows": 90
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

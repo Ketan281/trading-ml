@@ -1,0 +1,24 @@
+{
+  "symbol": "BHARTIHEXA",
+  "xgb_cv": 0.2809,
+  "baseline": 0.2022,
+  "edge": 0.0787,
+  "trained": "2026-06-22T13:46:51.733855",
+  "data_range": "2024-08-06 -> 2026-05-13",
+  "total_rows": 439,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2809,
+      "rf": 0.3483,
+      "baseline": 0.2022,
+      "edge": 0.0787,
+      "train_rows": 350,
+      "test_rows": 89
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

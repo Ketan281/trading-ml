@@ -1,0 +1,12 @@
+{
+  "symbol": "WOCKPHARMA",
+  "xgb_cv": 0.3463,
+  "baseline": 0.561,
+  "edge": -0.2146,
+  "trained": "2026-06-22T11:32:57.405071",
+  "data_range": "2014-01-29 -> 2015-02-04",
+  "total_rows": 248,
+  "era_results": [],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

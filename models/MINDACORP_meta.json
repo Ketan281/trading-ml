@@ -1,0 +1,35 @@
+{
+  "symbol": "MINDACORP",
+  "xgb_cv": 0.4692,
+  "baseline": 0.4251,
+  "edge": 0.0441,
+  "trained": "2026-06-22T11:38:37.075077",
+  "data_range": "2016-02-10 -> 2026-05-22",
+  "total_rows": 2538,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4542,
+      "rf": 0.3147,
+      "baseline": 0.4502,
+      "edge": 0.004,
+      "train_rows": 956,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4842,
+      "rf": 0.5158,
+      "baseline": 0.4,
+      "edge": 0.0842,
+      "train_rows": 1487,
+      "test_rows": 95
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,24 @@
+{
+  "symbol": "IOC",
+  "xgb_cv": 0.3696,
+  "baseline": 0.4239,
+  "edge": -0.0543,
+  "trained": "2026-06-22T11:06:35.211840",
+  "data_range": "2020-07-31 -> 2026-05-18",
+  "total_rows": 1434,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3696,
+      "rf": 0.413,
+      "baseline": 0.4239,
+      "edge": -0.0543,
+      "train_rows": 1342,
+      "test_rows": 92
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

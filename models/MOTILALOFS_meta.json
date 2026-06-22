@@ -1,0 +1,35 @@
+{
+  "symbol": "MOTILALOFS",
+  "xgb_cv": 0.4244,
+  "baseline": 0.4323,
+  "edge": -0.0079,
+  "trained": "2026-06-22T11:15:37.885318",
+  "data_range": "2014-01-29 -> 2020-10-30",
+  "total_rows": 1662,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3943,
+      "rf": 0.4024,
+      "baseline": 0.4675,
+      "edge": -0.0732,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4545,
+      "rf": 0.4354,
+      "baseline": 0.3971,
+      "edge": 0.0574,
+      "train_rows": 983,
+      "test_rows": 209
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

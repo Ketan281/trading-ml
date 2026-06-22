@@ -1,0 +1,24 @@
+{
+  "symbol": "PVRINOX",
+  "xgb_cv": 0.4943,
+  "baseline": 0.3448,
+  "edge": 0.1494,
+  "trained": "2026-06-22T11:39:45.204596",
+  "data_range": "2020-09-15 -> 2026-05-11",
+  "total_rows": 1392,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4943,
+      "rf": 0.4138,
+      "baseline": 0.3448,
+      "edge": 0.1494,
+      "train_rows": 1305,
+      "test_rows": 87
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

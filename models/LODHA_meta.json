@@ -1,0 +1,24 @@
+{
+  "symbol": "LODHA",
+  "xgb_cv": 0.5526,
+  "baseline": 0.3289,
+  "edge": 0.2237,
+  "trained": "2026-06-22T13:39:52.664661",
+  "data_range": "2021-10-22 -> 2026-04-24",
+  "total_rows": 1113,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5526,
+      "rf": 0.5132,
+      "baseline": 0.3289,
+      "edge": 0.2237,
+      "train_rows": 1037,
+      "test_rows": 76
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,35 @@
+{
+  "symbol": "RHIM",
+  "xgb_cv": 0.3507,
+  "baseline": 0.4747,
+  "edge": -0.1241,
+  "trained": "2026-06-22T11:40:27.505178",
+  "data_range": "2014-11-13 -> 2023-05-30",
+  "total_rows": 2110,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4065,
+      "rf": 0.3496,
+      "baseline": 0.4634,
+      "edge": -0.0569,
+      "train_rows": 280,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.2948,
+      "rf": 0.3307,
+      "baseline": 0.4861,
+      "edge": -0.1912,
+      "train_rows": 983,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

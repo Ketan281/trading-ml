@@ -1,0 +1,24 @@
+{
+  "symbol": "POLICYBZR",
+  "xgb_cv": 0.2289,
+  "baseline": 0.3253,
+  "edge": -0.0964,
+  "trained": "2026-06-22T13:41:12.437748",
+  "data_range": "2022-02-08 -> 2026-05-06",
+  "total_rows": 1046,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2289,
+      "rf": 0.3614,
+      "baseline": 0.3253,
+      "edge": -0.0964,
+      "train_rows": 963,
+      "test_rows": 83
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

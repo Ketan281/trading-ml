@@ -1,0 +1,24 @@
+{
+  "symbol": "UNIONBANK",
+  "xgb_cv": 0.4133,
+  "baseline": 0.44,
+  "edge": -0.0267,
+  "trained": "2026-06-22T11:30:31.208877",
+  "data_range": "2020-06-24 -> 2026-04-23",
+  "total_rows": 1445,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4133,
+      "rf": 0.2133,
+      "baseline": 0.44,
+      "edge": -0.0267,
+      "train_rows": 1370,
+      "test_rows": 75
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

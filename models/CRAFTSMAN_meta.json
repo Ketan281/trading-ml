@@ -1,0 +1,24 @@
+{
+  "symbol": "CRAFTSMAN",
+  "xgb_cv": 0.3253,
+  "baseline": 0.3976,
+  "edge": -0.0723,
+  "trained": "2026-06-22T13:39:47.145965",
+  "data_range": "2021-07-15 -> 2026-05-07",
+  "total_rows": 1187,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3253,
+      "rf": 0.3855,
+      "baseline": 0.3976,
+      "edge": -0.0723,
+      "train_rows": 1104,
+      "test_rows": 83
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

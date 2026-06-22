@@ -1,0 +1,24 @@
+{
+  "symbol": "COHANCE",
+  "xgb_cv": 0.3448,
+  "baseline": 0.0345,
+  "edge": 0.3103,
+  "trained": "2026-06-22T13:38:31.822194",
+  "data_range": "2020-11-02 -> 2026-02-11",
+  "total_rows": 1307,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3448,
+      "rf": 0.6207,
+      "baseline": 0.0345,
+      "edge": 0.3103,
+      "train_rows": 1278,
+      "test_rows": 29
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

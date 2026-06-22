@@ -1,0 +1,24 @@
+{
+  "symbol": "ABFRL",
+  "xgb_cv": 0.3646,
+  "baseline": 0.4062,
+  "edge": -0.0417,
+  "trained": "2026-06-22T10:41:18.331387",
+  "data_range": "2020-05-28 -> 2026-05-25",
+  "total_rows": 1485,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3646,
+      "rf": 0.3333,
+      "baseline": 0.4062,
+      "edge": -0.0417,
+      "train_rows": 1389,
+      "test_rows": 96
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,24 @@
+{
+  "symbol": "NYKAA",
+  "xgb_cv": 0.5895,
+  "baseline": 0.4526,
+  "edge": 0.1368,
+  "trained": "2026-06-22T13:40:59.275060",
+  "data_range": "2021-12-09 -> 2026-05-21",
+  "total_rows": 1100,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5895,
+      "rf": 0.5789,
+      "baseline": 0.4526,
+      "edge": 0.1368,
+      "train_rows": 1005,
+      "test_rows": 95
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

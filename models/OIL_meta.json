@@ -1,0 +1,24 @@
+{
+  "symbol": "OIL",
+  "xgb_cv": 0.3258,
+  "baseline": 0.4494,
+  "edge": -0.1236,
+  "trained": "2026-06-22T11:19:06.547081",
+  "data_range": "2020-08-24 -> 2026-05-13",
+  "total_rows": 1416,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3258,
+      "rf": 0.2809,
+      "baseline": 0.4494,
+      "edge": -0.1236,
+      "train_rows": 1327,
+      "test_rows": 89
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

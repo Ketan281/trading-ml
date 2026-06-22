@@ -1,0 +1,24 @@
+{
+  "symbol": "ADANIGREEN",
+  "xgb_cv": 0.3425,
+  "baseline": 0.3973,
+  "edge": -0.0548,
+  "trained": "2026-06-22T11:53:48.116074",
+  "data_range": "2025-04-29 -> 2026-04-21",
+  "total_rows": 243,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3425,
+      "rf": 0.3562,
+      "baseline": 0.3973,
+      "edge": -0.0548,
+      "train_rows": 170,
+      "test_rows": 73
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

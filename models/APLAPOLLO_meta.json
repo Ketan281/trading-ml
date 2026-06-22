@@ -1,0 +1,24 @@
+{
+  "symbol": "APLAPOLLO",
+  "xgb_cv": 0.3827,
+  "baseline": 0.3827,
+  "edge": 0.0,
+  "trained": "2026-06-22T10:43:19.003031",
+  "data_range": "2020-07-01 -> 2026-05-01",
+  "total_rows": 1446,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3827,
+      "rf": 0.5185,
+      "baseline": 0.3827,
+      "edge": 0.0,
+      "train_rows": 1365,
+      "test_rows": 81
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

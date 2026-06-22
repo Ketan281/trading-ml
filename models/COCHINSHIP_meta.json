@@ -1,0 +1,24 @@
+{
+  "symbol": "COCHINSHIP",
+  "xgb_cv": 0.5385,
+  "baseline": 0.3846,
+  "edge": 0.1538,
+  "trained": "2026-06-22T11:50:27.494530",
+  "data_range": "2020-02-12 -> 2026-05-15",
+  "total_rows": 1548,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5385,
+      "rf": 0.5275,
+      "baseline": 0.3846,
+      "edge": 0.1538,
+      "train_rows": 1457,
+      "test_rows": 91
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

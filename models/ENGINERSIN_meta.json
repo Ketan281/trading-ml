@@ -1,0 +1,35 @@
+{
+  "symbol": "ENGINERSIN",
+  "xgb_cv": 0.3723,
+  "baseline": 0.3868,
+  "edge": -0.0145,
+  "trained": "2026-06-22T10:55:29.598429",
+  "data_range": "2014-01-29 -> 2024-10-29",
+  "total_rows": 2575,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.382,
+      "rf": 0.3539,
+      "baseline": 0.427,
+      "edge": -0.0449,
+      "train_rows": 464,
+      "test_rows": 178
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3625,
+      "rf": 0.4622,
+      "baseline": 0.3466,
+      "edge": 0.0159,
+      "train_rows": 915,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

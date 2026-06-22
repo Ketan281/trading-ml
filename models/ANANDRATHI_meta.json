@@ -1,0 +1,12 @@
+{
+  "symbol": "ANANDRATHI",
+  "xgb_cv": 0.33,
+  "baseline": 0.47,
+  "edge": -0.14,
+  "trained": "2026-06-22T13:43:16.719999",
+  "data_range": "2024-01-15 -> 2025-01-13",
+  "total_rows": 245,
+  "era_results": [],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

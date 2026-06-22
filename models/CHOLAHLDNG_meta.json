@@ -1,0 +1,24 @@
+{
+  "symbol": "CHOLAHLDNG",
+  "xgb_cv": 0.5185,
+  "baseline": 0.4444,
+  "edge": 0.0741,
+  "trained": "2026-06-22T10:51:10.231682",
+  "data_range": "2024-05-13 -> 2026-02-09",
+  "total_rows": 435,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5185,
+      "rf": 0.5185,
+      "baseline": 0.4444,
+      "edge": 0.0741,
+      "train_rows": 408,
+      "test_rows": 27
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

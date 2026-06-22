@@ -1,0 +1,24 @@
+{
+  "symbol": "DEVYANI",
+  "xgb_cv": 0.375,
+  "baseline": 0.625,
+  "edge": -0.25,
+  "trained": "2026-06-22T13:40:25.978226",
+  "data_range": "2022-05-04 -> 2026-02-04",
+  "total_rows": 931,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.375,
+      "rf": 0.6667,
+      "baseline": 0.625,
+      "edge": -0.25,
+      "train_rows": 907,
+      "test_rows": 24
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

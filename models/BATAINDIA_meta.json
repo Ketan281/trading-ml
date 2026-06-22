@@ -1,0 +1,24 @@
+{
+  "symbol": "BATAINDIA",
+  "xgb_cv": 0.3571,
+  "baseline": 0.2551,
+  "edge": 0.102,
+  "trained": "2026-06-22T10:45:43.991849",
+  "data_range": "2020-08-10 -> 2026-05-27",
+  "total_rows": 1435,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3571,
+      "rf": 0.3163,
+      "baseline": 0.2551,
+      "edge": 0.102,
+      "train_rows": 1337,
+      "test_rows": 98
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

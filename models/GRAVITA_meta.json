@@ -1,0 +1,35 @@
+{
+  "symbol": "GRAVITA",
+  "xgb_cv": 0.3654,
+  "baseline": 0.4235,
+  "edge": -0.0581,
+  "trained": "2026-06-22T11:01:28.933343",
+  "data_range": "2015-11-09 -> 2026-05-07",
+  "total_rows": 2590,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3426,
+      "rf": 0.4343,
+      "baseline": 0.494,
+      "edge": -0.1514,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3882,
+      "rf": 0.3294,
+      "baseline": 0.3529,
+      "edge": 0.0353,
+      "train_rows": 1487,
+      "test_rows": 85
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

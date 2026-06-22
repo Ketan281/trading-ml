@@ -1,0 +1,24 @@
+{
+  "symbol": "CHOLAFIN",
+  "xgb_cv": 0.325,
+  "baseline": 0.2,
+  "edge": 0.125,
+  "trained": "2026-06-22T10:51:00.958584",
+  "data_range": "2020-07-31 -> 2026-04-30",
+  "total_rows": 1423,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.325,
+      "rf": 0.4875,
+      "baseline": 0.2,
+      "edge": 0.125,
+      "train_rows": 1343,
+      "test_rows": 80
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

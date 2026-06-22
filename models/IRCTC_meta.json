@@ -1,0 +1,24 @@
+{
+  "symbol": "IRCTC",
+  "xgb_cv": 0.4184,
+  "baseline": 0.3776,
+  "edge": 0.0408,
+  "trained": "2026-06-22T11:55:45.666190",
+  "data_range": "2020-11-13 -> 2026-05-26",
+  "total_rows": 1367,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4184,
+      "rf": 0.398,
+      "baseline": 0.3776,
+      "edge": 0.0408,
+      "train_rows": 1269,
+      "test_rows": 98
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,35 @@
+{
+  "symbol": "MANAPPURAM",
+  "xgb_cv": 0.4749,
+  "baseline": 0.4768,
+  "edge": -0.002,
+  "trained": "2026-06-22T11:14:10.771857",
+  "data_range": "2017-11-08 -> 2026-05-04",
+  "total_rows": 2095,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4741,
+      "rf": 0.4382,
+      "baseline": 0.4781,
+      "edge": -0.004,
+      "train_rows": 526,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4756,
+      "rf": 0.2439,
+      "baseline": 0.4756,
+      "edge": 0.0,
+      "train_rows": 1487,
+      "test_rows": 82
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

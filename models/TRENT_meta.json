@@ -1,0 +1,24 @@
+{
+  "symbol": "TRENT",
+  "xgb_cv": 0.5811,
+  "baseline": 0.3514,
+  "edge": 0.2297,
+  "trained": "2026-06-22T11:29:06.167420",
+  "data_range": "2020-08-14 -> 2026-04-22",
+  "total_rows": 1406,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5811,
+      "rf": 0.6757,
+      "baseline": 0.3514,
+      "edge": 0.2297,
+      "train_rows": 1332,
+      "test_rows": 74
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

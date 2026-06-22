@@ -1,0 +1,24 @@
+{
+  "symbol": "BANKINDIA",
+  "xgb_cv": 0.3953,
+  "baseline": 0.3256,
+  "edge": 0.0698,
+  "trained": "2026-06-22T10:45:30.580984",
+  "data_range": "2020-02-03 -> 2026-05-08",
+  "total_rows": 1550,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3953,
+      "rf": 0.3605,
+      "baseline": 0.3256,
+      "edge": 0.0698,
+      "train_rows": 1464,
+      "test_rows": 86
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

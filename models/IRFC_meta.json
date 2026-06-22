@@ -1,0 +1,24 @@
+{
+  "symbol": "IRFC",
+  "xgb_cv": 0.5054,
+  "baseline": 0.2043,
+  "edge": 0.3011,
+  "trained": "2026-06-22T13:39:19.744770",
+  "data_range": "2021-02-26 -> 2026-05-20",
+  "total_rows": 1290,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5054,
+      "rf": 0.6344,
+      "baseline": 0.2043,
+      "edge": 0.3011,
+      "train_rows": 1197,
+      "test_rows": 93
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,35 @@
+{
+  "symbol": "GMDCLTD",
+  "xgb_cv": 0.4684,
+  "baseline": 0.3814,
+  "edge": 0.087,
+  "trained": "2026-06-22T10:59:06.113392",
+  "data_range": "2014-01-29 -> 2022-08-12",
+  "total_rows": 2031,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4309,
+      "rf": 0.3821,
+      "baseline": 0.2927,
+      "edge": 0.1382,
+      "train_rows": 399,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.506,
+      "rf": 0.5657,
+      "baseline": 0.4701,
+      "edge": 0.0359,
+      "train_rows": 983,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

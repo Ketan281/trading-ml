@@ -1,0 +1,24 @@
+{
+  "symbol": "AARTIIND",
+  "xgb_cv": 0.622,
+  "baseline": 0.4634,
+  "edge": 0.1585,
+  "trained": "2026-06-22T10:40:44.003408",
+  "data_range": "2020-08-13 -> 2026-05-04",
+  "total_rows": 1415,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.622,
+      "rf": 0.5244,
+      "baseline": 0.4634,
+      "edge": 0.1585,
+      "train_rows": 1333,
+      "test_rows": 82
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

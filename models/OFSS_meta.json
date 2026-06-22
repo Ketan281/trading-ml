@@ -1,0 +1,24 @@
+{
+  "symbol": "OFSS",
+  "xgb_cv": 0.3378,
+  "baseline": 0.473,
+  "edge": -0.1351,
+  "trained": "2026-06-22T11:18:54.366980",
+  "data_range": "2020-02-05 -> 2026-04-22",
+  "total_rows": 1536,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3378,
+      "rf": 0.5,
+      "baseline": 0.473,
+      "edge": -0.1351,
+      "train_rows": 1462,
+      "test_rows": 74
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

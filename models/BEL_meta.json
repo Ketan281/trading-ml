@@ -1,0 +1,24 @@
+{
+  "symbol": "BEL",
+  "xgb_cv": 0.3548,
+  "baseline": 0.3441,
+  "edge": 0.0108,
+  "trained": "2026-06-22T10:46:32.990914",
+  "data_range": "2020-07-28 -> 2026-05-19",
+  "total_rows": 1436,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3548,
+      "rf": 0.5591,
+      "baseline": 0.3441,
+      "edge": 0.0108,
+      "train_rows": 1343,
+      "test_rows": 93
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

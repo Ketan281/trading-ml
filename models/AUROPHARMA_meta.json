@@ -1,0 +1,24 @@
+{
+  "symbol": "AUROPHARMA",
+  "xgb_cv": 0.4255,
+  "baseline": 0.6915,
+  "edge": -0.266,
+  "trained": "2026-06-22T11:34:58.654088",
+  "data_range": "2020-08-13 -> 2026-05-21",
+  "total_rows": 1428,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4255,
+      "rf": 0.383,
+      "baseline": 0.6915,
+      "edge": -0.266,
+      "train_rows": 1334,
+      "test_rows": 94
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

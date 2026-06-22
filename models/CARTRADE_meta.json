@@ -1,0 +1,24 @@
+{
+  "symbol": "CARTRADE",
+  "xgb_cv": 0.3176,
+  "baseline": 0.2941,
+  "edge": 0.0235,
+  "trained": "2026-06-22T13:40:31.040347",
+  "data_range": "2022-10-24 -> 2026-05-07",
+  "total_rows": 873,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3176,
+      "rf": 0.3059,
+      "baseline": 0.2941,
+      "edge": 0.0235,
+      "train_rows": 788,
+      "test_rows": 85
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

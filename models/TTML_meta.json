@@ -1,0 +1,46 @@
+{
+  "symbol": "TTML",
+  "xgb_cv": 0.4404,
+  "baseline": 0.4157,
+  "edge": 0.0247,
+  "trained": "2026-06-22T11:29:50.276086",
+  "data_range": "2014-01-29 -> 2026-05-22",
+  "total_rows": 2999,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3862,
+      "rf": 0.3902,
+      "baseline": 0.3618,
+      "edge": 0.0244,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.508,
+      "rf": 0.536,
+      "baseline": 0.5,
+      "edge": 0.008,
+      "train_rows": 979,
+      "test_rows": 250
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4271,
+      "rf": 0.4583,
+      "baseline": 0.3854,
+      "edge": 0.0417,
+      "train_rows": 1454,
+      "test_rows": 96
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

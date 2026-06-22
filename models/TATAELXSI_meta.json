@@ -1,0 +1,24 @@
+{
+  "symbol": "TATAELXSI",
+  "xgb_cv": 0.4521,
+  "baseline": 0.274,
+  "edge": 0.1781,
+  "trained": "2026-06-22T11:27:13.383383",
+  "data_range": "2020-04-21 -> 2026-04-21",
+  "total_rows": 1487,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4521,
+      "rf": 0.3699,
+      "baseline": 0.274,
+      "edge": 0.1781,
+      "train_rows": 1414,
+      "test_rows": 73
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

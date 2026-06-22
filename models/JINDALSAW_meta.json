@@ -1,0 +1,46 @@
+{
+  "symbol": "JINDALSAW",
+  "xgb_cv": 0.4802,
+  "baseline": 0.4619,
+  "edge": 0.0182,
+  "trained": "2026-06-22T11:07:51.217633",
+  "data_range": "2015-05-08 -> 2026-04-27",
+  "total_rows": 2709,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4919,
+      "rf": 0.4675,
+      "baseline": 0.4553,
+      "edge": 0.0366,
+      "train_rows": 162,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4422,
+      "rf": 0.5578,
+      "baseline": 0.502,
+      "edge": -0.0598,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5065,
+      "rf": 0.3377,
+      "baseline": 0.4286,
+      "edge": 0.0779,
+      "train_rows": 1487,
+      "test_rows": 77
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

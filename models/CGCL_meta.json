@@ -1,0 +1,35 @@
+{
+  "symbol": "CGCL",
+  "xgb_cv": 0.3797,
+  "baseline": 0.3965,
+  "edge": -0.0168,
+  "trained": "2026-06-22T10:50:02.078488",
+  "data_range": "2014-02-03 -> 2020-07-31",
+  "total_rows": 1595,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4146,
+      "rf": 0.4187,
+      "baseline": 0.3862,
+      "edge": 0.0285,
+      "train_rows": 467,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3448,
+      "rf": 0.2897,
+      "baseline": 0.4069,
+      "edge": -0.0621,
+      "train_rows": 983,
+      "test_rows": 145
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

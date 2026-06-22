@@ -1,0 +1,24 @@
+{
+  "symbol": "SONACOMS",
+  "xgb_cv": 0.375,
+  "baseline": 0.3875,
+  "edge": -0.0125,
+  "trained": "2026-06-22T13:40:04.629407",
+  "data_range": "2021-10-28 -> 2026-04-30",
+  "total_rows": 1052,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.375,
+      "rf": 0.3125,
+      "baseline": 0.3875,
+      "edge": -0.0125,
+      "train_rows": 972,
+      "test_rows": 80
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

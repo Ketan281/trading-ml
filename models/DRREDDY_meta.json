@@ -1,55 +1,24 @@
 {
   "symbol": "DRREDDY",
-  "xgb_cv": 0.4031,
-  "baseline": 0.4046,
-  "edge": -0.0015,
-  "trained": "2026-06-22T09:39:55.598600",
-  "data_range": "2006-02-01 -> 2026-06-05",
-  "total_rows": 5014,
+  "xgb_cv": 0.4773,
+  "baseline": 0.3977,
+  "edge": 0.0795,
+  "trained": "2026-06-22T10:31:37.546941",
+  "data_range": "2020-07-30 -> 2026-05-12",
+  "total_rows": 1428,
   "era_results": [
-    {
-      "era": "GFC_era",
-      "train": "2006-2010",
-      "test": 2011,
-      "xgb": 0.3455,
-      "rf": 0.3211,
-      "baseline": 0.3699,
-      "edge": -0.0244,
-      "train_rows": 1213,
-      "test_rows": 246
-    },
-    {
-      "era": "bull_run",
-      "train": "2012-2015",
-      "test": 2016,
-      "xgb": 0.4472,
-      "rf": 0.5325,
-      "baseline": 0.4187,
-      "edge": 0.0285,
-      "train_rows": 983,
-      "test_rows": 246
-    },
-    {
-      "era": "pre_covid",
-      "train": "2016-2019",
-      "test": 2020,
-      "xgb": 0.3386,
-      "rf": 0.3187,
-      "baseline": 0.49,
-      "edge": -0.1514,
-      "train_rows": 983,
-      "test_rows": 251
-    },
     {
       "era": "post_covid",
       "train": "2020-2025",
       "test": 2026,
-      "xgb": 0.4811,
-      "rf": 0.4245,
-      "baseline": 0.3396,
-      "edge": 0.1415,
-      "train_rows": 1483,
-      "test_rows": 106
+      "xgb": 0.4773,
+      "rf": 0.4205,
+      "baseline": 0.3977,
+      "edge": 0.0795,
+      "train_rows": 1340,
+      "test_rows": 88
     }
-  ]
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
 }

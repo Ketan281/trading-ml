@@ -1,0 +1,35 @@
+{
+  "symbol": "TIINDIA",
+  "xgb_cv": 0.2922,
+  "baseline": 0.5321,
+  "edge": -0.2398,
+  "trained": "2026-06-22T11:51:57.297450",
+  "data_range": "2019-02-06 -> 2026-05-13",
+  "total_rows": 1793,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.1912,
+      "rf": 0.2191,
+      "baseline": 0.5697,
+      "edge": -0.3785,
+      "train_rows": 217,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3933,
+      "rf": 0.3596,
+      "baseline": 0.4944,
+      "edge": -0.1011,
+      "train_rows": 1487,
+      "test_rows": 89
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

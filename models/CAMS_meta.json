@@ -1,0 +1,24 @@
+{
+  "symbol": "CAMS",
+  "xgb_cv": 0.4634,
+  "baseline": 0.4146,
+  "edge": 0.0488,
+  "trained": "2026-06-22T13:38:55.800633",
+  "data_range": "2021-05-26 -> 2026-05-04",
+  "total_rows": 1156,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4634,
+      "rf": 0.3415,
+      "baseline": 0.4146,
+      "edge": 0.0488,
+      "train_rows": 1074,
+      "test_rows": 82
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

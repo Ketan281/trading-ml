@@ -1,0 +1,35 @@
+{
+  "symbol": "CGPOWER",
+  "xgb_cv": 0.3389,
+  "baseline": 0.5103,
+  "edge": -0.1714,
+  "trained": "2026-06-22T10:50:19.333402",
+  "data_range": "2017-05-29 -> 2026-05-06",
+  "total_rows": 2195,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3207,
+      "rf": 0.3502,
+      "baseline": 0.4135,
+      "edge": -0.0928,
+      "train_rows": 638,
+      "test_rows": 237
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3571,
+      "rf": 0.3929,
+      "baseline": 0.6071,
+      "edge": -0.25,
+      "train_rows": 1473,
+      "test_rows": 84
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

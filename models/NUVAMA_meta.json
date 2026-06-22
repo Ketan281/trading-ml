@@ -1,0 +1,24 @@
+{
+  "symbol": "NUVAMA",
+  "xgb_cv": 0.5057,
+  "baseline": 0.3678,
+  "edge": 0.1379,
+  "trained": "2026-06-22T13:45:54.256036",
+  "data_range": "2024-07-29 -> 2026-05-11",
+  "total_rows": 443,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5057,
+      "rf": 0.4943,
+      "baseline": 0.3678,
+      "edge": 0.1379,
+      "train_rows": 356,
+      "test_rows": 87
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

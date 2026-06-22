@@ -1,0 +1,24 @@
+{
+  "symbol": "SAMMAANCAP",
+  "xgb_cv": 0.4024,
+  "baseline": 0.4542,
+  "edge": -0.0518,
+  "trained": "2026-06-22T11:23:07.693836",
+  "data_range": "2019-02-01 -> 2024-11-14",
+  "total_rows": 1428,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4024,
+      "rf": 0.4502,
+      "baseline": 0.4542,
+      "edge": -0.0518,
+      "train_rows": 220,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

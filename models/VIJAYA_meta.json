@@ -1,0 +1,24 @@
+{
+  "symbol": "VIJAYA",
+  "xgb_cv": 0.369,
+  "baseline": 0.4762,
+  "edge": -0.1071,
+  "trained": "2026-06-22T13:40:47.824463",
+  "data_range": "2022-02-07 -> 2026-05-07",
+  "total_rows": 1048,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.369,
+      "rf": 0.381,
+      "baseline": 0.4762,
+      "edge": -0.1071,
+      "train_rows": 964,
+      "test_rows": 84
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,24 @@
+{
+  "symbol": "GLENMARK",
+  "xgb_cv": 0.4742,
+  "baseline": 0.4845,
+  "edge": -0.0103,
+  "trained": "2026-06-22T10:58:49.411426",
+  "data_range": "2019-11-15 -> 2026-05-27",
+  "total_rows": 1607,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4742,
+      "rf": 0.4536,
+      "baseline": 0.4845,
+      "edge": -0.0103,
+      "train_rows": 1478,
+      "test_rows": 97
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

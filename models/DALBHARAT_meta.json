@@ -1,0 +1,24 @@
+{
+  "symbol": "DALBHARAT",
+  "xgb_cv": 0.4872,
+  "baseline": 0.3333,
+  "edge": 0.1538,
+  "trained": "2026-06-22T11:54:44.471735",
+  "data_range": "2020-08-07 -> 2026-04-28",
+  "total_rows": 1416,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4872,
+      "rf": 0.4359,
+      "baseline": 0.3333,
+      "edge": 0.1538,
+      "train_rows": 1338,
+      "test_rows": 78
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

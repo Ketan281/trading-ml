@@ -1,0 +1,46 @@
+{
+  "symbol": "GRAPHITE",
+  "xgb_cv": 0.4198,
+  "baseline": 0.5149,
+  "edge": -0.0951,
+  "trained": "2026-06-22T11:01:07.032052",
+  "data_range": "2014-01-29 -> 2026-05-15",
+  "total_rows": 3027,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.5041,
+      "rf": 0.5407,
+      "baseline": 0.5285,
+      "edge": -0.0244,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4696,
+      "rf": 0.3846,
+      "baseline": 0.4777,
+      "edge": -0.0081,
+      "train_rows": 983,
+      "test_rows": 247
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2857,
+      "rf": 0.2418,
+      "baseline": 0.5385,
+      "edge": -0.2527,
+      "train_rows": 1483,
+      "test_rows": 91
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

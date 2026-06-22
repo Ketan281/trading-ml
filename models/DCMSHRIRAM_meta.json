@@ -1,0 +1,24 @@
+{
+  "symbol": "DCMSHRIRAM",
+  "xgb_cv": 0.3089,
+  "baseline": 0.561,
+  "edge": -0.252,
+  "trained": "2026-06-22T11:36:20.156627",
+  "data_range": "2014-04-29 -> 2019-10-24",
+  "total_rows": 1348,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3089,
+      "rf": 0.3618,
+      "baseline": 0.561,
+      "edge": -0.252,
+      "train_rows": 411,
+      "test_rows": 246
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

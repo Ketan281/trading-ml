@@ -1,0 +1,24 @@
+{
+  "symbol": "NBCC",
+  "xgb_cv": 0.4268,
+  "baseline": 0.4146,
+  "edge": 0.0122,
+  "trained": "2026-06-22T11:17:27.093346",
+  "data_range": "2014-11-14 -> 2019-08-08",
+  "total_rows": 1168,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4268,
+      "rf": 0.3699,
+      "baseline": 0.4146,
+      "edge": 0.0122,
+      "train_rows": 279,
+      "test_rows": 246
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

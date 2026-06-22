@@ -1,0 +1,24 @@
+{
+  "symbol": "AMBUJACEM",
+  "xgb_cv": 0.5244,
+  "baseline": 0.2195,
+  "edge": 0.3049,
+  "trained": "2026-06-22T10:42:45.001398",
+  "data_range": "2020-07-27 -> 2026-05-04",
+  "total_rows": 1428,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5244,
+      "rf": 0.5488,
+      "baseline": 0.2195,
+      "edge": 0.3049,
+      "train_rows": 1346,
+      "test_rows": 82
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

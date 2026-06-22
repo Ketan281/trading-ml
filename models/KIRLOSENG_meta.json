@@ -1,0 +1,35 @@
+{
+  "symbol": "KIRLOSENG",
+  "xgb_cv": 0.3332,
+  "baseline": 0.4132,
+  "edge": -0.08,
+  "trained": "2026-06-22T11:37:57.418288",
+  "data_range": "2015-05-11 -> 2024-02-12",
+  "total_rows": 2165,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.2561,
+      "rf": 0.2195,
+      "baseline": 0.4837,
+      "edge": -0.2276,
+      "train_rows": 161,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4104,
+      "rf": 0.3745,
+      "baseline": 0.3426,
+      "edge": 0.0677,
+      "train_rows": 983,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

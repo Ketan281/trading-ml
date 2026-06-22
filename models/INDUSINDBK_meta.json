@@ -1,55 +1,24 @@
 {
   "symbol": "INDUSINDBK",
-  "xgb_cv": 0.4045,
-  "baseline": 0.4573,
-  "edge": -0.0528,
-  "trained": "2026-06-22T09:44:38.126529",
-  "data_range": "2006-02-01 -> 2026-06-12",
-  "total_rows": 5024,
+  "xgb_cv": 0.4868,
+  "baseline": 0.5132,
+  "edge": -0.0263,
+  "trained": "2026-06-22T10:33:02.831260",
+  "data_range": "2020-07-29 -> 2026-04-24",
+  "total_rows": 1421,
   "era_results": [
-    {
-      "era": "GFC_era",
-      "train": "2006-2010",
-      "test": 2011,
-      "xgb": 0.3902,
-      "rf": 0.3699,
-      "baseline": 0.3984,
-      "edge": -0.0081,
-      "train_rows": 1214,
-      "test_rows": 246
-    },
-    {
-      "era": "bull_run",
-      "train": "2012-2015",
-      "test": 2016,
-      "xgb": 0.374,
-      "rf": 0.3862,
-      "baseline": 0.4309,
-      "edge": -0.0569,
-      "train_rows": 983,
-      "test_rows": 246
-    },
-    {
-      "era": "pre_covid",
-      "train": "2016-2019",
-      "test": 2020,
-      "xgb": 0.4303,
-      "rf": 0.3865,
-      "baseline": 0.4502,
-      "edge": -0.0199,
-      "train_rows": 983,
-      "test_rows": 251
-    },
     {
       "era": "post_covid",
       "train": "2020-2025",
       "test": 2026,
-      "xgb": 0.4234,
-      "rf": 0.5315,
-      "baseline": 0.5495,
-      "edge": -0.1261,
-      "train_rows": 1487,
-      "test_rows": 111
+      "xgb": 0.4868,
+      "rf": 0.4342,
+      "baseline": 0.5132,
+      "edge": -0.0263,
+      "train_rows": 1345,
+      "test_rows": 76
     }
-  ]
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
 }

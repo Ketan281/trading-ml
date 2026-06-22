@@ -1,0 +1,24 @@
+{
+  "symbol": "GILLETTE",
+  "xgb_cv": 0.2642,
+  "baseline": 0.2201,
+  "edge": 0.044,
+  "trained": "2026-06-22T10:58:22.988591",
+  "data_range": "2014-01-29 -> 2016-08-23",
+  "total_rows": 629,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.2642,
+      "rf": 0.239,
+      "baseline": 0.2201,
+      "edge": 0.044,
+      "train_rows": 470,
+      "test_rows": 159
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

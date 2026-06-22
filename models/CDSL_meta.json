@@ -1,0 +1,24 @@
+{
+  "symbol": "CDSL",
+  "xgb_cv": 0.3457,
+  "baseline": 0.7407,
+  "edge": -0.3951,
+  "trained": "2026-06-22T11:49:53.222535",
+  "data_range": "2024-05-06 -> 2026-05-01",
+  "total_rows": 491,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3457,
+      "rf": 0.3086,
+      "baseline": 0.7407,
+      "edge": -0.3951,
+      "train_rows": 410,
+      "test_rows": 81
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

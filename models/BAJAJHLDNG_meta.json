@@ -1,0 +1,24 @@
+{
+  "symbol": "BAJAJHLDNG",
+  "xgb_cv": 0.4187,
+  "baseline": 0.4756,
+  "edge": -0.0569,
+  "trained": "2026-06-22T10:44:45.793470",
+  "data_range": "2014-01-29 -> 2018-10-24",
+  "total_rows": 1165,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4187,
+      "rf": 0.4268,
+      "baseline": 0.4756,
+      "edge": -0.0569,
+      "train_rows": 470,
+      "test_rows": 246
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,55 +1,24 @@
 {
   "symbol": "BRITANNIA",
-  "xgb_cv": 0.3984,
-  "baseline": 0.3889,
-  "edge": 0.0095,
-  "trained": "2026-06-22T09:44:59.922931",
-  "data_range": "2006-02-01 -> 2026-06-11",
-  "total_rows": 5022,
+  "xgb_cv": 0.4118,
+  "baseline": 0.3412,
+  "edge": 0.0706,
+  "trained": "2026-06-22T10:31:07.541363",
+  "data_range": "2020-07-20 -> 2026-05-07",
+  "total_rows": 1437,
   "era_results": [
-    {
-      "era": "GFC_era",
-      "train": "2006-2010",
-      "test": 2011,
-      "xgb": 0.3902,
-      "rf": 0.3821,
-      "baseline": 0.3171,
-      "edge": 0.0732,
-      "train_rows": 1214,
-      "test_rows": 246
-    },
-    {
-      "era": "bull_run",
-      "train": "2012-2015",
-      "test": 2016,
-      "xgb": 0.4878,
-      "rf": 0.4878,
-      "baseline": 0.3862,
-      "edge": 0.1016,
-      "train_rows": 983,
-      "test_rows": 246
-    },
-    {
-      "era": "pre_covid",
-      "train": "2016-2019",
-      "test": 2020,
-      "xgb": 0.3944,
-      "rf": 0.3745,
-      "baseline": 0.5219,
-      "edge": -0.1275,
-      "train_rows": 983,
-      "test_rows": 251
-    },
     {
       "era": "post_covid",
       "train": "2020-2025",
       "test": 2026,
-      "xgb": 0.3211,
-      "rf": 0.3303,
-      "baseline": 0.3303,
-      "edge": -0.0092,
-      "train_rows": 1487,
-      "test_rows": 109
+      "xgb": 0.4118,
+      "rf": 0.3882,
+      "baseline": 0.3412,
+      "edge": 0.0706,
+      "train_rows": 1352,
+      "test_rows": 85
     }
-  ]
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
 }

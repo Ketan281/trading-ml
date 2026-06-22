@@ -1,0 +1,24 @@
+{
+  "symbol": "LTTS",
+  "xgb_cv": 0.4459,
+  "baseline": 0.3784,
+  "edge": 0.0676,
+  "trained": "2026-06-22T11:47:51.770199",
+  "data_range": "2020-07-17 -> 2026-04-22",
+  "total_rows": 1427,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4459,
+      "rf": 0.473,
+      "baseline": 0.3784,
+      "edge": 0.0676,
+      "train_rows": 1353,
+      "test_rows": 74
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

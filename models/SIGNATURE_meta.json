@@ -1,0 +1,24 @@
+{
+  "symbol": "SIGNATURE",
+  "xgb_cv": 0.5057,
+  "baseline": 0.3908,
+  "edge": 0.1149,
+  "trained": "2026-06-22T13:45:59.121607",
+  "data_range": "2024-05-16 -> 2026-05-13",
+  "total_rows": 492,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5057,
+      "rf": 0.3908,
+      "baseline": 0.3908,
+      "edge": 0.1149,
+      "train_rows": 405,
+      "test_rows": 87
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

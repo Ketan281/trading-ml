@@ -1,0 +1,24 @@
+{
+  "symbol": "SOBHA",
+  "xgb_cv": 0.2375,
+  "baseline": 0.45,
+  "edge": -0.2125,
+  "trained": "2026-06-22T11:41:46.694118",
+  "data_range": "2019-11-11 -> 2026-05-01",
+  "total_rows": 1602,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2375,
+      "rf": 0.1625,
+      "baseline": 0.45,
+      "edge": -0.2125,
+      "train_rows": 1487,
+      "test_rows": 80
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,24 @@
+{
+  "symbol": "FIVESTAR",
+  "xgb_cv": 0.4359,
+  "baseline": 0.2949,
+  "edge": 0.141,
+  "trained": "2026-06-22T13:44:39.177982",
+  "data_range": "2023-05-10 -> 2026-04-28",
+  "total_rows": 733,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4359,
+      "rf": 0.3846,
+      "baseline": 0.2949,
+      "edge": 0.141,
+      "train_rows": 655,
+      "test_rows": 78
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

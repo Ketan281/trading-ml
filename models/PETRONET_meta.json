@@ -1,0 +1,24 @@
+{
+  "symbol": "PETRONET",
+  "xgb_cv": 0.439,
+  "baseline": 0.4634,
+  "edge": -0.0244,
+  "trained": "2026-06-22T11:19:56.722085",
+  "data_range": "2020-08-18 -> 2026-05-04",
+  "total_rows": 1413,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.439,
+      "rf": 0.5488,
+      "baseline": 0.4634,
+      "edge": -0.0244,
+      "train_rows": 1331,
+      "test_rows": 82
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

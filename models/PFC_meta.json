@@ -1,0 +1,46 @@
+{
+  "symbol": "PFC",
+  "xgb_cv": 0.4463,
+  "baseline": 0.4049,
+  "edge": 0.0414,
+  "trained": "2026-06-22T11:20:18.611113",
+  "data_range": "2014-01-29 -> 2026-05-15",
+  "total_rows": 3030,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.435,
+      "rf": 0.4512,
+      "baseline": 0.4187,
+      "edge": 0.0163,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3984,
+      "rf": 0.3944,
+      "baseline": 0.4223,
+      "edge": -0.0239,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5055,
+      "rf": 0.5055,
+      "baseline": 0.3736,
+      "edge": 0.1319,
+      "train_rows": 1486,
+      "test_rows": 91
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

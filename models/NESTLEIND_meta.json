@@ -1,55 +1,24 @@
 {
   "symbol": "NESTLEIND",
-  "xgb_cv": 0.4253,
-  "baseline": 0.3795,
-  "edge": 0.0458,
-  "trained": "2026-06-22T09:50:11.364198",
-  "data_range": "2010-01-08 -> 2026-06-11",
-  "total_rows": 4054,
+  "xgb_cv": 0.5205,
+  "baseline": 0.3836,
+  "edge": 0.137,
+  "trained": "2026-06-22T10:34:46.120369",
+  "data_range": "2020-05-13 -> 2026-04-21",
+  "total_rows": 1472,
   "era_results": [
-    {
-      "era": "GFC_era",
-      "train": "2006-2010",
-      "test": 2011,
-      "xgb": 0.4146,
-      "rf": 0.4228,
-      "baseline": 0.3943,
-      "edge": 0.0203,
-      "train_rows": 246,
-      "test_rows": 246
-    },
-    {
-      "era": "bull_run",
-      "train": "2012-2015",
-      "test": 2016,
-      "xgb": 0.3984,
-      "rf": 0.4106,
-      "baseline": 0.3577,
-      "edge": 0.0407,
-      "train_rows": 982,
-      "test_rows": 246
-    },
-    {
-      "era": "pre_covid",
-      "train": "2016-2019",
-      "test": 2020,
-      "xgb": 0.3426,
-      "rf": 0.3068,
-      "baseline": 0.4024,
-      "edge": -0.0598,
-      "train_rows": 983,
-      "test_rows": 251
-    },
     {
       "era": "post_covid",
       "train": "2020-2025",
       "test": 2026,
-      "xgb": 0.5455,
-      "rf": 0.5091,
-      "baseline": 0.3636,
-      "edge": 0.1818,
-      "train_rows": 1487,
-      "test_rows": 110
+      "xgb": 0.5205,
+      "rf": 0.5205,
+      "baseline": 0.3836,
+      "edge": 0.137,
+      "train_rows": 1399,
+      "test_rows": 73
     }
-  ]
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
 }

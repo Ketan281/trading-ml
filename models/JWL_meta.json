@@ -1,0 +1,46 @@
+{
+  "symbol": "JWL",
+  "xgb_cv": 0.533,
+  "baseline": 0.4353,
+  "edge": 0.0977,
+  "trained": "2026-06-22T11:10:58.833814",
+  "data_range": "2014-01-29 -> 2026-05-26",
+  "total_rows": 3036,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.5,
+      "rf": 0.4675,
+      "baseline": 0.4187,
+      "edge": 0.0813,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4701,
+      "rf": 0.3546,
+      "baseline": 0.4542,
+      "edge": 0.0159,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.6289,
+      "rf": 0.5361,
+      "baseline": 0.433,
+      "edge": 0.1959,
+      "train_rows": 1486,
+      "test_rows": 97
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

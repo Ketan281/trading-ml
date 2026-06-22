@@ -1,0 +1,24 @@
+{
+  "symbol": "YESBANK",
+  "xgb_cv": 0.5352,
+  "baseline": 0.3239,
+  "edge": 0.2113,
+  "trained": "2026-06-22T11:33:10.913451",
+  "data_range": "2020-07-29 -> 2026-04-17",
+  "total_rows": 1416,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5352,
+      "rf": 0.5493,
+      "baseline": 0.3239,
+      "edge": 0.2113,
+      "train_rows": 1345,
+      "test_rows": 71
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

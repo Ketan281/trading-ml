@@ -1,0 +1,12 @@
+{
+  "symbol": "IOB",
+  "xgb_cv": 0.3647,
+  "baseline": 0.3294,
+  "edge": 0.0353,
+  "trained": "2026-06-22T11:06:23.363361",
+  "data_range": "2014-01-29 -> 2015-05-08",
+  "total_rows": 309,
+  "era_results": [],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

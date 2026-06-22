@@ -1,0 +1,46 @@
+{
+  "symbol": "LINDEINDIA",
+  "xgb_cv": 0.3985,
+  "baseline": 0.5025,
+  "edge": -0.104,
+  "trained": "2026-06-22T11:38:18.816741",
+  "data_range": "2014-01-29 -> 2026-05-27",
+  "total_rows": 3033,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4268,
+      "rf": 0.3984,
+      "baseline": 0.3943,
+      "edge": 0.0325,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4422,
+      "rf": 0.498,
+      "baseline": 0.5657,
+      "edge": -0.1235,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3263,
+      "rf": 0.2,
+      "baseline": 0.5474,
+      "edge": -0.2211,
+      "train_rows": 1485,
+      "test_rows": 95
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

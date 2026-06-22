@@ -1,0 +1,24 @@
+{
+  "symbol": "GODREJIND",
+  "xgb_cv": 0.4472,
+  "baseline": 0.4919,
+  "edge": -0.0447,
+  "trained": "2026-06-22T11:00:08.605032",
+  "data_range": "2014-08-11 -> 2019-05-13",
+  "total_rows": 1166,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4472,
+      "rf": 0.4472,
+      "baseline": 0.4919,
+      "edge": -0.0447,
+      "train_rows": 339,
+      "test_rows": 246
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

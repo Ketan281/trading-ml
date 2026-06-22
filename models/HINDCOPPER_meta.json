@@ -1,0 +1,12 @@
+{
+  "symbol": "HINDCOPPER",
+  "xgb_cv": 0.5098,
+  "baseline": 0.4706,
+  "edge": 0.0392,
+  "trained": "2026-06-22T11:03:18.566568",
+  "data_range": "2017-11-13 -> 2019-02-11",
+  "total_rows": 310,
+  "era_results": [],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

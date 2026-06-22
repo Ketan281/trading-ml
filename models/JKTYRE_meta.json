@@ -1,0 +1,46 @@
+{
+  "symbol": "JKTYRE",
+  "xgb_cv": 0.3905,
+  "baseline": 0.3773,
+  "edge": 0.0131,
+  "trained": "2026-06-22T11:08:48.188434",
+  "data_range": "2014-01-29 -> 2026-05-26",
+  "total_rows": 3038,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.435,
+      "rf": 0.4431,
+      "baseline": 0.3862,
+      "edge": 0.0488,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4303,
+      "rf": 0.4024,
+      "baseline": 0.3785,
+      "edge": 0.0518,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3061,
+      "rf": 0.2755,
+      "baseline": 0.3673,
+      "edge": -0.0612,
+      "train_rows": 1487,
+      "test_rows": 98
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

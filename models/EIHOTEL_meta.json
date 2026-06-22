@@ -1,0 +1,35 @@
+{
+  "symbol": "EIHOTEL",
+  "xgb_cv": 0.3983,
+  "baseline": 0.376,
+  "edge": 0.0224,
+  "trained": "2026-06-22T10:54:18.377442",
+  "data_range": "2014-01-29 -> 2023-11-03",
+  "total_rows": 2408,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3943,
+      "rf": 0.3821,
+      "baseline": 0.3496,
+      "edge": 0.0447,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4024,
+      "rf": 0.4701,
+      "baseline": 0.4024,
+      "edge": 0.0,
+      "train_rows": 983,
+      "test_rows": 251
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,35 @@
+{
+  "symbol": "NAVA",
+  "xgb_cv": 0.3747,
+  "baseline": 0.3242,
+  "edge": 0.0506,
+  "trained": "2026-06-22T11:17:15.884401",
+  "data_range": "2014-01-29 -> 2020-11-11",
+  "total_rows": 1670,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.2886,
+      "rf": 0.3537,
+      "baseline": 0.252,
+      "edge": 0.0366,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4608,
+      "rf": 0.5392,
+      "baseline": 0.3963,
+      "edge": 0.0645,
+      "train_rows": 983,
+      "test_rows": 217
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

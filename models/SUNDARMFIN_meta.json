@@ -1,0 +1,24 @@
+{
+  "symbol": "SUNDARMFIN",
+  "xgb_cv": 0.5155,
+  "baseline": 0.268,
+  "edge": 0.2474,
+  "trained": "2026-06-22T11:25:24.780766",
+  "data_range": "2020-02-11 -> 2026-05-25",
+  "total_rows": 1553,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5155,
+      "rf": 0.4948,
+      "baseline": 0.268,
+      "edge": 0.2474,
+      "train_rows": 1456,
+      "test_rows": 97
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

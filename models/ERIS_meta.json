@@ -1,0 +1,35 @@
+{
+  "symbol": "ERIS",
+  "xgb_cv": 0.3763,
+  "baseline": 0.3478,
+  "edge": 0.0285,
+  "trained": "2026-06-22T11:50:06.920341",
+  "data_range": "2018-11-05 -> 2026-05-20",
+  "total_rows": 1815,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.2961,
+      "rf": 0.3204,
+      "baseline": 0.2282,
+      "edge": 0.068,
+      "train_rows": 281,
+      "test_rows": 206
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4565,
+      "rf": 0.4565,
+      "baseline": 0.4674,
+      "edge": -0.0109,
+      "train_rows": 1442,
+      "test_rows": 92
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

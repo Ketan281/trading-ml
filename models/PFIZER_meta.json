@@ -1,0 +1,35 @@
+{
+  "symbol": "PFIZER",
+  "xgb_cv": 0.4718,
+  "baseline": 0.4971,
+  "edge": -0.0253,
+  "trained": "2026-06-22T11:39:32.817562",
+  "data_range": "2018-05-08 -> 2026-02-09",
+  "total_rows": 1917,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4622,
+      "rf": 0.3506,
+      "baseline": 0.5498,
+      "edge": -0.0876,
+      "train_rows": 404,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4815,
+      "rf": 0.2222,
+      "baseline": 0.4444,
+      "edge": 0.037,
+      "train_rows": 1486,
+      "test_rows": 27
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

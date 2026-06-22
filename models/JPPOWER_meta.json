@@ -1,0 +1,12 @@
+{
+  "symbol": "JPPOWER",
+  "xgb_cv": 0.4567,
+  "baseline": 0.3967,
+  "edge": 0.06,
+  "trained": "2026-06-22T11:09:29.977263",
+  "data_range": "2014-01-29 -> 2015-11-03",
+  "total_rows": 364,
+  "era_results": [],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

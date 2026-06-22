@@ -1,0 +1,24 @@
+{
+  "symbol": "MOTHERSON",
+  "xgb_cv": 0.3298,
+  "baseline": 0.4574,
+  "edge": -0.1277,
+  "trained": "2026-06-22T11:15:21.095656",
+  "data_range": "2020-08-12 -> 2026-05-20",
+  "total_rows": 1420,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3298,
+      "rf": 0.3723,
+      "baseline": 0.4574,
+      "edge": -0.1277,
+      "train_rows": 1326,
+      "test_rows": 94
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

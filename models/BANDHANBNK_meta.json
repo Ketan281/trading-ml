@@ -1,0 +1,24 @@
+{
+  "symbol": "BANDHANBNK",
+  "xgb_cv": 0.4615,
+  "baseline": 0.6154,
+  "edge": -0.1538,
+  "trained": "2026-06-22T11:53:20.530950",
+  "data_range": "2020-07-16 -> 2026-04-28",
+  "total_rows": 1432,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4615,
+      "rf": 0.4231,
+      "baseline": 0.6154,
+      "edge": -0.1538,
+      "train_rows": 1354,
+      "test_rows": 78
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

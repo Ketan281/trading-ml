@@ -1,0 +1,24 @@
+{
+  "symbol": "JBCHEPHARM",
+  "xgb_cv": 0.4253,
+  "baseline": 0.5632,
+  "edge": -0.1379,
+  "trained": "2026-06-22T11:07:13.797244",
+  "data_range": "2020-06-26 -> 2026-05-11",
+  "total_rows": 1455,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4253,
+      "rf": 0.3908,
+      "baseline": 0.5632,
+      "edge": -0.1379,
+      "train_rows": 1368,
+      "test_rows": 87
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,24 @@
+{
+  "symbol": "INDHOTEL",
+  "xgb_cv": 0.4483,
+  "baseline": 0.3333,
+  "edge": 0.1149,
+  "trained": "2026-06-22T11:05:16.319100",
+  "data_range": "2020-06-11 -> 2026-05-11",
+  "total_rows": 1462,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4483,
+      "rf": 0.3793,
+      "baseline": 0.3333,
+      "edge": 0.1149,
+      "train_rows": 1375,
+      "test_rows": 87
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,46 @@
+{
+  "symbol": "ABREL",
+  "xgb_cv": 0.5232,
+  "baseline": 0.3086,
+  "edge": 0.2146,
+  "trained": "2026-06-22T10:41:44.319528",
+  "data_range": "2014-01-29 -> 2026-01-28",
+  "total_rows": 2959,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.4431,
+      "rf": 0.4106,
+      "baseline": 0.4756,
+      "edge": -0.0325,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4422,
+      "rf": 0.4861,
+      "baseline": 0.4502,
+      "edge": -0.008,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.6842,
+      "rf": 0.5789,
+      "baseline": 0.0,
+      "edge": 0.6842,
+      "train_rows": 1487,
+      "test_rows": 19
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

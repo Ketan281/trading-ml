@@ -1,0 +1,24 @@
+{
+  "symbol": "PATANJALI",
+  "xgb_cv": 0.2105,
+  "baseline": 0.6105,
+  "edge": -0.4,
+  "trained": "2026-06-22T11:19:18.233575",
+  "data_range": "2024-10-25 -> 2026-05-25",
+  "total_rows": 389,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2105,
+      "rf": 0.1684,
+      "baseline": 0.6105,
+      "edge": -0.4,
+      "train_rows": 294,
+      "test_rows": 95
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

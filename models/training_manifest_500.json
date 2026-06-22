@@ -1,0 +1,484 @@
+{
+  "date": "2026-06-22T13:47:17.853338",
+  "total_attempted": 93,
+  "total_time_sec": 572.9,
+  "success": [
+    {
+      "symbol": "SUMICHEM",
+      "time_sec": 6.4,
+      "edge": 0.0825,
+      "accuracy": 0
+    },
+    {
+      "symbol": "COHANCE",
+      "time_sec": 7.0,
+      "edge": 0.3103,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SBICARD",
+      "time_sec": 5.9,
+      "edge": -0.2987,
+      "accuracy": 0
+    },
+    {
+      "symbol": "POWERINDIA",
+      "time_sec": 5.8,
+      "edge": -0.433,
+      "accuracy": 0
+    },
+    {
+      "symbol": "MAXHEALTH",
+      "time_sec": 6.2,
+      "edge": 0.2526,
+      "accuracy": 0
+    },
+    {
+      "symbol": "CAMS",
+      "time_sec": 5.8,
+      "edge": 0.0488,
+      "accuracy": 0
+    },
+    {
+      "symbol": "MAZDOCK",
+      "time_sec": 7.2,
+      "edge": 0.1139,
+      "accuracy": 0
+    },
+    {
+      "symbol": "UTIAMC",
+      "time_sec": 5.8,
+      "edge": 0.1067,
+      "accuracy": 0
+    },
+    {
+      "symbol": "GLAND",
+      "time_sec": 5.6,
+      "edge": -0.0111,
+      "accuracy": 0
+    },
+    {
+      "symbol": "IRFC",
+      "time_sec": 5.3,
+      "edge": 0.3011,
+      "accuracy": 0
+    },
+    {
+      "symbol": "HOMEFIRST",
+      "time_sec": 5.5,
+      "edge": -0.1687,
+      "accuracy": 0
+    },
+    {
+      "symbol": "JUBLINGREA",
+      "time_sec": 5.0,
+      "edge": -0.0204,
+      "accuracy": 0
+    },
+    {
+      "symbol": "ANURAS",
+      "time_sec": 5.9,
+      "edge": -0.0105,
+      "accuracy": 0
+    },
+    {
+      "symbol": "KALYANKJIL",
+      "time_sec": 5.2,
+      "edge": 0.093,
+      "accuracy": 0
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "time_sec": 5.4,
+      "edge": -0.0723,
+      "accuracy": 0
+    },
+    {
+      "symbol": "LODHA",
+      "time_sec": 5.5,
+      "edge": 0.2237,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SHYAMMETL",
+      "time_sec": 6.0,
+      "edge": 0.1724,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SONACOMS",
+      "time_sec": 6.0,
+      "edge": -0.0125,
+      "accuracy": 0
+    },
+    {
+      "symbol": "KIMS",
+      "time_sec": 4.8,
+      "edge": 0.044,
+      "accuracy": 0
+    },
+    {
+      "symbol": "CLEAN",
+      "time_sec": 5.3,
+      "edge": 0,
+      "accuracy": 0
+    },
+    {
+      "symbol": "ETERNAL",
+      "time_sec": 5.2,
+      "edge": -0.0256,
+      "accuracy": 0
+    },
+    {
+      "symbol": "DEVYANI",
+      "time_sec": 6.0,
+      "edge": -0.25,
+      "accuracy": 0
+    },
+    {
+      "symbol": "CARTRADE",
+      "time_sec": 5.1,
+      "edge": 0.0235,
+      "accuracy": 0
+    },
+    {
+      "symbol": "NUVOCO",
+      "time_sec": 6.1,
+      "edge": 0.4118,
+      "accuracy": 0
+    },
+    {
+      "symbol": "APTUS",
+      "time_sec": 5.4,
+      "edge": -0.1786,
+      "accuracy": 0
+    },
+    {
+      "symbol": "VIJAYA",
+      "time_sec": 5.3,
+      "edge": -0.1071,
+      "accuracy": 0
+    },
+    {
+      "symbol": "ABSLAMC",
+      "time_sec": 5.4,
+      "edge": -0.1067,
+      "accuracy": 0
+    },
+    {
+      "symbol": "NYKAA",
+      "time_sec": 6.1,
+      "edge": 0.1368,
+      "accuracy": 0
+    },
+    {
+      "symbol": "POLICYBZR",
+      "time_sec": 13.1,
+      "edge": -0.0964,
+      "accuracy": 0
+    },
+    {
+      "symbol": "PAYTM",
+      "time_sec": 7.0,
+      "edge": 0.2381,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SAPPHIRE",
+      "time_sec": 86.5,
+      "edge": 0.1667,
+      "accuracy": 0
+    },
+    {
+      "symbol": "LATENTVIEW",
+      "time_sec": 7.4,
+      "edge": 0.1099,
+      "accuracy": 0
+    },
+    {
+      "symbol": "STARHEALTH",
+      "time_sec": 11.5,
+      "edge": -0.1026,
+      "accuracy": 0
+    },
+    {
+      "symbol": "ANANDRATHI",
+      "time_sec": 11.5,
+      "edge": -0.14,
+      "accuracy": 0
+    },
+    {
+      "symbol": "MAPMYINDIA",
+      "time_sec": 7.3,
+      "edge": 0.0652,
+      "accuracy": 0
+    },
+    {
+      "symbol": "DATAPATTNS",
+      "time_sec": 8.3,
+      "edge": -0.2667,
+      "accuracy": 0
+    },
+    {
+      "symbol": "AWL",
+      "time_sec": 7.2,
+      "edge": 0.0659,
+      "accuracy": 0
+    },
+    {
+      "symbol": "MSUMI",
+      "time_sec": 8.1,
+      "edge": 0.1282,
+      "accuracy": 0
+    },
+    {
+      "symbol": "RAINBOW",
+      "time_sec": 6.8,
+      "edge": -0.0889,
+      "accuracy": 0
+    },
+    {
+      "symbol": "LICI",
+      "time_sec": 6.7,
+      "edge": 0.2842,
+      "accuracy": 0
+    },
+    {
+      "symbol": "DELHIVERY",
+      "time_sec": 6.9,
+      "edge": 0.1099,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SYRMA",
+      "time_sec": 5.9,
+      "edge": -0.2989,
+      "accuracy": 0
+    },
+    {
+      "symbol": "PPLPHARMA",
+      "time_sec": 6.5,
+      "edge": 0.0385,
+      "accuracy": 0
+    },
+    {
+      "symbol": "BIKAJI",
+      "time_sec": 5.5,
+      "edge": -0.1383,
+      "accuracy": 0
+    },
+    {
+      "symbol": "MEDANTA",
+      "time_sec": 6.0,
+      "edge": 0.0674,
+      "accuracy": 0
+    },
+    {
+      "symbol": "FIVESTAR",
+      "time_sec": 6.6,
+      "edge": 0.141,
+      "accuracy": 0
+    },
+    {
+      "symbol": "KAYNES",
+      "time_sec": 8.2,
+      "edge": 0.1685,
+      "accuracy": 0
+    },
+    {
+      "symbol": "KFINTECH",
+      "time_sec": 6.5,
+      "edge": 0.1646,
+      "accuracy": 0
+    },
+    {
+      "symbol": "NSLNISP",
+      "time_sec": 7.0,
+      "edge": 0.1915,
+      "accuracy": 0
+    },
+    {
+      "symbol": "MANKIND",
+      "time_sec": 6.3,
+      "edge": 0.0109,
+      "accuracy": 0
+    },
+    {
+      "symbol": "KPIL",
+      "time_sec": 6.2,
+      "edge": -0.0674,
+      "accuracy": 0
+    },
+    {
+      "symbol": "LLOYDSME",
+      "time_sec": 5.6,
+      "edge": -0.1807,
+      "accuracy": 0
+    },
+    {
+      "symbol": "NETWEB",
+      "time_sec": 4.9,
+      "edge": -0.2593,
+      "accuracy": 0
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "time_sec": 5.5,
+      "edge": -0.1333,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SBFC",
+      "time_sec": 4.6,
+      "edge": 0.2353,
+      "accuracy": 0
+    },
+    {
+      "symbol": "CONCORDBIO",
+      "time_sec": 5.6,
+      "edge": 0.0612,
+      "accuracy": 0
+    },
+    {
+      "symbol": "JIOFIN",
+      "time_sec": 5.5,
+      "edge": -0.1474,
+      "accuracy": 0
+    },
+    {
+      "symbol": "RRKABEL",
+      "time_sec": 4.4,
+      "edge": -0.1625,
+      "accuracy": 0
+    },
+    {
+      "symbol": "NUVAMA",
+      "time_sec": 4.5,
+      "edge": 0.1379,
+      "accuracy": 0
+    },
+    {
+      "symbol": "SIGNATURE",
+      "time_sec": 4.9,
+      "edge": 0.1149,
+      "accuracy": 0
+    },
+    {
+      "symbol": "JSWINFRA",
+      "time_sec": 5.1,
+      "edge": -0.1279,
+      "accuracy": 0
+    },
+    {
+      "symbol": "ARE&M",
+      "time_sec": 6.5,
+      "edge": -0.1818,
+      "accuracy": 0
+    },
+    {
+      "symbol": "BLUEJET",
+      "time_sec": 5.2,
+      "edge": 0.0103,
+      "accuracy": 0
+    },
+    {
+      "symbol": "HONASA",
+      "time_sec": 5.0,
+      "edge": -0.0745,
+      "accuracy": 0
+    },
+    {
+      "symbol": "IREDA",
+      "time_sec": 5.3,
+      "edge": -0.0612,
+      "accuracy": 0
+    },
+    {
+      "symbol": "TATATECH",
+      "time_sec": 5.2,
+      "edge": -0.1098,
+      "accuracy": 0
+    },
+    {
+      "symbol": "DOMS",
+      "time_sec": 10.7,
+      "edge": -0.0683,
+      "accuracy": 0
+    },
+    {
+      "symbol": "JYOTICNC",
+      "time_sec": 3.9,
+      "edge": 0.101,
+      "accuracy": 0
+    },
+    {
+      "symbol": "BHARTIHEXA",
+      "time_sec": 5.5,
+      "edge": 0.0787,
+      "accuracy": 0
+    },
+    {
+      "symbol": "AIIL",
+      "time_sec": 6.0,
+      "edge": 0.0729,
+      "accuracy": 0
+    },
+    {
+      "symbol": "INDGN",
+      "time_sec": 4.6,
+      "edge": 0,
+      "accuracy": 0
+    },
+    {
+      "symbol": "AADHARHFC",
+      "time_sec": 4.9,
+      "edge": -0.0602,
+      "accuracy": 0
+    },
+    {
+      "symbol": "TBOTEK",
+      "time_sec": 5.1,
+      "edge": -0.2604,
+      "accuracy": 0
+    },
+    {
+      "symbol": "GODIGIT",
+      "time_sec": 5.5,
+      "edge": 0.0909,
+      "accuracy": 0
+    }
+  ],
+  "failed": [
+    {
+      "symbol": "nifty500_list",
+      "error": "'Date' is not in list"
+    }
+  ],
+  "no_data": [
+    "ANANTRAJ",
+    "BEML",
+    "IDBI",
+    "ITI",
+    "MAHABANK",
+    "OLECTRA",
+    "SCI",
+    "SWANCORP",
+    "UCOBANK",
+    "EIDPARRY",
+    "NIACL",
+    "ATGL",
+    "ANGELONE",
+    "RAILTEL",
+    "TEGA",
+    "CHOICEIN",
+    "PARADEEP",
+    "PTCIL"
+  ],
+  "config": {
+    "min_rows": 500,
+    "features": "55 (26 technical + 29 intermarket)",
+    "earnings_features": "6 (days_since, days_to, surprise, streak, near, momentum)",
+    "validation": "era_based_walk_forward",
+    "models": "XGBoost + RandomForest ensemble"
+  }
+}

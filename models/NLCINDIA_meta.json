@@ -1,0 +1,24 @@
+{
+  "symbol": "NLCINDIA",
+  "xgb_cv": 0.5203,
+  "baseline": 0.4837,
+  "edge": 0.0366,
+  "trained": "2026-06-22T11:18:29.132526",
+  "data_range": "2014-01-29 -> 2017-08-11",
+  "total_rows": 869,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.5203,
+      "rf": 0.5041,
+      "baseline": 0.4837,
+      "edge": 0.0366,
+      "train_rows": 470,
+      "test_rows": 246
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

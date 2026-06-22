@@ -1,0 +1,24 @@
+{
+  "symbol": "PNBHOUSING",
+  "xgb_cv": 0.4306,
+  "baseline": 0.3194,
+  "edge": 0.1111,
+  "trained": "2026-06-22T11:48:26.327538",
+  "data_range": "2020-06-15 -> 2026-04-20",
+  "total_rows": 1446,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4306,
+      "rf": 0.4167,
+      "baseline": 0.3194,
+      "edge": 0.1111,
+      "train_rows": 1374,
+      "test_rows": 72
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

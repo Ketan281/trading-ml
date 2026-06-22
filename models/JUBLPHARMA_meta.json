@@ -1,0 +1,35 @@
+{
+  "symbol": "JUBLPHARMA",
+  "xgb_cv": 0.398,
+  "baseline": 0.3449,
+  "edge": 0.0531,
+  "trained": "2026-06-22T11:37:41.899084",
+  "data_range": "2018-10-23 -> 2026-05-22",
+  "total_rows": 1866,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4024,
+      "rf": 0.3944,
+      "baseline": 0.3386,
+      "edge": 0.0637,
+      "train_rows": 290,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3936,
+      "rf": 0.5532,
+      "baseline": 0.3511,
+      "edge": 0.0426,
+      "train_rows": 1482,
+      "test_rows": 94
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

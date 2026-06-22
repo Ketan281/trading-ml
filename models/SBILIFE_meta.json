@@ -1,33 +1,24 @@
 {
   "symbol": "SBILIFE",
-  "xgb_cv": 0.3439,
-  "baseline": 0.3754,
-  "edge": -0.0315,
-  "trained": "2026-06-22T09:46:49.285515",
-  "data_range": "2017-11-01 -> 2026-06-15",
-  "total_rows": 2130,
+  "xgb_cv": 0.5135,
+  "baseline": 0.2973,
+  "edge": 0.2162,
+  "trained": "2026-06-22T11:50:48.103397",
+  "data_range": "2020-07-22 -> 2026-04-22",
+  "total_rows": 1424,
   "era_results": [
-    {
-      "era": "pre_covid",
-      "train": "2016-2019",
-      "test": 2020,
-      "xgb": 0.3307,
-      "rf": 0.3267,
-      "baseline": 0.4382,
-      "edge": -0.1076,
-      "train_rows": 531,
-      "test_rows": 251
-    },
     {
       "era": "post_covid",
       "train": "2020-2025",
       "test": 2026,
-      "xgb": 0.3571,
-      "rf": 0.4821,
-      "baseline": 0.3125,
-      "edge": 0.0446,
-      "train_rows": 1487,
-      "test_rows": 112
+      "xgb": 0.5135,
+      "rf": 0.6216,
+      "baseline": 0.2973,
+      "edge": 0.2162,
+      "train_rows": 1350,
+      "test_rows": 74
     }
-  ]
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
 }

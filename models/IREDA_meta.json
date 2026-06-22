@@ -1,0 +1,24 @@
+{
+  "symbol": "IREDA",
+  "xgb_cv": 0.4592,
+  "baseline": 0.5204,
+  "edge": -0.0612,
+  "trained": "2026-06-22T13:46:26.294306",
+  "data_range": "2024-01-23 -> 2026-05-26",
+  "total_rows": 578,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4592,
+      "rf": 0.4388,
+      "baseline": 0.5204,
+      "edge": -0.0612,
+      "train_rows": 480,
+      "test_rows": 98
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

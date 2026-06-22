@@ -1,0 +1,24 @@
+{
+  "symbol": "SYNGENE",
+  "xgb_cv": 0.443,
+  "baseline": 0.4557,
+  "edge": -0.0127,
+  "trained": "2026-06-22T11:45:41.236749",
+  "data_range": "2020-07-22 -> 2026-04-29",
+  "total_rows": 1429,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.443,
+      "rf": 0.4051,
+      "baseline": 0.4557,
+      "edge": -0.0127,
+      "train_rows": 1350,
+      "test_rows": 79
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

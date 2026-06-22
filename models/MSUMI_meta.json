@@ -1,0 +1,24 @@
+{
+  "symbol": "MSUMI",
+  "xgb_cv": 0.4615,
+  "baseline": 0.3333,
+  "edge": 0.1282,
+  "trained": "2026-06-22T13:43:47.646289",
+  "data_range": "2022-05-27 -> 2026-04-28",
+  "total_rows": 968,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4615,
+      "rf": 0.5897,
+      "baseline": 0.3333,
+      "edge": 0.1282,
+      "train_rows": 890,
+      "test_rows": 78
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

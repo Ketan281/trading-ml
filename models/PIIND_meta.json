@@ -1,0 +1,24 @@
+{
+  "symbol": "PIIND",
+  "xgb_cv": 0.5269,
+  "baseline": 0.2473,
+  "edge": 0.2796,
+  "trained": "2026-06-22T11:20:48.932644",
+  "data_range": "2020-08-05 -> 2026-05-19",
+  "total_rows": 1433,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5269,
+      "rf": 0.5914,
+      "baseline": 0.2473,
+      "edge": 0.2796,
+      "train_rows": 1340,
+      "test_rows": 93
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

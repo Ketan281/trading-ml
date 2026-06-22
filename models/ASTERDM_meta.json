@@ -1,0 +1,35 @@
+{
+  "symbol": "ASTERDM",
+  "xgb_cv": 0.4079,
+  "baseline": 0.505,
+  "edge": -0.0971,
+  "trained": "2026-06-22T11:52:46.208392",
+  "data_range": "2018-03-27 -> 2026-05-26",
+  "total_rows": 2012,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4542,
+      "rf": 0.4462,
+      "baseline": 0.4781,
+      "edge": -0.0239,
+      "train_rows": 431,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3617,
+      "rf": 0.3511,
+      "baseline": 0.5319,
+      "edge": -0.1702,
+      "train_rows": 1487,
+      "test_rows": 94
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

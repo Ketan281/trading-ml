@@ -1,0 +1,24 @@
+{
+  "symbol": "TEJASNET",
+  "xgb_cv": 0.404,
+  "baseline": 0.384,
+  "edge": 0.02,
+  "trained": "2026-06-22T11:49:44.798171",
+  "data_range": "2018-07-24 -> 2024-04-22",
+  "total_rows": 1410,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.404,
+      "rf": 0.352,
+      "baseline": 0.384,
+      "edge": 0.02,
+      "train_rows": 349,
+      "test_rows": 250
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

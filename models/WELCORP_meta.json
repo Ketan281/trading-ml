@@ -1,0 +1,46 @@
+{
+  "symbol": "WELCORP",
+  "xgb_cv": 0.4425,
+  "baseline": 0.517,
+  "edge": -0.0746,
+  "trained": "2026-06-22T11:32:00.029101",
+  "data_range": "2014-01-29 -> 2026-05-21",
+  "total_rows": 3032,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3862,
+      "rf": 0.3862,
+      "baseline": 0.4309,
+      "edge": -0.0447,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.5202,
+      "rf": 0.5,
+      "baseline": 0.5202,
+      "edge": 0.0,
+      "train_rows": 983,
+      "test_rows": 248
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4211,
+      "rf": 0.4105,
+      "baseline": 0.6,
+      "edge": -0.1789,
+      "train_rows": 1484,
+      "test_rows": 95
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

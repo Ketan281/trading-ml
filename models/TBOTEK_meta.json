@@ -1,0 +1,24 @@
+{
+  "symbol": "TBOTEK",
+  "xgb_cv": 0.3125,
+  "baseline": 0.5729,
+  "edge": -0.2604,
+  "trained": "2026-06-22T13:47:12.235773",
+  "data_range": "2024-08-14 -> 2026-05-22",
+  "total_rows": 440,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3125,
+      "rf": 0.3542,
+      "baseline": 0.5729,
+      "edge": -0.2604,
+      "train_rows": 344,
+      "test_rows": 96
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

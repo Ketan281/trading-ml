@@ -1,0 +1,24 @@
+{
+  "symbol": "KAYNES",
+  "xgb_cv": 0.5281,
+  "baseline": 0.3596,
+  "edge": 0.1685,
+  "trained": "2026-06-22T13:44:47.390559",
+  "data_range": "2023-11-01 -> 2026-05-13",
+  "total_rows": 624,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5281,
+      "rf": 0.4831,
+      "baseline": 0.3596,
+      "edge": 0.1685,
+      "train_rows": 535,
+      "test_rows": 89
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

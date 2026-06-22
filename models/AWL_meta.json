@@ -1,0 +1,24 @@
+{
+  "symbol": "AWL",
+  "xgb_cv": 0.5495,
+  "baseline": 0.4835,
+  "edge": 0.0659,
+  "trained": "2026-06-22T13:43:39.610633",
+  "data_range": "2022-03-09 -> 2026-05-19",
+  "total_rows": 1031,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5495,
+      "rf": 0.6044,
+      "baseline": 0.4835,
+      "edge": 0.0659,
+      "train_rows": 940,
+      "test_rows": 91
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

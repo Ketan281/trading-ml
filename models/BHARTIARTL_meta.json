@@ -1,55 +1,24 @@
 {
   "symbol": "BHARTIARTL",
-  "xgb_cv": 0.4011,
-  "baseline": 0.3772,
-  "edge": 0.0238,
-  "trained": "2026-06-22T09:32:43.195591",
-  "data_range": "2006-02-01 -> 2026-06-16",
-  "total_rows": 5026,
+  "xgb_cv": 0.3483,
+  "baseline": 0.2472,
+  "edge": 0.1011,
+  "trained": "2026-06-22T10:30:29.356171",
+  "data_range": "2020-07-30 -> 2026-05-13",
+  "total_rows": 1433,
   "era_results": [
-    {
-      "era": "GFC_era",
-      "train": "2006-2010",
-      "test": 2011,
-      "xgb": 0.4837,
-      "rf": 0.4797,
-      "baseline": 0.3496,
-      "edge": 0.1341,
-      "train_rows": 1214,
-      "test_rows": 246
-    },
-    {
-      "era": "bull_run",
-      "train": "2012-2015",
-      "test": 2016,
-      "xgb": 0.4593,
-      "rf": 0.4878,
-      "baseline": 0.4268,
-      "edge": 0.0325,
-      "train_rows": 983,
-      "test_rows": 246
-    },
-    {
-      "era": "pre_covid",
-      "train": "2016-2019",
-      "test": 2020,
-      "xgb": 0.3426,
-      "rf": 0.3386,
-      "baseline": 0.4582,
-      "edge": -0.1155,
-      "train_rows": 983,
-      "test_rows": 251
-    },
     {
       "era": "post_covid",
       "train": "2020-2025",
       "test": 2026,
-      "xgb": 0.3186,
-      "rf": 0.3186,
-      "baseline": 0.2743,
-      "edge": 0.0442,
-      "train_rows": 1487,
-      "test_rows": 113
+      "xgb": 0.3483,
+      "rf": 0.3483,
+      "baseline": 0.2472,
+      "edge": 0.1011,
+      "train_rows": 1344,
+      "test_rows": 89
     }
-  ]
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
 }

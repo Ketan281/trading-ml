@@ -1,0 +1,24 @@
+{
+  "symbol": "TATACOMM",
+  "xgb_cv": 0.4595,
+  "baseline": 0.3649,
+  "edge": 0.0946,
+  "trained": "2026-06-22T11:27:01.137262",
+  "data_range": "2020-06-15 -> 2026-04-22",
+  "total_rows": 1451,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4595,
+      "rf": 0.4595,
+      "baseline": 0.3649,
+      "edge": 0.0946,
+      "train_rows": 1377,
+      "test_rows": 74
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

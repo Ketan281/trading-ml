@@ -1,0 +1,24 @@
+{
+  "symbol": "NSLNISP",
+  "xgb_cv": 0.5532,
+  "baseline": 0.3617,
+  "edge": 0.1915,
+  "trained": "2026-06-22T13:45:00.947767",
+  "data_range": "2023-03-21 -> 2026-05-20",
+  "total_rows": 780,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5532,
+      "rf": 0.5851,
+      "baseline": 0.3617,
+      "edge": 0.1915,
+      "train_rows": 686,
+      "test_rows": 94
+    }
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
+}

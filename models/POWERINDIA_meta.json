@@ -1,0 +1,24 @@
+{
+  "symbol": "POWERINDIA",
+  "xgb_cv": 0.3196,
+  "baseline": 0.7526,
+  "edge": -0.433,
+  "trained": "2026-06-22T13:38:43.481968",
+  "data_range": "2021-05-06 -> 2026-05-25",
+  "total_rows": 1250,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3196,
+      "rf": 0.2887,
+      "baseline": 0.7526,
+      "edge": -0.433,
+      "train_rows": 1153,
+      "test_rows": 97
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

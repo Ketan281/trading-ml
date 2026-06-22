@@ -1,0 +1,35 @@
+{
+  "symbol": "LTFOODS",
+  "xgb_cv": 0.4547,
+  "baseline": 0.5047,
+  "edge": -0.05,
+  "trained": "2026-06-22T11:13:02.581694",
+  "data_range": "2014-11-11 -> 2020-10-30",
+  "total_rows": 1474,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.5122,
+      "rf": 0.4919,
+      "baseline": 0.4878,
+      "edge": 0.0244,
+      "train_rows": 282,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3971,
+      "rf": 0.3541,
+      "baseline": 0.5215,
+      "edge": -0.1244,
+      "train_rows": 983,
+      "test_rows": 209
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

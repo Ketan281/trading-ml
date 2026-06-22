@@ -1,0 +1,24 @@
+{
+  "symbol": "SBICARD",
+  "xgb_cv": 0.3377,
+  "baseline": 0.6364,
+  "edge": -0.2987,
+  "trained": "2026-06-22T13:38:37.706540",
+  "data_range": "2021-01-22 -> 2026-04-27",
+  "total_rows": 1298,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3377,
+      "rf": 0.4026,
+      "baseline": 0.6364,
+      "edge": -0.2987,
+      "train_rows": 1221,
+      "test_rows": 77
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

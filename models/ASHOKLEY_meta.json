@@ -1,0 +1,24 @@
+{
+  "symbol": "ASHOKLEY",
+  "xgb_cv": 0.3196,
+  "baseline": 0.3196,
+  "edge": 0.0,
+  "trained": "2026-06-22T10:44:04.519314",
+  "data_range": "2020-08-13 -> 2026-05-27",
+  "total_rows": 1431,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3196,
+      "rf": 0.3196,
+      "baseline": 0.3196,
+      "edge": 0.0,
+      "train_rows": 1334,
+      "test_rows": 97
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

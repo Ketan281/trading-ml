@@ -3,7 +3,7 @@
   "xgb_cv": 0.426,
   "baseline": 0.3825,
   "edge": 0.0434,
-  "trained": "2026-06-22T09:27:03.543068",
+  "trained": "2026-06-22T10:40:00.037708",
   "data_range": "2013-01-22 -> 2026-06-12",
   "total_rows": 3287,
   "era_results": [
@@ -40,5 +40,7 @@
       "train_rows": 1484,
       "test_rows": 108
     }
-  ]
+  ],
+  "has_earnings": false,
+  "training_scale": "500_stock_batch"
 }

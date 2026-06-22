@@ -1,0 +1,35 @@
+{
+  "symbol": "BSOFT",
+  "xgb_cv": 0.3477,
+  "baseline": 0.2961,
+  "edge": 0.0516,
+  "trained": "2026-06-22T10:48:06.364605",
+  "data_range": "2018-10-25 -> 2026-05-06",
+  "total_rows": 1859,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.243,
+      "rf": 0.2709,
+      "baseline": 0.2231,
+      "edge": 0.0199,
+      "train_rows": 288,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4524,
+      "rf": 0.4762,
+      "baseline": 0.369,
+      "edge": 0.0833,
+      "train_rows": 1487,
+      "test_rows": 84
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

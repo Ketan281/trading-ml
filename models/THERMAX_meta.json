@@ -1,0 +1,24 @@
+{
+  "symbol": "THERMAX",
+  "xgb_cv": 0.3333,
+  "baseline": 0.5119,
+  "edge": -0.1786,
+  "trained": "2026-06-22T11:42:29.397397",
+  "data_range": "2020-08-13 -> 2026-05-07",
+  "total_rows": 1363,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3333,
+      "rf": 0.4881,
+      "baseline": 0.5119,
+      "edge": -0.1786,
+      "train_rows": 1279,
+      "test_rows": 84
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

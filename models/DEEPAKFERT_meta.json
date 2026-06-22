@@ -1,0 +1,35 @@
+{
+  "symbol": "DEEPAKFERT",
+  "xgb_cv": 0.4024,
+  "baseline": 0.3484,
+  "edge": 0.0541,
+  "trained": "2026-06-22T10:53:34.373622",
+  "data_range": "2018-05-31 -> 2026-05-27",
+  "total_rows": 1973,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.3705,
+      "rf": 0.4143,
+      "baseline": 0.3028,
+      "edge": 0.0677,
+      "train_rows": 387,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4343,
+      "rf": 0.5455,
+      "baseline": 0.3939,
+      "edge": 0.0404,
+      "train_rows": 1487,
+      "test_rows": 99
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,35 @@
+{
+  "symbol": "SPLPETRO",
+  "xgb_cv": 0.3959,
+  "baseline": 0.726,
+  "edge": -0.3301,
+  "trained": "2026-06-22T11:24:58.927205",
+  "data_range": "2014-01-29 -> 2020-01-21",
+  "total_rows": 1468,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.3252,
+      "rf": 0.3618,
+      "baseline": 0.5854,
+      "edge": -0.2602,
+      "train_rows": 470,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4667,
+      "rf": 0.6667,
+      "baseline": 0.8667,
+      "edge": -0.4,
+      "train_rows": 983,
+      "test_rows": 15
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

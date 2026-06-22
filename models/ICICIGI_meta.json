@@ -1,0 +1,24 @@
+{
+  "symbol": "ICICIGI",
+  "xgb_cv": 0.5072,
+  "baseline": 0.3623,
+  "edge": 0.1449,
+  "trained": "2026-06-22T11:51:08.795380",
+  "data_range": "2021-04-19 -> 2026-04-15",
+  "total_rows": 1234,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5072,
+      "rf": 0.6232,
+      "baseline": 0.3623,
+      "edge": 0.1449,
+      "train_rows": 1165,
+      "test_rows": 69
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

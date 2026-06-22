@@ -1,0 +1,24 @@
+{
+  "symbol": "IDFCFIRSTB",
+  "xgb_cv": 0.2763,
+  "baseline": 0.2895,
+  "edge": -0.0132,
+  "trained": "2026-06-22T11:45:53.094905",
+  "data_range": "2020-07-29 -> 2026-04-24",
+  "total_rows": 1421,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.2763,
+      "rf": 0.3816,
+      "baseline": 0.2895,
+      "edge": -0.0132,
+      "train_rows": 1345,
+      "test_rows": 76
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

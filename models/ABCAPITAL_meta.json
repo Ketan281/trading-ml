@@ -1,0 +1,24 @@
+{
+  "symbol": "ABCAPITAL",
+  "xgb_cv": 0.439,
+  "baseline": 0.2805,
+  "edge": 0.1585,
+  "trained": "2026-06-22T11:50:37.848012",
+  "data_range": "2020-08-10 -> 2026-05-04",
+  "total_rows": 1359,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.439,
+      "rf": 0.3293,
+      "baseline": 0.2805,
+      "edge": 0.1585,
+      "train_rows": 1277,
+      "test_rows": 82
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

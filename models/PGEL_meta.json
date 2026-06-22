@@ -1,0 +1,35 @@
+{
+  "symbol": "PGEL",
+  "xgb_cv": 0.488,
+  "baseline": 0.3391,
+  "edge": 0.1489,
+  "trained": "2026-06-22T11:20:35.362160",
+  "data_range": "2017-12-12 -> 2026-05-26",
+  "total_rows": 1962,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4343,
+      "rf": 0.4263,
+      "baseline": 0.3865,
+      "edge": 0.0478,
+      "train_rows": 502,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5417,
+      "rf": 0.5208,
+      "baseline": 0.2917,
+      "edge": 0.25,
+      "train_rows": 1364,
+      "test_rows": 96
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

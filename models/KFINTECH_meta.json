@@ -1,0 +1,24 @@
+{
+  "symbol": "KFINTECH",
+  "xgb_cv": 0.4557,
+  "baseline": 0.2911,
+  "edge": 0.1646,
+  "trained": "2026-06-22T13:44:53.841375",
+  "data_range": "2023-07-31 -> 2026-04-29",
+  "total_rows": 677,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.4557,
+      "rf": 0.3924,
+      "baseline": 0.2911,
+      "edge": 0.1646,
+      "train_rows": 598,
+      "test_rows": 79
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

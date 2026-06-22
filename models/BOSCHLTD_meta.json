@@ -1,0 +1,35 @@
+{
+  "symbol": "BOSCHLTD",
+  "xgb_cv": 0.4019,
+  "baseline": 0.37,
+  "edge": 0.0319,
+  "trained": "2026-06-22T11:35:49.820360",
+  "data_range": "2017-05-29 -> 2026-05-20",
+  "total_rows": 2217,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4382,
+      "rf": 0.4064,
+      "baseline": 0.3745,
+      "edge": 0.0637,
+      "train_rows": 638,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3656,
+      "rf": 0.3978,
+      "baseline": 0.3656,
+      "edge": 0.0,
+      "train_rows": 1486,
+      "test_rows": 93
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

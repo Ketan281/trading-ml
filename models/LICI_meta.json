@@ -1,0 +1,24 @@
+{
+  "symbol": "LICI",
+  "xgb_cv": 0.5579,
+  "baseline": 0.2737,
+  "edge": 0.2842,
+  "trained": "2026-06-22T13:44:01.596449",
+  "data_range": "2022-08-16 -> 2026-05-21",
+  "total_rows": 930,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5579,
+      "rf": 0.4947,
+      "baseline": 0.2737,
+      "edge": 0.2842,
+      "train_rows": 835,
+      "test_rows": 95
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

@@ -1,0 +1,12 @@
+{
+  "symbol": "IFCI",
+  "xgb_cv": 0.3674,
+  "baseline": 0.293,
+  "edge": 0.0744,
+  "trained": "2026-06-22T11:04:39.279546",
+  "data_range": "2014-04-30 -> 2015-05-26",
+  "total_rows": 261,
+  "era_results": [],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

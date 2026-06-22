@@ -1,0 +1,35 @@
+{
+  "symbol": "NEWGEN",
+  "xgb_cv": 0.275,
+  "baseline": 0.2914,
+  "edge": -0.0165,
+  "trained": "2026-06-22T11:52:22.289478",
+  "data_range": "2019-05-16 -> 2026-04-30",
+  "total_rows": 1721,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.2749,
+      "rf": 0.247,
+      "baseline": 0.2829,
+      "edge": -0.008,
+      "train_rows": 154,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.275,
+      "rf": 0.3625,
+      "baseline": 0.3,
+      "edge": -0.025,
+      "train_rows": 1487,
+      "test_rows": 80
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

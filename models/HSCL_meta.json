@@ -1,0 +1,35 @@
+{
+  "symbol": "HSCL",
+  "xgb_cv": 0.4204,
+  "baseline": 0.4572,
+  "edge": -0.0368,
+  "trained": "2026-06-22T11:04:05.494897",
+  "data_range": "2017-08-04 -> 2026-04-23",
+  "total_rows": 2094,
+  "era_results": [
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4542,
+      "rf": 0.4542,
+      "baseline": 0.3944,
+      "edge": 0.0598,
+      "train_rows": 532,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3867,
+      "rf": 0.4267,
+      "baseline": 0.52,
+      "edge": -0.1333,
+      "train_rows": 1487,
+      "test_rows": 75
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

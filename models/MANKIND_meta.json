@@ -1,0 +1,24 @@
+{
+  "symbol": "MANKIND",
+  "xgb_cv": 0.3043,
+  "baseline": 0.2935,
+  "edge": 0.0109,
+  "trained": "2026-06-22T13:45:07.216260",
+  "data_range": "2023-08-03 -> 2026-05-19",
+  "total_rows": 687,
+  "era_results": [
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.3043,
+      "rf": 0.3696,
+      "baseline": 0.2935,
+      "edge": 0.0109,
+      "train_rows": 595,
+      "test_rows": 92
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}

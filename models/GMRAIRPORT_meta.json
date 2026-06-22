@@ -1,0 +1,46 @@
+{
+  "symbol": "GMRAIRPORT",
+  "xgb_cv": 0.4621,
+  "baseline": 0.4033,
+  "edge": 0.0588,
+  "trained": "2026-06-22T10:59:28.820881",
+  "data_range": "2014-02-12 -> 2026-05-27",
+  "total_rows": 3028,
+  "era_results": [
+    {
+      "era": "bull_run",
+      "train": "2012-2015",
+      "test": 2016,
+      "xgb": 0.439,
+      "rf": 0.4024,
+      "baseline": 0.3943,
+      "edge": 0.0447,
+      "train_rows": 460,
+      "test_rows": 246
+    },
+    {
+      "era": "pre_covid",
+      "train": "2016-2019",
+      "test": 2020,
+      "xgb": 0.4422,
+      "rf": 0.4143,
+      "baseline": 0.4622,
+      "edge": -0.0199,
+      "train_rows": 983,
+      "test_rows": 251
+    },
+    {
+      "era": "post_covid",
+      "train": "2020-2025",
+      "test": 2026,
+      "xgb": 0.5051,
+      "rf": 0.4949,
+      "baseline": 0.3535,
+      "edge": 0.1515,
+      "train_rows": 1486,
+      "test_rows": 99
+    }
+  ],
+  "has_earnings": true,
+  "training_scale": "500_stock_batch"
+}
