@@ -41,9 +41,20 @@ from pydantic import BaseModel
 from api.router import route, _silent
 from api import auth
 from aos import user_wallet as uw
+from api.routers.phase2_routes import router as phase2_router
 
-app = FastAPI(title="Trading-AI", version="1.0",
+app = FastAPI(title="Trading-AI", version="2.0",
               description="NSE equity + NIFTY/BANKNIFTY options intelligence")
+
+# Phase 2 schema migration
+try:
+    from memory.phase2_schema import migrate
+    migrate()
+except Exception as _e:
+    print(f"Phase 2 migration: {_e}")
+
+# Phase 2 routes
+app.include_router(phase2_router)
 
 # CORS: in production set ALLOWED_ORIGINS to your frontend origin(s),
 # comma-separated (e.g. "https://app.example.com"). For local dev any
