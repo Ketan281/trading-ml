@@ -80,6 +80,7 @@ def init_cache_db():
 
 
 def _cache_get(key):
+    # Try SQLite first
     try:
         conn = _db()
         row = conn.execute(
@@ -90,17 +91,39 @@ def _cache_get(key):
             return json.loads(row[0])
     except Exception:
         pass
+    # Fallback: JSON file
+    fp = os.path.join(CACHE_DIR, f"{key}.json")
+    if os.path.exists(fp):
+        try:
+            with open(fp) as f:
+                data = json.load(f)
+            if time.time() - data.get("_ts", 0) < 3600:
+                data.pop("_ts", None)
+                return data
+        except Exception:
+            pass
     return None
 
 
 def _cache_set(key, value):
-    conn = _db()
-    conn.execute(
-        "INSERT OR REPLACE INTO scheduler_state (key, value, updated_at) VALUES (?,?,?)",
-        (key, json.dumps(value, default=str), datetime.now().isoformat())
-    )
-    conn.commit()
-    conn.close()
+    try:
+        conn = _db()
+        conn.execute(
+            "INSERT OR REPLACE INTO scheduler_state (key, value, updated_at) VALUES (?,?,?)",
+            (key, json.dumps(value, default=str), datetime.now().isoformat())
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log.error("_cache_set(%s) SQLite failed: %s", key, e)
+    # Also write JSON fallback
+    try:
+        fp = os.path.join(CACHE_DIR, f"{key}.json")
+        value["_ts"] = time.time()
+        with open(fp, "w") as f:
+            json.dump(value, f, default=str)
+    except Exception:
+        pass
 
 
 # ── Data loading utilities ───────────────────────────────
@@ -287,16 +310,22 @@ def ml_score_tier_a(tier_a_stocks):
     """Load XGBoost model once, score Tier A stocks."""
     model_path = os.path.join(ROOT, "models", "cross_sectional_xgb.pkl")
     if not os.path.exists(model_path):
+        log.warning("No cross_sectional_xgb.pkl found — skipping ML scoring")
         return tier_a_stocks
 
-    with open(model_path, "rb") as f:
-        model = pickle.load(f)
+    try:
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+    except Exception as e:
+        log.warning("Failed to load ML model: %s", e)
+        return tier_a_stocks
 
     FEATURES = ["mom_21", "mom_63", "mom_126", "mom_252",
                 "rev_5", "vol_21", "rsi_14", "dist_high", "ma_ratio"]
 
     src = _get_data_dir()
-    rows = []
+    stock_map = {}
+    feat_rows = []
     for s in tier_a_stocks:
         path_candidates = [
             os.path.join(src, f"{s['symbol']}.csv"),
@@ -309,7 +338,7 @@ def ml_score_tier_a(tier_a_stocks):
             df = pd.read_csv(path, index_col="Date", parse_dates=True,
                              usecols=["Date", "Open", "High", "Low", "Close", "Volume"])
             if len(df) < 260:
-                continue
+                del df; continue
             df = df.sort_index()
             close = df["Close"]
             feat = {}
@@ -330,47 +359,62 @@ def ml_score_tier_a(tier_a_stocks):
             if any(np.isnan(v) for v in feat.values()):
                 del df; continue
 
-            rows.append({"symbol": s["symbol"], **feat, "_stock": s})
+            sym = s["symbol"]
+            feat_rows.append({"symbol": sym, **feat})
+            stock_map[sym] = s
             del df
         except Exception:
             pass
 
     gc.collect()
-    if len(rows) < 5:
+    log.warning("ML scoring: %d stocks have features (of %d Tier A)", len(feat_rows), len(tier_a_stocks))
+
+    if len(feat_rows) < 5:
         del model; gc.collect()
         return tier_a_stocks
 
-    feat_df = pd.DataFrame(rows)
+    feat_df = pd.DataFrame(feat_rows)
     for c in FEATURES:
         feat_df[c + "_z"] = (feat_df[c] - feat_df[c].mean()) / (feat_df[c].std() + 1e-9)
     feat_z = [c + "_z" for c in FEATURES]
-    feat_df["ml_score"] = model.predict_proba(feat_df[feat_z])[:, 1]
+
+    try:
+        feat_df["ml_score"] = model.predict_proba(feat_df[feat_z])[:, 1]
+    except Exception as e:
+        log.warning("ML predict failed: %s", e)
+        del model; gc.collect()
+        return tier_a_stocks
 
     del model; gc.collect()
 
     scored = []
     for _, row in feat_df.iterrows():
-        s = row["_stock"]
+        sym = row["symbol"]
+        s = stock_map.get(sym)
+        if not s:
+            continue
         s["ml_score"] = round(float(row["ml_score"]), 4)
-        s["ml_rank"] = 0
         scored.append(s)
 
     scored.sort(key=lambda x: x["ml_score"], reverse=True)
     for i, s in enumerate(scored):
         s["ml_rank"] = i + 1
 
-    conn = _db()
-    now = datetime.now().isoformat()
-    for s in scored:
-        conn.execute(
-            "INSERT OR REPLACE INTO ml_predictions (symbol, score, rank, features, computed_at) "
-            "VALUES (?,?,?,?,?)",
-            (s["symbol"], s["ml_score"], s["ml_rank"], json.dumps({
-                k: s.get(k) for k in ["ret_5", "ret_20", "ret_60", "rsi", "composite"]
-            }), now)
-        )
-    conn.commit()
-    conn.close()
+    try:
+        conn = _db()
+        now = datetime.now().isoformat()
+        for s in scored:
+            conn.execute(
+                "INSERT OR REPLACE INTO ml_predictions (symbol, score, rank, features, computed_at) "
+                "VALUES (?,?,?,?,?)",
+                (s["symbol"], s["ml_score"], s["ml_rank"], json.dumps({
+                    k: s.get(k) for k in ["ret_5", "ret_20", "ret_60", "rsi", "composite"]
+                }), now)
+            )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log.warning("Failed to cache ML scores: %s", e)
 
     return scored
 
@@ -422,41 +466,49 @@ def compute_options_picks(capital=100_000):
 
 def build_equity_recommendations(scored_stocks, breadth):
     """Convert scored Tier A stocks into recommendation format."""
+    log.warning("Building equity recos from %d scored stocks", len(scored_stocks))
     picks = []
     for s in scored_stocks[:20]:
-        ml = s.get("ml_score", 0.5)
-        price = s["price"]
-        atr = s["atr"]
-        stop = round(price - 1.5 * atr, 2)
-        target = round(price + 2.5 * atr, 2)
-        risk = price - stop
-        rr = round((target - price) / risk, 2) if risk > 0 else 0
-        conf = round(ml * 100, 1)
+        try:
+            ml = s.get("ml_score", 0.5)
+            price = s.get("price", 0)
+            atr = s.get("atr", 0)
+            if price <= 0 or atr <= 0:
+                continue
 
-        trend = "bullish" if s["ret_20"] > 0 and s.get("above_200ma", 0) else \
-                "bearish" if s["ret_20"] < 0 else "neutral"
-        grade = "A+" if conf >= 85 else "A" if conf >= 70 else "B" if conf >= 55 else "C"
+            stop = round(price - 1.5 * atr, 2)
+            target = round(price + 2.5 * atr, 2)
+            risk = price - stop
+            rr = round((target - price) / risk, 2) if risk > 0 else 0
+            conf = round(ml * 100, 1)
 
-        picks.append({
-            "segment": "equity_intraday",
-            "symbol": s["symbol"],
-            "action": "BUY",
-            "entry": round(price, 2),
-            "stop": stop,
-            "target": target,
-            "confidence": conf,
-            "grade": grade,
-            "reward_risk": rr,
-            "trend": trend,
-            "rsi": round(s["rsi"], 1),
-            "tier": s.get("tier", "A"),
-            "ml_rank": s.get("ml_rank", 0),
-            "rs_score": round(s.get("rs_score", 0), 1),
-            "sector_score": round(s.get("sector_score", 0), 1),
-            "reason": f"{s['symbol']} — ML rank #{s.get('ml_rank', '?')}, "
-                      f"score {ml:.3f}, R:R {rr}:1, {trend}, RSI {s['rsi']:.0f}",
-        })
+            trend = "bullish" if s.get("ret_20", 0) > 0 and s.get("above_200ma", 0) else \
+                    "bearish" if s.get("ret_20", 0) < 0 else "neutral"
+            grade = "A+" if conf >= 85 else "A" if conf >= 70 else "B" if conf >= 55 else "C"
+
+            picks.append({
+                "segment": "equity_intraday",
+                "symbol": s["symbol"],
+                "action": "BUY",
+                "entry": round(price, 2),
+                "stop": stop,
+                "target": target,
+                "confidence": conf,
+                "grade": grade,
+                "reward_risk": rr,
+                "trend": trend,
+                "rsi": round(s.get("rsi", 50), 1),
+                "tier": s.get("tier", "A"),
+                "ml_rank": s.get("ml_rank", 0),
+                "rs_score": round(s.get("rs_score", 0), 1),
+                "sector_score": round(s.get("sector_score", 0), 1),
+                "reason": f"{s['symbol']} — ML rank #{s.get('ml_rank', '?')}, "
+                          f"score {ml:.3f}, R:R {rr}:1, {trend}, RSI {s.get('rsi', 50):.0f}",
+            })
+        except Exception as e:
+            log.warning("Failed to build reco for %s: %s", s.get("symbol", "?"), e)
     picks.sort(key=lambda x: x["confidence"], reverse=True)
+    log.warning("Built %d equity recommendations", len(picks))
     return picks
 
 
@@ -560,18 +612,32 @@ def run_full_pipeline(is_premarket=False):
         gc.collect()
 
         # Step 7: ML inference — Tier A only (rule #1,2)
-        scored = ml_score_tier_a(tiers["A"])
+        try:
+            scored = ml_score_tier_a(tiers["A"])
+        except Exception as e:
+            log.error("Step 7 ML failed: %s", e)
+            scored = tiers["A"]
         gc.collect()
         log.warning("Step 7: ML scored %d Tier A stocks", len(scored))
 
         # Step 8: Options flow
-        options = compute_options_picks()
+        options = []
+        try:
+            options = compute_options_picks()
+        except Exception as e:
+            log.error("Step 8 Options failed: %s", e)
         gc.collect()
         log.warning("Step 8: %d options picks", len(options))
 
         # Step 9: Build recommendations
-        equity = build_equity_recommendations(scored, breadth)
-        swing = build_swing_recommendations(equity)
+        equity = []
+        swing = []
+        try:
+            equity = build_equity_recommendations(scored, breadth)
+            swing = build_swing_recommendations(equity)
+        except Exception as e:
+            log.error("Step 9 Recommendations failed: %s", e)
+        log.warning("Step 9: %d equity, %d swing recommendations", len(equity), len(swing))
 
         result = {
             "equity_intraday": equity,
@@ -591,20 +657,24 @@ def run_full_pipeline(is_premarket=False):
         }
 
         # Step 10: Cache to SQLite (rule #24)
-        conn = _db()
-        now = datetime.now().isoformat()
-        for seg in ("equity_intraday", "options", "swing"):
-            conn.execute(
-                "INSERT OR REPLACE INTO cached_recommendations (segment, data, computed_at) "
-                "VALUES (?,?,?)",
-                (seg, json.dumps(result[seg], default=str), now)
-            )
-        conn.commit()
-        conn.close()
+        try:
+            conn = _db()
+            now = datetime.now().isoformat()
+            for seg in ("equity_intraday", "options", "swing"):
+                conn.execute(
+                    "INSERT OR REPLACE INTO cached_recommendations (segment, data, computed_at) "
+                    "VALUES (?,?,?)",
+                    (seg, json.dumps(result[seg], default=str), now)
+                )
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            log.error("Step 10 SQLite cache failed: %s", e)
+
         _cache_set("last_recommendations", result)
 
         elapsed = time.time() - t0
-        log.warning("Pipeline complete in %.1fs — %d equity, %d options, %d swing",
+        log.warning("Pipeline COMPLETE in %.1fs — %d equity, %d options, %d swing",
                      elapsed, len(equity), len(options), len(swing))
         gc.collect()
         return result
