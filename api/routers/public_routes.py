@@ -199,7 +199,7 @@ def ml_intraday_equity_ep(user: dict = Depends(auth.current_user)):
 def ml_intraday_options_ep(user: dict = Depends(auth.current_user)):
     balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
     from engines.intraday_inference import get_intraday_options_trades
-    return _silent(get_intraday_options_trades, capital=balance, max_picks=3)
+    return _silent(get_intraday_options_trades, capital=balance, max_picks=5)
 
 
 @router.get("/ml/intraday/status")

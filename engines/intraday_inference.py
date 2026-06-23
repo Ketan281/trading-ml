@@ -238,18 +238,137 @@ def get_intraday_equity_trades(capital=100000, max_picks=5):
     return trades
 
 
-def get_intraday_options_trades(capital=100000, max_picks=3):
-    """Options trades: use direction model (STRONG) to pick stock + direction,
-    then filter for high-range stocks (better for options) and select strategy."""
+def _predict_index_options():
+    """Predict NIFTY/BANKNIFTY direction using the index options model."""
+    model_path = os.path.join(MODEL_DIR, "latest_index_options.pkl")
+    meta_path = os.path.join(MODEL_DIR, "latest_index_options_meta.json")
+
+    if not os.path.exists(model_path):
+        return []
+
+    with open(model_path, "rb") as f:
+        model = pickle.load(f)
+    with open(meta_path, "r") as f:
+        meta = json.load(f)
+
+    from engines.index_options_trainer import (
+        _load_index, _compute_breadth_features, _load_intermarket,
+        _load_option_chain_daily, _compute_index_features, FEATURE_COLS, INDICES
+    )
+
+    breadth_df = _compute_breadth_features()
+    im_df, fii_series = _load_intermarket()
+
+    predictions = []
+    features_list = meta.get("features", [])
+
+    for sym in INDICES:
+        df = _load_index(sym)
+        if len(df) < 30:
+            continue
+        oc_df = _load_option_chain_daily(sym)
+        feats = _compute_index_features(df, sym, breadth_df, oc_df, im_df, fii_series)
+        if feats is None or feats.empty:
+            continue
+
+        latest = feats.tail(1).copy()
+        for col in features_list:
+            if col in latest.columns:
+                latest[col] = latest[col].replace([np.inf, -np.inf], 0).fillna(0)
+            else:
+                latest[col] = 0.0
+
+        available = [f for f in features_list if f in latest.columns]
+        prob = model.predict_proba(latest[available])[0, 1]
+
+        row = latest.iloc[0]
+        spot = float(row.get("price", 0))
+        open_price = float(row.get("open_price", spot))
+        avg_range = float(row.get("avg_range_5d", 0.012))
+        if avg_range < 0.005:
+            avg_range = 0.012
+
+        direction = "bullish" if prob > 0.5 else "bearish"
+        confidence = round(abs(prob - 0.5) * 200, 1)
+
+        expected_move = spot * avg_range * 0.6
+        # Strike selection: round to nearest 50 for NIFTY, 100 for BANKNIFTY
+        strike_step = 50 if sym == "NIFTY" else 100
+        atm_strike = round(spot / strike_step) * strike_step
+
+        if direction == "bullish":
+            strike = atm_strike
+            option_type = "CE"
+            target_strike = atm_strike + strike_step * 2
+            sl_points = expected_move * 0.5
+        else:
+            strike = atm_strike
+            option_type = "PE"
+            target_strike = atm_strike - strike_step * 2
+            sl_points = expected_move * 0.5
+
+        # Strategy based on confidence
+        if confidence > 70:
+            strategy = f"buy_{sym}_{atm_strike}_{option_type}"
+            strategy_name = f"Buy {sym} {atm_strike} {option_type}"
+        elif confidence > 50:
+            if direction == "bullish":
+                strategy = f"bull_call_spread_{sym}"
+                strategy_name = f"Bull Call Spread {sym} {atm_strike}/{atm_strike + strike_step}"
+            else:
+                strategy = f"bear_put_spread_{sym}"
+                strategy_name = f"Bear Put Spread {sym} {atm_strike}/{atm_strike - strike_step}"
+        else:
+            strategy = f"iron_condor_{sym}"
+            strategy_name = f"Iron Condor {sym} (low conviction)"
+
+        predictions.append({
+            "symbol": sym,
+            "segment": "index_options",
+            "spot": round(spot, 1),
+            "direction": direction,
+            "probability": round(prob, 4),
+            "confidence": confidence,
+            "option_type": option_type,
+            "strike": atm_strike,
+            "strategy": strategy_name,
+            "expected_move": round(expected_move, 1),
+            "expected_range_pct": round(avg_range * 100, 2),
+            "target": round(spot + expected_move if direction == "bullish" else spot - expected_move, 1),
+            "stoploss": round(spot - sl_points if direction == "bullish" else spot + sl_points, 1),
+            "model_id": meta.get("model_id"),
+            "edge": meta.get("edge"),
+            "reason": (f"Index ML: {sym} {direction.upper()} (prob {prob:.1%}, conf {confidence:.0f}%) — "
+                       f"range {avg_range*100:.1f}%, "
+                       f"Buy {atm_strike} {option_type}"),
+        })
+
+    return predictions
+
+
+def get_intraday_options_trades(capital=100000, max_picks=5):
+    """Combined options trades: NIFTY/BANKNIFTY first, then stock options.
+
+    Priority:
+      1. NIFTY/BANKNIFTY index options (from index_options model)
+      2. Stock options (from stock direction model + range filter)
+    """
+    trades = []
+
+    # === PRIMARY: NIFTY/BANKNIFTY index options ===
+    index_trades = _predict_index_options()
+    for t in index_trades:
+        trades.append(t)
+
+    # === SECONDARY: Stock options (fill remaining slots) ===
+    remaining = max_picks - len(trades)
+    if remaining <= 0:
+        return trades
 
     dir_result = predict_intraday(target="direction", top_n=30)
     if dir_result.get("error"):
-        return []
+        return trades
 
-    trades = []
-    per_trade = capital / max_picks
-
-    # Filter for stocks with high historical intraday range (options need movement)
     candidates = [p for p in dir_result["picks"]
                   if p["features"].get("avg_intraday_range_5d", 0) > 0.01]
     if not candidates:
@@ -297,7 +416,7 @@ def get_intraday_options_trades(capital=100000, max_picks=3):
 
         trades.append({
             "symbol": sym,
-            "segment": "options_intraday",
+            "segment": "stock_options",
             "direction": direction,
             "option_strategy": strategy,
             "equity_price": price,
@@ -307,7 +426,7 @@ def get_intraday_options_trades(capital=100000, max_picks=3):
             "ml_score": pick["ml_score"],
             "ml_rank": pick["rank"],
             "confidence": pick["confidence"],
-            "reason": (f"Dir ML #{pick['rank']} (conf {pick['confidence']:.0f}%) — "
+            "reason": (f"Stock Dir ML #{pick['rank']} (conf {pick['confidence']:.0f}%) — "
                        f"{'BULL' if direction == 'bullish' else 'BEAR'}, "
                        f"range {avg_range*100:.1f}%, "
                        f"strategy: {strategy}"),
@@ -317,7 +436,7 @@ def get_intraday_options_trades(capital=100000, max_picks=3):
 
 
 def model_status():
-    """Status of intraday models."""
+    """Status of all intraday models."""
     status = {}
     for target in ["direction", "range"]:
         _, meta = _load_model(target)
@@ -331,6 +450,22 @@ def model_status():
             }
         else:
             status[target] = {"loaded": False}
+
+    # Index options model
+    idx_meta_path = os.path.join(MODEL_DIR, "latest_index_options_meta.json")
+    if os.path.exists(idx_meta_path):
+        with open(idx_meta_path) as f:
+            idx_meta = json.load(f)
+        status["index_options"] = {
+            "loaded": True,
+            "model_id": idx_meta.get("model_id"),
+            "edge": idx_meta.get("edge"),
+            "validation": idx_meta.get("validation"),
+            "trained_at": idx_meta.get("trained_at"),
+        }
+    else:
+        status["index_options"] = {"loaded": False}
+
     return status
 
 
@@ -345,10 +480,18 @@ if __name__ == "__main__":
               f"R:R={t['reward_risk']:.1f}  Conf={t['confidence']:.0f}%")
         print(f"       {t['reason']}")
 
-    print("\n=== INTRADAY OPTIONS TRADES ===")
-    opt = get_intraday_options_trades(capital=100000, max_picks=3)
+    print("\n=== INTRADAY OPTIONS TRADES (INDEX + STOCK) ===")
+    opt = get_intraday_options_trades(capital=100000, max_picks=5)
     for t in opt:
-        print(f"  {t['direction'].upper():7s} {t['symbol']:12s} @ Rs.{t['equity_price']:8.1f}  "
-              f"Strategy={t['option_strategy']:18s}  "
-              f"Range={t['expected_range_pct']:.1f}%  Conf={t['confidence']:.0f}%")
-        print(f"       {t['reason']}")
+        if t["segment"] == "index_options":
+            print(f"  [{t['segment'].upper()}] {t['direction'].upper():7s} {t['symbol']:10s}  "
+                  f"Spot={t['spot']:>8.1f}  Strike={t['strike']}  {t['option_type']}  "
+                  f"Conf={t['confidence']:.0f}%")
+            print(f"       {t['strategy']}")
+            print(f"       {t['reason']}")
+        else:
+            print(f"  [{t['segment'].upper()}] {t['direction'].upper():7s} {t['symbol']:10s}  "
+                  f"@ Rs.{t['equity_price']:8.1f}  "
+                  f"Strategy={t.get('option_strategy',''):18s}  "
+                  f"Range={t['expected_range_pct']:.1f}%  Conf={t['confidence']:.0f}%")
+            print(f"       {t['reason']}")
