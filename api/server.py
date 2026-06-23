@@ -539,40 +539,9 @@ class ModeChange(BaseModel):
 
 
 def _trigger_ml_immediately(uid, market):
-    """When the user switches to ML mode, immediately open the best trade
-    instead of waiting for the background cycle."""
-    from datetime import datetime as dt, time as dtime
-    from aos.sim_wallet import SQUARE_OFF
-    opened = []
-    now_time = dt.now().time()
-    if market in ("indian", "both"):
-        indian_market_open = dtime(9, 15) <= now_time <= SQUARE_OFF
-        if indian_market_open:
-            try:
-                t = uw.auto_open_trade(uid)
-                if t:
-                    opened.append({"market": "indian", "symbol": t["symbol"], "trade": t})
-                else:
-                    opened.append({"market": "indian", "symbol": None,
-                                   "info": "no actionable Indian trade right now"})
-            except Exception as e:
-                _ml_log.warning("ML immediate Indian trade for uid %s failed: %s", uid, e)
-                opened.append({"market": "indian", "error": str(e)})
-        else:
-            opened.append({"market": "indian", "symbol": None,
-                           "info": "Indian market is closed (09:15–15:15 IST)"})
-    if market in ("forex", "both"):
-        try:
-            t = uw.auto_open_forex_trade(uid)
-            if t:
-                opened.append({"market": "forex", "symbol": t["symbol"], "trade": t})
-            else:
-                opened.append({"market": "forex", "symbol": None,
-                               "info": "no actionable forex setup meets confluence threshold"})
-        except Exception as e:
-            _ml_log.warning("ML immediate Forex trade for uid %s failed: %s", uid, e)
-            opened.append({"market": "forex", "error": str(e)})
-    return opened
+    """When the user switches to ML mode, queue for background loop.
+    On 1GB instance, running the screener inline would block/OOM."""
+    return [{"market": market, "info": "ML mode activated — best trade will open within 10 minutes via background loop"}]
 
 
 @app.get("/me/mode")
@@ -779,5 +748,4 @@ def _start_reco_precompute():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=False,
-                limit_concurrency=8)
+    uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=False)

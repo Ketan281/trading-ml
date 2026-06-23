@@ -38,7 +38,7 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/trading-ml
-ExecStart=/home/ubuntu/trading-ml/venv/bin/uvicorn api.server:app --host 0.0.0.0 --port 8000 --workers 1 --limit-concurrency 10
+ExecStart=/home/ubuntu/trading-ml/venv/bin/uvicorn api.server:app --host 0.0.0.0 --port 8000 --workers 1
 Restart=always
 RestartSec=10
 
