@@ -62,14 +62,11 @@ app.include_router(phase2_router)
 # static frontend on any port (5500, 5601, 8080, …) works without configuration.
 # Tokens are sent in the Authorization header (not cookies), so allowing any
 # local port carries no credential-leak risk.
-_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_origins or ["*"],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True,
 )
 
 # Tiny TTL cache so repeated identical queries don't re-hit NSE.
