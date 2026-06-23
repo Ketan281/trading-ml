@@ -611,15 +611,122 @@ def run_full_pipeline(is_premarket=False):
 
 
 def get_cached_recommendations():
-    """Serve from SQLite cache — zero computation, instant response (rule #24)."""
+    """Serve from SQLite cache — zero computation, instant response (rule #24).
+    Falls back to old screener output if scheduler hasn't populated yet."""
     cached = _cache_get("last_recommendations")
     if cached:
         return cached
+
+    # Fallback: read from old screener output + options engine
+    fallback = _fallback_from_screener()
+    if fallback:
+        return fallback
+
     return {
         "equity_intraday": [], "options": [], "swing": [],
         "best_per_segment": {"equity_intraday": None, "options": None, "swing": None},
         "note": "Recommendations computing — check back in a few minutes",
     }
+
+
+def _fallback_from_screener():
+    """Convert old screener_report.json to recommendation format."""
+    report_path = os.path.join(ROOT, "outputs", "screener_report.json")
+    if not os.path.exists(report_path):
+        return None
+    try:
+        age = time.time() - os.path.getmtime(report_path)
+        if age > 3600:
+            return None
+
+        with open(report_path) as f:
+            report = json.load(f)
+
+        equity = []
+        for c in (report.get("actionable", []) + report.get("watchlist", []))[:15]:
+            entry = c.get("price", 0)
+            stop = c.get("stop_loss", 0)
+            target = c.get("target", 0)
+            try:
+                entry = float(str(entry).replace(",", "").split("-")[-1])
+                stop = float(str(stop).replace(",", ""))
+                target = float(str(target).replace(",", "")) if target else entry * 1.03
+            except (ValueError, TypeError):
+                continue
+            if not entry or stop >= entry:
+                continue
+            risk = entry - stop
+            rr = round((target - entry) / risk, 2) if risk > 0 else 0
+            conf = c.get("conviction", 50)
+            equity.append({
+                "segment": "equity_intraday",
+                "symbol": c.get("symbol", "?"),
+                "action": "BUY",
+                "entry": round(entry, 2),
+                "stop": round(stop, 2),
+                "target": round(target, 2),
+                "confidence": round(conf, 1),
+                "grade": c.get("grade", "B"),
+                "reward_risk": rr,
+                "trend": c.get("trend", "neutral"),
+                "rsi": round(c.get("rsi", 50), 1),
+                "reason": f"{c.get('symbol')} — grade {c.get('grade', '?')}, "
+                          f"conviction {conf:.0f}%, R:R {rr}:1",
+            })
+
+        # Try to get options from the old api_cache
+        options = []
+        cache_path = os.path.join(ROOT, "data", "api_cache", "options_NIFTY.json")
+        for sym in ("BANKNIFTY", "NIFTY"):
+            cp = os.path.join(ROOT, "data", "api_cache", f"options_{sym}.json")
+            if os.path.exists(cp):
+                try:
+                    with open(cp) as f:
+                        blob = json.load(f)
+                    if time.time() - blob.get("ts", 0) < 3600:
+                        data = blob.get("data", {})
+                        if isinstance(data, dict) and data.get("action"):
+                            prob = data.get("prob_up", 0.5)
+                            conf_map = {"high": 85, "moderate": 60, "none": 0}
+                            conf = conf_map.get(data.get("conviction", "none"), 50)
+                            eff_conf = round(conf * 0.6 + abs(prob - 0.5) * 200 * 0.4, 1)
+                            options.append({
+                                "segment": "options",
+                                "symbol": data.get("instrument", sym),
+                                "underlying": sym,
+                                "action": data.get("action", "NO_TRADE"),
+                                "entry": data.get("entry_premium", 0),
+                                "stop": data.get("stop_premium", 0),
+                                "target": data.get("target_premium", 0),
+                                "confidence": eff_conf,
+                                "reward_risk": data.get("reward_risk", 0),
+                                "prob_up": round(prob, 3),
+                                "conviction": data.get("conviction", "none"),
+                                "lots": data.get("lots", 0),
+                                "qty": data.get("qty", 0),
+                                "reason": f"{data.get('instrument', sym)} — {data.get('conviction', '')} "
+                                          f"({eff_conf:.0f}%), P(up) {prob:.1%}",
+                            })
+                except Exception:
+                    pass
+
+        if not equity and not options:
+            return None
+
+        return {
+            "equity_intraday": equity,
+            "options": options,
+            "swing": [],
+            "best_per_segment": {
+                "equity_intraday": equity[0] if equity else None,
+                "options": options[0] if options else None,
+                "swing": None,
+            },
+            "timestamp": report.get("date", ""),
+            "source": "screener_fallback",
+        }
+    except Exception:
+        return None
 
 
 def get_tier_universe():
