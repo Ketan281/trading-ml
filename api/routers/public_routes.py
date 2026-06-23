@@ -130,6 +130,50 @@ def market_breadth_ep(user: dict = Depends(auth.current_user)):
     return breadth or {"score": 0, "regime": "unknown", "note": "computing"}
 
 
+# ── ML System endpoints ─────────────────────────────────
+@router.get("/ml/predictions")
+def ml_predictions_ep(user: dict = Depends(auth.current_user)):
+    from engines.ml_inference import predict_all
+    return _silent(predict_all, top_n=20)
+
+
+@router.get("/ml/status")
+def ml_status_ep():
+    from engines.ml_inference import model_status
+    return model_status()
+
+
+@router.get("/ml/portfolio")
+def ml_portfolio_ep(user: dict = Depends(auth.current_user)):
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    from engines.portfolio_optimizer import get_portfolio_recommendations
+    return _silent(get_portfolio_recommendations, capital=balance, uid=user["id"])
+
+
+@router.get("/ml/performance")
+def ml_performance_ep():
+    from engines.performance_tracker import compute_performance
+    return _silent(compute_performance, lookback_days=30)
+
+
+@router.get("/ml/accuracy-trend")
+def ml_accuracy_trend_ep():
+    from engines.performance_tracker import get_accuracy_trend
+    return _silent(get_accuracy_trend, days=90)
+
+
+@router.get("/ml/retrain-check")
+def ml_retrain_check_ep():
+    from engines.performance_tracker import check_retrain_needed
+    return _silent(check_retrain_needed)
+
+
+@router.get("/ml/feature-store")
+def ml_feature_store_ep():
+    from engines.feature_store import get_store_stats
+    return get_store_stats()
+
+
 @router.get("/market-intel")
 def market_intel_ep():
     from pipelines.market_intel import market_context

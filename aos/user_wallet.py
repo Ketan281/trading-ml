@@ -891,30 +891,39 @@ def ml_users():
 
 
 def _pick_best_recommendation(uid, balance):
-    """Read from the pre-computed scheduler cache (zero computation).
-    The scheduler pipeline runs in the background every 10 minutes and
-    caches recommendations to SQLite. This just reads from that cache."""
+    """Pick best trade using ML inference engine (instant — reads pre-trained model).
+    Falls back to scheduler cache if ML model not available."""
+    held_symbols = {t["symbol"] for t in _open_trades(uid)}
+
+    # Try ML inference first (fastest, smartest)
+    try:
+        from engines.ml_inference import get_top_picks_for_trading
+        picks = get_top_picks_for_trading(capital=balance, max_picks=10)
+        if picks:
+            for pick in picks:
+                if pick.get("symbol") in held_symbols:
+                    continue
+                if pick.get("confidence", 0) < 30:
+                    continue
+                return pick
+    except Exception:
+        pass
+
+    # Fallback: scheduler cache
     try:
         from engines.market_scheduler import get_cached_recommendations
         reco = get_cached_recommendations()
-        if not reco:
-            return None
-        all_picks = []
-        for seg in ("equity_intraday", "options", "swing"):
-            picks = reco.get(seg, [])
-            if picks:
-                all_picks.extend(picks)
-        if not all_picks:
-            return None
-        all_picks.sort(key=lambda p: p.get("confidence", 0), reverse=True)
-
-        held_symbols = {t["symbol"] for t in _open_trades(uid)}
-        for pick in all_picks:
-            if pick.get("symbol") in held_symbols:
-                continue
-            if pick.get("confidence", 0) < 30:
-                continue
-            return pick
+        if reco:
+            all_picks = []
+            for seg in ("equity_intraday", "options", "swing"):
+                all_picks.extend(reco.get(seg, []))
+            all_picks.sort(key=lambda p: p.get("confidence", 0), reverse=True)
+            for pick in all_picks:
+                if pick.get("symbol") in held_symbols:
+                    continue
+                if pick.get("confidence", 0) < 30:
+                    continue
+                return pick
     except Exception:
         pass
     return None

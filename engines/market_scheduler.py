@@ -469,6 +469,47 @@ def compute_options_picks(capital=100_000):
 
 # ── Step 8: Build recommendations (rule #24, #25) ───────
 
+def _ml_picks_to_recommendations(ml_picks):
+    """Convert ml_inference picks to recommendation format."""
+    recos = []
+    for p in ml_picks:
+        feat = p.get("features", {})
+        price = p.get("price", 0)
+        if price <= 0:
+            continue
+        atr_ratio = feat.get("atr_ratio", 0.02) if feat.get("atr_ratio") else 0.02
+        atr = price * atr_ratio
+
+        stop = round(price - 2 * atr, 2)
+        target = round(price + 3 * atr, 2)
+        risk = price - stop
+        rr = round((target - price) / risk, 2) if risk > 0 else 0
+        conf = p.get("confidence", 50)
+        rsi = feat.get("rsi_14", 50)
+        ret_5d = feat.get("ret_5d", 0)
+        grade = "A+" if conf >= 85 else "A" if conf >= 70 else "B" if conf >= 55 else "C"
+
+        recos.append({
+            "segment": "equity_intraday",
+            "symbol": p["symbol"],
+            "action": "BUY" if ret_5d >= 0 else "SELL",
+            "entry": round(price, 2),
+            "stop": stop,
+            "target": target,
+            "confidence": round(conf, 1),
+            "grade": grade,
+            "reward_risk": rr,
+            "rsi": round(rsi, 1),
+            "ml_rank": p.get("rank", 0),
+            "ml_score": p.get("ml_score", 0),
+            "reason": (f"{p['symbol']} — ML rank #{p.get('rank', '?')}, "
+                       f"score {p.get('ml_score', 0):.3f}, conf {conf:.0f}%, "
+                       f"R:R {rr}:1, RSI {rsi:.0f}"),
+        })
+    recos.sort(key=lambda x: x["confidence"], reverse=True)
+    return recos
+
+
 def build_equity_recommendations(scored_stocks, breadth):
     """Convert scored Tier A stocks into recommendation format."""
     log.warning("Building equity recos from %d scored stocks", len(scored_stocks))
@@ -616,14 +657,35 @@ def run_full_pipeline(is_premarket=False):
         del all_stocks  # free memory before ML
         gc.collect()
 
-        # Step 7: ML inference — Tier A only (rule #1,2)
+        # Step 7: ML inference from pre-trained model (fast — <1 sec)
+        ml_picks = []
         try:
-            scored = ml_score_tier_a(tiers["A"])
+            from engines.ml_inference import predict_all, get_top_picks_for_trading
+            result_ml = predict_all(top_n=20)
+            if not result_ml.get("error"):
+                ml_picks = result_ml.get("picks", [])
+                log.warning("Step 7: ML scored %d stocks in %dms (model: %s)",
+                            result_ml.get("total_scored", 0),
+                            result_ml.get("inference_time_ms", 0),
+                            result_ml.get("model_id", "?"))
+                # Log predictions for performance tracking
+                try:
+                    from engines.performance_tracker import log_predictions
+                    log_predictions(ml_picks, result_ml.get("model_id", "unknown"))
+                except Exception:
+                    pass
+            else:
+                log.warning("Step 7: ML inference unavailable (%s), falling back to tier scoring",
+                            result_ml.get("error"))
+                scored = ml_score_tier_a(tiers["A"])
+                ml_picks = []
         except Exception as e:
             log.error("Step 7 ML failed: %s", e)
-            scored = tiers["A"]
+            try:
+                scored = ml_score_tier_a(tiers["A"])
+            except Exception:
+                scored = tiers["A"]
         gc.collect()
-        log.warning("Step 7: ML scored %d Tier A stocks", len(scored))
 
         # Step 8: Options flow
         options = []
@@ -634,11 +696,14 @@ def run_full_pipeline(is_premarket=False):
         gc.collect()
         log.warning("Step 8: %d options picks", len(options))
 
-        # Step 9: Build recommendations
+        # Step 9: Build recommendations from ML picks or fallback
         equity = []
         swing = []
         try:
-            equity = build_equity_recommendations(scored, breadth)
+            if ml_picks:
+                equity = _ml_picks_to_recommendations(ml_picks)
+            else:
+                equity = build_equity_recommendations(scored, breadth)
             swing = build_swing_recommendations(equity)
         except Exception as e:
             log.error("Step 9 Recommendations failed: %s", e)
