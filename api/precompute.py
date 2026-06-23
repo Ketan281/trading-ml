@@ -131,8 +131,12 @@ def _equity_picks_lean(pool=30, final=15):
     FEATURES = ["mom_21", "mom_63", "mom_126", "mom_252",
                 "rev_5", "vol_21", "rsi_14", "dist_high", "ma_ratio"]
 
+    all_files = _glob.glob(os.path.join(src, "*.csv"))
+    all_files.sort(key=lambda p: os.path.getsize(p), reverse=True)
+    all_files = all_files[:80]
+
     rows = []
-    for path in _glob.glob(os.path.join(src, "*.csv")):
+    for path in all_files:
         name = os.path.basename(path).replace(".csv", "").replace("_daily", "")
         if name.lower() in ("manifest",) or name in EXCLUDE:
             continue
@@ -296,8 +300,9 @@ def get_cached_recommendations():
 
 
 def _bg_reco_loop():
-    """Background: refresh recommendations every 5 min during market hours."""
+    """Background: refresh recommendations every 10 min during market hours."""
     import gc
+    time.sleep(60)
     while True:
         try:
             now = datetime.now()
@@ -305,10 +310,10 @@ def _bg_reco_loop():
             if is_market or not os.path.exists(_path(RECO_CACHE_KEY)):
                 compute_recommendations()
                 gc.collect()
-            time.sleep(300 if is_market else 1800)
+            time.sleep(600 if is_market else 3600)
         except Exception as e:
             print(f"  [precompute] bg error: {e}")
-            time.sleep(120)
+            time.sleep(300)
 
 
 def start_reco_background():

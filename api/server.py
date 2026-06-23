@@ -691,7 +691,7 @@ def _ml_loop():
     global _learning_ran_today
     from datetime import time as dtime, datetime as _dt
     while True:
-        time.sleep(60)
+        time.sleep(300)
         try:
             results = uw.ml_tick_all()
             if results:
