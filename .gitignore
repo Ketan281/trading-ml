@@ -23,7 +23,16 @@ data/intraday/
 data/option_chain/
 data/paper/
 data/feature_store/
+data/feature_store.db
+data/cache/
+data/ml_performance.db
 outputs/
+
+# ── Old model versions (only latest.pkl + latest_meta.json are committed) ──
+models/ml_v2/v2_*.pkl
+models/ml_v2/v2_*_meta.json
+models/ml_v2/v3_2*.pkl
+models/ml_v2/v3_2*_meta.json
 
 # ── DO commit (needed to run): code + price history + fundamentals + models ──
 # data/historical/*.csv         (10-yr price + index CSVs)  — kept

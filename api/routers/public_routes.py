@@ -137,6 +137,20 @@ def ml_predictions_ep(user: dict = Depends(auth.current_user)):
     return _silent(predict_all, top_n=20)
 
 
+@router.get("/ml/trades")
+def ml_trades_ep(user: dict = Depends(auth.current_user)):
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    from engines.ml_inference import get_top_picks_for_trading
+    return {"trades": _silent(get_top_picks_for_trading, capital=balance, max_picks=5)}
+
+
+@router.get("/ml/options")
+def ml_options_ep(user: dict = Depends(auth.current_user)):
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    from engines.ml_inference import get_options_trades
+    return {"trades": _silent(get_options_trades, capital=balance, max_picks=3)}
+
+
 @router.get("/ml/status")
 def ml_status_ep():
     from engines.ml_inference import model_status

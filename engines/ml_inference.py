@@ -78,9 +78,8 @@ def predict_all(top_n=20):
 
     t0 = time.time()
 
-    # Load latest features from feature store
-    from engines.feature_store import load_latest_features
-    latest = load_latest_features()
+    from engines.feature_store import load_latest_features_fast
+    latest = load_latest_features_fast()
     if latest.empty:
         return {"error": "Feature store empty", "picks": []}
 
@@ -132,7 +131,9 @@ def predict_all(top_n=20):
         }
         # Include key feature values for explainability
         for feat in ["ret_5d", "ret_21d", "ret_63d", "rsi_14", "mfi_14",
-                      "rel_volume", "dist_ma20", "sharpe_60d", "sr_proximity"]:
+                      "rel_volume", "dist_ema20", "sharpe_60d", "sr_proximity",
+                      "adx_14", "supertrend_signal", "vwap_dist", "roe",
+                      "earnings_growth", "pattern_score", "bb_pctb"]:
             if feat in row.index:
                 val = row[feat]
                 pick["features"][feat] = round(float(val), 4) if pd.notna(val) else 0
@@ -172,8 +173,8 @@ def get_top_picks_for_trading(capital=100000, max_picks=5):
     if result.get("error"):
         return []
 
-    from engines.feature_store import load_latest_features
-    latest = load_latest_features()
+    from engines.feature_store import load_latest_features_fast
+    latest = load_latest_features_fast()
     price_map = dict(zip(latest["symbol"], latest["price"]))
     feat_map = {}
     for _, row in latest.iterrows():
@@ -206,10 +207,18 @@ def get_top_picks_for_trading(capital=100000, max_picks=5):
         risk_per_share = price - stop
         qty = max(1, int(per_trade * 0.02 / risk_per_share)) if risk_per_share > 0 else 1
 
-        # Determine action from momentum
+        # Determine action from momentum + supertrend + VWAP
         ret_5d = pick["features"].get("ret_5d", 0)
         rsi = pick["features"].get("rsi_14", 50)
-        action = "buy" if ret_5d >= 0 or rsi < 60 else "sell"
+        supertrend = pick["features"].get("supertrend_signal", 1)
+        vwap = pick["features"].get("vwap_dist", 0)
+        bullish_signals = sum([
+            1 if ret_5d >= 0 else 0,
+            1 if rsi < 65 else 0,
+            1 if supertrend > 0 else 0,
+            1 if vwap > 0 else 0,
+        ])
+        action = "buy" if bullish_signals >= 2 else "sell"
         side = "long" if action == "buy" else "short"
         if side == "short":
             stop = round(price + 2 * atr, 2)
@@ -231,11 +240,63 @@ def get_top_picks_for_trading(capital=100000, max_picks=5):
             "ml_rank": pick["rank"],
             "reward_risk": reward_risk,
             "reason": (f"ML rank #{pick['rank']} (score {pick['ml_score']:.3f}, "
-                       f"confidence {pick['confidence']:.0f}%) — "
-                       f"RSI {rsi:.0f}, 5d ret {ret_5d*100:.1f}%"),
+                       f"confidence {pick['confidence']:.0f}%) -- "
+                       f"RSI {rsi:.0f}, 5d ret {ret_5d*100:.1f}%, "
+                       f"ST {'UP' if supertrend > 0 else 'DN'}, "
+                       f"VWAP {'above' if vwap > 0 else 'below'}"),
         })
 
     return trades
+
+
+def get_options_trades(capital=100000, max_picks=3):
+    """ML-ranked stocks -> options trade recommendations.
+    Uses ML to pick the stock, then options pipeline for strike/strategy."""
+    equity_trades = get_top_picks_for_trading(capital=capital, max_picks=max_picks * 2)
+    if not equity_trades:
+        return []
+
+    options_trades = []
+    for trade in equity_trades:
+        if len(options_trades) >= max_picks:
+            break
+        sym = trade["symbol"]
+        try:
+            from pipelines.options.strategy_selector import select_strategy
+            strategy = select_strategy(sym, trade["side"], trade["confidence"])
+            if strategy and strategy.get("strategy"):
+                options_trades.append({
+                    "symbol": sym,
+                    "segment": "options_intraday",
+                    "equity_action": trade["action"],
+                    "equity_entry": trade["entry"],
+                    "equity_stop": trade["stop"],
+                    "equity_target": trade["target"],
+                    "ml_score": trade["ml_score"],
+                    "ml_rank": trade["ml_rank"],
+                    "confidence": trade["confidence"],
+                    "option_strategy": strategy.get("strategy", "buy_call" if trade["side"] == "long" else "buy_put"),
+                    "option_details": strategy,
+                    "reason": trade["reason"],
+                })
+        except Exception:
+            # Fallback: simple call/put based on ML direction
+            options_trades.append({
+                "symbol": sym,
+                "segment": "options_intraday",
+                "equity_action": trade["action"],
+                "equity_entry": trade["entry"],
+                "equity_stop": trade["stop"],
+                "equity_target": trade["target"],
+                "ml_score": trade["ml_score"],
+                "ml_rank": trade["ml_rank"],
+                "confidence": trade["confidence"],
+                "option_strategy": "buy_call" if trade["side"] == "long" else "buy_put",
+                "option_details": None,
+                "reason": trade["reason"],
+            })
+
+    return options_trades
 
 
 def model_status():

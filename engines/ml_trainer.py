@@ -1,18 +1,13 @@
 """
 ML Trainer — train once, predict forever.
 
-Builds a cross-sectional ranking model on ALL historical data from the
-feature store. The model learns which stocks will outperform the universe
-over the next N days, using 35 features across momentum, volatility,
-volume flow, trend, and mean-reversion.
+Walk-forward training with 4-year train / 1-year test blocks:
+  Fold 1: Train 2006-2010, Test 2011
+  Fold 2: Train 2012-2016, Test 2017
+  Fold 3: Train 2018-2024, Test 2025
+  Final:  Train ALL data -> production model
 
-Training pipeline:
-    1. Load panel from feature store (symbol × date × features)
-    2. Compute forward returns as targets
-    3. Cross-sectional z-score normalization per date
-    4. Walk-forward validation (no future leak)
-    5. Train final model on all data
-    6. Save to model registry
+Loads data per-fold to avoid MemoryError on large feature stores.
 
 Run locally: python -m engines.ml_trainer
 The server only loads the saved model for inference.
@@ -39,18 +34,13 @@ log = logging.getLogger("ml_trainer")
 MODEL_DIR = os.path.join(ROOT, "models", "ml_v2")
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-# Features used for training (must match feature_store.FEATURE_COLS minus cross-sectional)
-RAW_FEATURES = [
-    "ret_1d", "ret_5d", "ret_10d", "ret_21d", "ret_63d", "ret_126d", "ret_252d",
-    "rsi_14", "bb_pctb", "dist_ma20", "dist_ma50", "dist_ma200",
-    "above_20ema", "above_50ema", "above_200ma", "ma_slope_20", "macd_hist",
-    "trend_slope_10",
-    "vol_10d", "vol_21d", "atr_ratio", "intraday_range",
-    "rel_volume", "vol_trend", "mfi_14", "ad_momentum", "up_down_vol_ratio",
-    "vol_price_confirm",
-    "sr_proximity", "fib_level", "range_pos_20",
-    "sharpe_60d", "stretch_atr",
-]
+CROSS_SECTIONAL = {"mom_rank", "vol_rank", "rs_score"}
+
+def _get_raw_features():
+    from engines.feature_store import FEATURE_COLS
+    return [f for f in FEATURE_COLS if f not in CROSS_SECTIONAL]
+
+RAW_FEATURES = _get_raw_features()
 Z_FEATURES = [f + "_z" for f in RAW_FEATURES]
 
 HORIZONS = {
@@ -60,24 +50,30 @@ HORIZONS = {
 }
 MIN_STOCKS_PER_DATE = 20
 
+# Walk-forward folds: (train_start, train_end, test_start, test_end)
+WALK_FORWARD_FOLDS = [
+    ("2006-01-01", "2010-12-31", "2011-01-01", "2011-12-31"),
+    ("2012-01-01", "2016-12-31", "2017-01-01", "2017-12-31"),
+    ("2018-01-01", "2024-12-31", "2025-01-01", "2025-12-31"),
+]
 
-def _load_panel():
-    """Load training panel from feature store."""
+# Train on 5d horizon — picks the best trade for THIS WEEK, not next month
+DEFAULT_HORIZON = "5d"
+
+
+def _load_panel_range(min_date, max_date):
+    """Load a date range from feature store. Memory-safe."""
     from engines.feature_store import load_training_panel
-    panel = load_training_panel()
-    if panel.empty:
-        raise ValueError("Feature store is empty — run: python -m engines.feature_store")
-    return panel
+    return load_training_panel(min_date=min_date, max_date=max_date, recent_years=None)
 
 
-def _add_forward_returns(panel, prices_by_sym):
-    """Add forward return columns using price data from feature store."""
+def _add_forward_returns(panel, horizon_key="21d"):
+    """Add forward return columns using price data."""
     panel = panel.sort_values(["symbol", "date"]).copy()
 
     for label, horizon in HORIZONS.items():
         fwd_col = f"fwd_{label}"
         panel[fwd_col] = np.nan
-
         for sym, grp in panel.groupby("symbol"):
             idx = grp.index
             prices = grp["price"].values
@@ -91,9 +87,7 @@ def _add_forward_returns(panel, prices_by_sym):
 
 
 def _zscore_per_date(panel):
-    """Cross-sectional z-score normalization: each feature normalized across
-    all stocks on the same date. This removes market-wide moves and makes
-    features comparable across different market conditions."""
+    """Cross-sectional z-score normalization per date."""
     for feat in RAW_FEATURES:
         zfeat = feat + "_z"
         if feat in panel.columns:
@@ -106,8 +100,7 @@ def _zscore_per_date(panel):
 
 
 def _add_labels(panel, horizon_key="21d"):
-    """Label: relative rank within each date's cross-section.
-    1 = top half (outperformer), 0 = bottom half."""
+    """Label: 1 = top half outperformer, 0 = bottom half."""
     fwd_col = f"fwd_{horizon_key}"
     panel["label"] = panel.groupby("date")[fwd_col].transform(
         lambda x: (x.rank(pct=True) > 0.5).astype(int)
@@ -115,6 +108,27 @@ def _add_labels(panel, horizon_key="21d"):
     panel["rel_fwd"] = panel.groupby("date")[fwd_col].transform(
         lambda x: x - x.mean()
     )
+    return panel
+
+
+def _clean_features(panel):
+    """Replace inf/nan in z-features."""
+    for col in Z_FEATURES:
+        if col in panel.columns:
+            panel[col] = panel[col].replace([np.inf, -np.inf], 0).fillna(0)
+    return panel
+
+
+def _prepare_panel(panel, horizon_key="21d"):
+    """Full prep: forward returns -> z-score -> labels -> clean."""
+    panel = _add_forward_returns(panel, horizon_key)
+    fwd_col = f"fwd_{horizon_key}"
+    panel = panel.dropna(subset=[fwd_col])
+    date_counts = panel.groupby("date")["symbol"].transform("count")
+    panel = panel[date_counts >= MIN_STOCKS_PER_DATE].copy()
+    panel = _zscore_per_date(panel)
+    panel = _add_labels(panel, horizon_key)
+    panel = _clean_features(panel)
     return panel
 
 
@@ -157,7 +171,7 @@ def _precision_at_k(df, k=10):
     return float(np.nanmean(precs)) if precs else float("nan")
 
 
-def _profit_simulation(df, top_n=10, capital=100000):
+def _profit_simulation(df, top_n=10):
     """Simulate buying top_n stocks equally weighted each rebalance."""
     daily_rets = []
     for date, grp in df.groupby("date"):
@@ -169,18 +183,15 @@ def _profit_simulation(df, top_n=10, capital=100000):
     if not daily_rets:
         return {}
     rets = pd.Series(daily_rets)
-    # Use log returns to avoid overflow in long backtests
     log_rets = np.log1p(rets.clip(-0.99, None))
     cum_log = log_rets.cumsum()
     cum = np.exp(cum_log)
     annual_periods = 252 / 21
     n_years = len(rets) / annual_periods
-    total_ret = float(cum.iloc[-1] - 1) if len(cum) > 0 else 0
     cagr = float((cum.iloc[-1]) ** (1 / max(n_years, 1)) - 1) if len(cum) > 0 else 0
     sharpe = float(rets.mean() / (rets.std() + 1e-9) * np.sqrt(annual_periods))
     max_dd = float((cum / cum.cummax() - 1).min())
     return {
-        "total_return": round(total_ret * 100, 2),
         "cagr": round(cagr * 100, 2),
         "sharpe": round(sharpe, 3),
         "max_drawdown": round(max_dd * 100, 2),
@@ -190,152 +201,205 @@ def _profit_simulation(df, top_n=10, capital=100000):
     }
 
 
-def train(horizon_key="21d", n_splits=5):
-    """Full training pipeline. Returns metrics dict and saves model."""
-    print("=" * 60)
-    print("  ML TRAINER — Cross-Sectional Ranking Model v2")
-    print("=" * 60)
+def _make_model():
+    """Create XGBoost model with tuned hyperparams for 78-feature set."""
+    return xgb.XGBClassifier(
+        n_estimators=600,
+        max_depth=6,
+        learning_rate=0.02,
+        subsample=0.8,
+        colsample_bytree=0.5,
+        reg_alpha=0.3,
+        reg_lambda=2.0,
+        min_child_weight=15,
+        eval_metric="logloss",
+        random_state=42,
+        verbosity=0,
+        n_jobs=1,
+    )
 
+
+def train(horizon_key=DEFAULT_HORIZON):
+    """Full training with walk-forward validation on 4yr/1yr blocks.
+
+    Folds:
+      Train 2006-2010 -> Test 2011
+      Train 2012-2016 -> Test 2017
+      Train 2018-2024 -> Test 2025
+
+    Then trains final model on ALL available data for production.
+    """
+    print("=" * 60)
+    print(f"  ML TRAINER v4 -- {len(RAW_FEATURES)} Features, Walk-Forward 4yr/1yr")
+    print("=" * 60)
     t0 = time.time()
-
-    # 1. Load panel
-    print("\n[1/6] Loading feature store...")
-    panel = _load_panel()
-    n_symbols = panel["symbol"].nunique()
-    n_dates = panel["date"].nunique()
-    print(f"  Loaded: {len(panel):,} rows, {n_symbols} stocks, {n_dates} dates")
-
-    # 2. Forward returns
-    print(f"\n[2/6] Computing forward returns ({horizon_key})...")
-    panel = _add_forward_returns(panel, None)
-    fwd_col = f"fwd_{horizon_key}"
-    panel = panel.dropna(subset=[fwd_col])
-
-    # Filter dates with enough stocks
-    date_counts = panel.groupby("date")["symbol"].transform("count")
-    panel = panel[date_counts >= MIN_STOCKS_PER_DATE].copy()
-    print(f"  After filters: {len(panel):,} rows, {panel['date'].nunique()} dates")
-
-    # 3. Z-score normalization
-    print("\n[3/6] Cross-sectional z-score normalization...")
-    panel = _zscore_per_date(panel)
-    panel = _add_labels(panel, horizon_key)
-
-    # Replace infinities and fill NaN
-    for col in Z_FEATURES:
-        if col in panel.columns:
-            panel[col] = panel[col].replace([np.inf, -np.inf], 0).fillna(0)
-
-    # 4. Walk-forward validation
-    print(f"\n[4/6] Walk-forward validation ({n_splits} folds)...")
-    dates = np.sort(panel["date"].unique())
-    fold_size = len(dates) // (n_splits + 1)
-    embargo = HORIZONS[horizon_key]
 
     ic_scores, ls_scores, prec_scores = [], [], []
     all_test_preds = []
+    total_train_rows = 0
+    total_test_rows = 0
+    available_features = None
 
-    for k in range(1, n_splits + 1):
-        train_end = fold_size * k
-        test_start = train_end + embargo
-        test_end = min(fold_size * (k + 1), len(dates))
-        if test_start >= test_end:
+    # ── Walk-forward validation: load each fold separately ──
+    print(f"\n[1/3] Walk-forward validation ({len(WALK_FORWARD_FOLDS)} folds)...\n")
+
+    for fold_i, (tr_start, tr_end, te_start, te_end) in enumerate(WALK_FORWARD_FOLDS, 1):
+        print(f"  --- Fold {fold_i}: Train {tr_start[:4]}-{tr_end[:4]} | "
+              f"Test {te_start[:4]}-{te_end[:4]} ---")
+
+        # Load train data
+        print(f"    Loading train data ({tr_start[:4]}-{tr_end[:4]})...")
+        train_panel = _load_panel_range(tr_start, tr_end)
+        if train_panel.empty:
+            print(f"    [SKIP] No train data for {tr_start}-{tr_end}")
             continue
 
-        train_dates = set(dates[:train_end])
-        test_dates = set(dates[test_start:test_end])
+        train_panel = _prepare_panel(train_panel, horizon_key)
+        n_train = len(train_panel)
+        n_train_sym = train_panel["symbol"].nunique()
+        n_train_dates = train_panel["date"].nunique()
+        print(f"    Train: {n_train:,} rows, {n_train_sym} stocks, {n_train_dates} dates")
 
-        tr = panel[panel["date"].isin(train_dates)]
-        te = panel[panel["date"].isin(test_dates)].copy()
-        if len(tr) < 1000 or len(te) < 200:
+        if n_train < 1000:
+            print(f"    [SKIP] Too few training rows")
+            del train_panel; gc.collect()
             continue
 
-        available_features = [f for f in Z_FEATURES if f in panel.columns]
+        available_features = [f for f in Z_FEATURES if f in train_panel.columns]
 
-        model = xgb.XGBClassifier(
-            n_estimators=400,
-            max_depth=5,
-            learning_rate=0.03,
-            subsample=0.8,
-            colsample_bytree=0.7,
-            reg_alpha=0.1,
-            reg_lambda=1.0,
-            min_child_weight=10,
-            eval_metric="logloss",
-            random_state=42,
-            verbosity=0,
-            n_jobs=1,
-        )
-        model.fit(tr[available_features], tr["label"])
-        te["pred"] = model.predict_proba(te[available_features])[:, 1]
+        # Train model for this fold
+        model = _make_model()
+        model.fit(train_panel[available_features], train_panel["label"])
 
-        ic = _rank_ic(te)
-        ls = _long_short(te)
-        prec = _precision_at_k(te, k=10)
+        # Free train memory before loading test
+        del train_panel; gc.collect()
+
+        # Load test data
+        print(f"    Loading test data ({te_start[:4]}-{te_end[:4]})...")
+        test_panel = _load_panel_range(te_start, te_end)
+        if test_panel.empty:
+            print(f"    [SKIP] No test data for {te_start}-{te_end}")
+            del model; gc.collect()
+            continue
+
+        test_panel = _prepare_panel(test_panel, horizon_key)
+        n_test = len(test_panel)
+        n_test_dates = test_panel["date"].nunique()
+        print(f"    Test:  {n_test:,} rows, {test_panel['symbol'].nunique()} stocks, "
+              f"{n_test_dates} dates")
+
+        if n_test < 200:
+            print(f"    [SKIP] Too few test rows")
+            del test_panel, model; gc.collect()
+            continue
+
+        # Predict
+        test_panel["pred"] = model.predict_proba(test_panel[available_features])[:, 1]
+
+        ic = _rank_ic(test_panel)
+        ls = _long_short(test_panel)
+        prec = _precision_at_k(test_panel, k=10)
+        sim = _profit_simulation(test_panel, top_n=10)
+
         ic_scores.append(ic)
         ls_scores.append(ls)
         prec_scores.append(prec)
-        all_test_preds.append(te)
+        all_test_preds.append(test_panel[["date", "symbol", "pred", "rel_fwd", "label"]].copy())
+        total_train_rows += n_train
+        total_test_rows += n_test
 
-        print(f"  Fold {k}: Rank IC = {ic:+.4f} | "
-              f"L/S spread = {ls:+.4%} | "
-              f"Precision@10 = {prec:.1%}")
+        print(f"    Rank IC      = {ic:+.4f}")
+        print(f"    L/S spread   = {ls:+.4%}")
+        print(f"    Precision@10 = {prec:.1%}")
+        if sim:
+            print(f"    CAGR={sim.get('cagr',0):.1f}%  Sharpe={sim.get('sharpe',0):.3f}  "
+                  f"MaxDD={sim.get('max_drawdown',0):.1f}%  WinRate={sim.get('win_rate',0):.0f}%")
+        print()
 
-    mean_ic = float(np.nanmean(ic_scores))
-    mean_ls = float(np.nanmean(ls_scores))
-    mean_prec = float(np.nanmean(prec_scores))
+        del test_panel, model; gc.collect()
 
-    # Profit simulation on all test data
+    # ── Summary ──
+    mean_ic = float(np.nanmean(ic_scores)) if ic_scores else 0
+    mean_ls = float(np.nanmean(ls_scores)) if ls_scores else 0
+    mean_prec = float(np.nanmean(prec_scores)) if prec_scores else 0
+
     sim_results = {}
     if all_test_preds:
         all_test = pd.concat(all_test_preds, ignore_index=True)
         sim_results = _profit_simulation(all_test, top_n=10)
+        del all_test; gc.collect()
 
-    print(f"\n  {'=' * 50}")
+    print(f"  {'=' * 50}")
+    print(f"  VALIDATION SUMMARY ({len(ic_scores)} folds)")
+    print(f"  {'=' * 50}")
     print(f"  Mean Rank IC        : {mean_ic:+.4f}")
     print(f"  Mean L/S spread     : {mean_ls:+.4%}  (per {horizon_key})")
     print(f"  Mean Precision@10   : {mean_prec:.1%}")
     if sim_results:
-        print(f"  Backtest CAGR       : {sim_results.get('cagr', 0):.1f}%")
-        print(f"  Backtest Sharpe     : {sim_results.get('sharpe', 0):.3f}")
+        print(f"  Combined CAGR       : {sim_results.get('cagr', 0):.1f}%")
+        print(f"  Combined Sharpe     : {sim_results.get('sharpe', 0):.3f}")
         print(f"  Max Drawdown        : {sim_results.get('max_drawdown', 0):.1f}%")
         print(f"  Win Rate            : {sim_results.get('win_rate', 0):.1f}%")
-        print(f"  Test period         : {sim_results.get('n_years', 0):.1f} years")
+    print(f"  Total train rows    : {total_train_rows:,}")
+    print(f"  Total test rows     : {total_test_rows:,}")
 
     edge = "STRONG" if mean_ic > 0.05 else "EDGE" if mean_ic > 0.02 else "WEAK"
     print(f"  Verdict             : {edge}")
 
-    # 5. Train final model on ALL data
-    print(f"\n[5/6] Training final model on all {len(panel):,} rows...")
-    available_features = [f for f in Z_FEATURES if f in panel.columns]
+    # ── Train final production model on most recent block ──
+    # Use 2018-2025 for final model (recent market regime most relevant)
+    print(f"\n[2/3] Training FINAL model on 2018-2025...")
+    final_panel = _load_panel_range("2018-01-01", "2025-12-31")
+    if final_panel.empty:
+        print("  ERROR: No data for 2018-2025")
+        return {}
+
+    final_panel = _prepare_panel(final_panel, horizon_key)
+    n_final = len(final_panel)
+    n_final_sym = final_panel["symbol"].nunique()
+    print(f"  Final training: {n_final:,} rows, {n_final_sym} stocks, "
+          f"{final_panel['date'].nunique()} dates")
+
+    available_features = [f for f in Z_FEATURES if f in final_panel.columns]
 
     final_model = xgb.XGBClassifier(
-        n_estimators=500,
-        max_depth=5,
-        learning_rate=0.03,
+        n_estimators=600,
+        max_depth=6,
+        learning_rate=0.02,
         subsample=0.8,
-        colsample_bytree=0.7,
-        reg_alpha=0.1,
-        reg_lambda=1.0,
-        min_child_weight=10,
+        colsample_bytree=0.5,
+        reg_alpha=0.3,
+        reg_lambda=2.0,
+        min_child_weight=15,
         eval_metric="logloss",
         random_state=42,
         verbosity=0,
         n_jobs=-1,
     )
-    final_model.fit(panel[available_features], panel["label"])
+    final_model.fit(final_panel[available_features], final_panel["label"])
 
     # Feature importance
     imp = pd.Series(final_model.feature_importances_, index=available_features)
     imp = imp.sort_values(ascending=False)
-    print("\n  Top features:")
-    for feat, val in imp.head(10).items():
+    print("\n  Top 15 features:")
+    for feat, val in imp.head(15).items():
         bar = "#" * int(val * 60)
-        print(f"    {feat:<24} {bar} {val:.3f}")
+        print(f"    {feat:<30} {bar} {val:.3f}")
 
-    # 6. Save model + metadata
-    print("\n[6/6] Saving model...")
-    model_id = f"v2_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    # Z-score stats for inference
+    zscore_stats = {}
+    latest_date = final_panel["date"].max()
+    latest_data = final_panel[final_panel["date"] == latest_date]
+    for feat in RAW_FEATURES:
+        if feat in latest_data.columns:
+            zscore_stats[feat] = {
+                "mean": float(latest_data[feat].mean()),
+                "std": float(latest_data[feat].std()),
+            }
+
+    # ── Save ──
+    print(f"\n[3/3] Saving model...")
+    model_id = f"v3_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     model_path = os.path.join(MODEL_DIR, f"{model_id}.pkl")
     meta_path = os.path.join(MODEL_DIR, f"{model_id}_meta.json")
     latest_path = os.path.join(MODEL_DIR, "latest.pkl")
@@ -344,76 +408,68 @@ def train(horizon_key="21d", n_splits=5):
     with open(model_path, "wb") as f:
         pickle.dump(final_model, f)
 
-    # Also compute and save the z-score statistics for inference
-    zscore_stats = {}
-    for feat in RAW_FEATURES:
-        if feat in panel.columns:
-            # Use the most recent date's cross-sectional stats as reference
-            latest_date = panel["date"].max()
-            latest_data = panel[panel["date"] == latest_date]
-            zscore_stats[feat] = {
-                "mean": float(latest_data[feat].mean()),
-                "std": float(latest_data[feat].std()),
-            }
-
     meta = {
         "model_id": model_id,
-        "type": "cross_sectional_ranker_v2",
+        "type": "cross_sectional_ranker_v3",
+        "n_features": len(available_features),
+        "feature_categories": {
+            "technical": len([f for f in available_features if not any(
+                f.endswith(x) for x in ["_pe_trailing_z", "_roe_z", "_roa_z",
+                "_profit_margin_z", "_earnings_growth_z"])]),
+            "fundamental": 20,
+            "pattern": 3,
+        },
         "horizon": horizon_key,
         "horizon_days": HORIZONS[horizon_key],
         "features": available_features,
         "raw_features": RAW_FEATURES,
-        "n_symbols": n_symbols,
-        "n_dates": int(panel["date"].nunique()),
-        "n_samples": len(panel),
+        "n_symbols": n_final_sym,
+        "n_dates": int(final_panel["date"].nunique()),
+        "n_samples": n_final,
+        "walk_forward": {
+            "folds": [
+                {"train": f"{s[:4]}-{e[:4]}", "test": f"{ts[:4]}-{te[:4]}"}
+                for s, e, ts, te in WALK_FORWARD_FOLDS
+            ],
+            "fold_ics": [round(x, 4) for x in ic_scores],
+            "fold_ls": [round(x, 4) for x in ls_scores],
+            "fold_prec": [round(x, 4) for x in prec_scores],
+        },
         "validation": {
             "mean_rank_ic": round(mean_ic, 4),
             "mean_ls_spread": round(mean_ls, 4),
             "mean_precision_at_10": round(mean_prec, 4),
-            "n_folds": n_splits,
+            "n_folds": len(ic_scores),
         },
         "backtest": sim_results,
-        "feature_importance": {k: round(v, 4) for k, v in imp.head(20).items()},
+        "feature_importance": {k: round(v, 4) for k, v in imp.head(25).items()},
         "zscore_stats": zscore_stats,
         "edge": edge,
         "trained_at": datetime.now().isoformat(),
         "training_time_sec": round(time.time() - t0, 1),
+        "final_train_period": "2018-2025",
     }
 
     with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
 
-    # Copy as "latest"
     import shutil
     shutil.copy2(model_path, latest_path)
     shutil.copy2(meta_path, latest_meta_path)
 
+    del final_panel, final_model; gc.collect()
+
     print(f"\n  [OK] Model saved -> {model_path}")
     print(f"       Also -> {latest_path}")
+    print(f"       {len(available_features)} features, {n_final:,} training rows")
     print(f"       Training time: {time.time() - t0:.0f}s")
 
     return meta
 
 
-def train_all_horizons():
-    """Train models for 5d, 10d, and 21d horizons."""
-    results = {}
-    for h in HORIZONS:
-        print(f"\n{'#' * 60}")
-        print(f"  Training {h} horizon model")
-        print(f"{'#' * 60}")
-        results[h] = train(horizon_key=h)
-        gc.collect()
-    return results
-
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
-    if "--all-horizons" in sys.argv:
-        train_all_horizons()
-    else:
-        horizon = "21d"
-        for arg in sys.argv[1:]:
-            if arg in HORIZONS:
-                horizon = arg
-        train(horizon_key=horizon)
+    result = train()
+    if result:
+        print(f"\nDone. Edge: {result.get('edge')}, "
+              f"Rank IC: {result.get('validation', {}).get('mean_rank_ic')}")
