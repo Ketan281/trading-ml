@@ -41,6 +41,7 @@ WorkingDirectory=/home/ubuntu/trading-ml
 ExecStart=/home/ubuntu/trading-ml/venv/bin/uvicorn api.server:app --host 0.0.0.0 --port 8000 --workers 1
 Restart=always
 RestartSec=10
+TimeoutStopSec=180
 
 # Rule #10: Minimal logging
 Environment=AOS_DISABLE_LLM=1

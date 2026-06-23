@@ -140,13 +140,18 @@ EXCLUDE = {"NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX"}
 
 
 def _load_single_stock(path):
-    """Load one stock CSV, compute basic features, return dict or None."""
+    """Load ONLY last 260 rows of a stock CSV — enough for all indicators."""
     name = os.path.basename(path).replace(".csv", "").replace("_daily", "")
     if name.lower() in ("manifest",) or name in EXCLUDE:
         return None
     try:
+        # Count lines first, then skip to tail — avoids loading 10yr of data
+        with open(path, 'r') as f:
+            n_lines = sum(1 for _ in f) - 1  # minus header
+        skip = max(0, n_lines - 260)
         df = pd.read_csv(path, index_col="Date", parse_dates=True,
-                         usecols=["Date", "Open", "High", "Low", "Close", "Volume"])
+                         usecols=["Date", "Open", "High", "Low", "Close", "Volume"],
+                         skiprows=range(1, skip + 1) if skip > 0 else None)
         if len(df) < 60:
             return None
         df = df.sort_index()
@@ -553,17 +558,17 @@ def run_full_pipeline(is_premarket=False):
         import glob as _glob
         files = _glob.glob(os.path.join(src, "*.csv"))
         if is_premarket:
-            pass  # process all
+            files = files[:200]
         else:
             files.sort(key=lambda p: os.path.getsize(p), reverse=True)
-            files = files[:200]
+            files = files[:80]
 
         all_stocks = []
         for i, path in enumerate(files):
             s = _load_single_stock(path)
             if s:
                 all_stocks.append(s)
-            if i % 100 == 0:
+            if i % 40 == 0:
                 gc.collect()
 
         gc.collect()
