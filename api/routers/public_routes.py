@@ -117,6 +117,19 @@ def recommendations_ep(user: dict = Depends(auth.current_user)):
     return get_cached_recommendations()
 
 
+@router.get("/universe/tiers")
+def universe_tiers_ep(user: dict = Depends(auth.current_user)):
+    from engines.market_scheduler import get_tier_universe
+    return get_tier_universe()
+
+
+@router.get("/market/breadth")
+def market_breadth_ep(user: dict = Depends(auth.current_user)):
+    from engines.market_scheduler import _cache_get
+    breadth = _cache_get("breadth")
+    return breadth or {"score": 0, "regime": "unknown", "note": "computing"}
+
+
 @router.get("/market-intel")
 def market_intel_ep():
     from pipelines.market_intel import market_context

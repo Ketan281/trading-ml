@@ -33,6 +33,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+# Rule #10: Reduce verbose logging — errors and important events only
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+for _noisy in ("uvicorn.access", "httpcore", "httpx", "urllib3", "xgboost"):
+    logging.getLogger(_noisy).setLevel(logging.ERROR)
+
 from fastapi import FastAPI, Depends, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -92,6 +97,43 @@ class Query(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "trading-ai"}
+
+
+@app.get("/health/detail")
+def health_detail():
+    """Detailed health: memory, scheduler state, cache age (rule #27)."""
+    import gc
+    info = {"status": "ok", "service": "trading-ai"}
+    try:
+        with open("/proc/meminfo") as f:
+            lines = f.readlines()
+        mem = {}
+        for line in lines:
+            parts = line.split()
+            mem[parts[0].rstrip(":")] = int(parts[1])
+        total = mem.get("MemTotal", 1)
+        avail = mem.get("MemAvailable", total)
+        info["memory"] = {
+            "total_mb": round(total / 1024),
+            "available_mb": round(avail / 1024),
+            "used_pct": round((1 - avail / total) * 100, 1),
+        }
+    except Exception:
+        info["memory"] = "not available"
+
+    try:
+        from engines.market_scheduler import _cache_get
+        last = _cache_get("last_recommendations")
+        if last:
+            info["last_reco"] = last.get("timestamp", "unknown")
+            info["pipeline_time"] = last.get("pipeline_time", "unknown")
+            info["equity_count"] = len(last.get("equity_intraday", []))
+            info["options_count"] = len(last.get("options", []))
+    except Exception:
+        pass
+
+    info["gc_stats"] = gc.get_stats()
+    return info
 
 
 @app.post("/query")
