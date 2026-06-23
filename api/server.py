@@ -725,19 +725,24 @@ _ml_log = logging.getLogger("ml_auto")
 _learning_ran_today = None
 
 def _ml_loop():
-    """Every 60 seconds, tick all ML-mode users, auto-open trades in both
-    Indian and Forex markets simultaneously, and manage the portfolio.
-    After market close (16:00–18:00 IST), runs the self-learning cycle once:
-    post-market review → meta-learning policy update.
-    Runs in a daemon thread — dies with the process."""
+    """ML auto-trading + post-market self-learning.
+    Runs ml_tick_all only during market hours (09:15-15:30) every 10 min.
+    Post-market learning 16:00-18:00. Sleeps otherwise."""
     global _learning_ran_today
     from datetime import time as dtime, datetime as _dt
+    import gc
     while True:
-        time.sleep(300)
+        time.sleep(600)
         try:
-            results = uw.ml_tick_all()
-            if results:
-                _ml_log.info("ML auto-traded: %s", results)
+            now = _dt.now()
+            t = now.hour * 100 + now.minute
+            is_market = now.weekday() < 5 and 915 <= t <= 1530
+
+            if is_market:
+                results = uw.ml_tick_all()
+                gc.collect()
+                if results:
+                    _ml_log.warning("ML auto-traded: %s", results)
         except Exception as e:
             _ml_log.warning("ML loop error: %s", e)
 
@@ -748,15 +753,15 @@ def _ml_loop():
             today = now.date()
             if after_close and weekday and _learning_ran_today != today:
                 _learning_ran_today = today
-                _ml_log.info("Running daily self-learning cycle...")
+                _ml_log.warning("Running daily self-learning cycle...")
                 from aos.postmarket import review
                 r = review()
-                _ml_log.info("Post-market review: %d trades, %d lessons",
-                             r.get("n_trades", 0), len(r.get("lessons", [])))
+                gc.collect()
                 from aos.meta_learning import learn
                 p = learn()
-                _ml_log.info("Meta-learning: %s (n=%d)",
-                             p.get("status"), p.get("n_outcomes", 0))
+                gc.collect()
+                _ml_log.warning("Self-learning done: %d trades, %d lessons",
+                                r.get("n_trades", 0), len(r.get("lessons", [])))
         except Exception as e:
             _ml_log.warning("Self-learning cycle error: %s", e)
 
@@ -774,4 +779,5 @@ def _start_reco_precompute():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=False,
+                limit_concurrency=8)
