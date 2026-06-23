@@ -552,30 +552,33 @@ def me_mode(user: dict = Depends(auth.current_user)):
 def me_set_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
     uid = user["id"]
     result = _silent(uw.set_mode, uid, body.mode, body.market)
+    if not isinstance(result, dict):
+        result = {}
     if body.mode == "ml":
         result["auto_opened"] = _trigger_ml_immediately(uid, body.market)
-    result["current_mode"] = uw.get_mode(uid)
-    result["status"] = _silent(uw.status, uid, do_tick=False)
+    result["current_mode"] = _silent(uw.get_mode, uid)
     return result
 
 @app.post("/me/mode/indian")
 def me_set_indian_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
     uid = user["id"]
     result = _silent(uw.set_mode, uid, body.mode, "indian")
+    if not isinstance(result, dict):
+        result = {}
     if body.mode == "ml":
         result["auto_opened"] = _trigger_ml_immediately(uid, "indian")
-    result["current_mode"] = uw.get_mode(uid)
-    result["status"] = _silent(uw.status, uid, do_tick=False)
+    result["current_mode"] = _silent(uw.get_mode, uid)
     return result
 
 @app.post("/me/mode/forex")
 def me_set_forex_mode(body: ModeChange, user: dict = Depends(auth.current_user)):
     uid = user["id"]
     result = _silent(uw.set_mode, uid, body.mode, "forex")
+    if not isinstance(result, dict):
+        result = {}
     if body.mode == "ml":
         result["auto_opened"] = _trigger_ml_immediately(uid, "forex")
-    result["current_mode"] = uw.get_mode(uid)
-    result["status"] = _silent(uw.status, uid, do_tick=False)
+    result["current_mode"] = _silent(uw.get_mode, uid)
     return result
 
 

@@ -891,44 +891,33 @@ def ml_users():
 
 
 def _pick_best_recommendation(uid, balance):
-    """Use the unified intelligence-backed recommendation engine to find
-    the best trade. Falls back to the simple pick_trade if the engine fails.
-
-    The recommendation engine combines:
-    - FII/DII flows, PCR, intermarket context (macro)
-    - Volume profile, delivery %, accumulation/distribution (institutional)
-    - Support/resistance, Fibonacci, Camarilla pivots (levels)
-    - 30 candlestick patterns + 20 fundamental parameters (base)
-    - Sector rotation, market regime, event calendar (context)
-
-    All factors are fused into a single confidence % — that's what the user sees.
-    """
+    """Read from the pre-computed scheduler cache (zero computation).
+    The scheduler pipeline runs in the background every 10 minutes and
+    caches recommendations to SQLite. This just reads from that cache."""
     try:
-        from api.recommendations import segment_recommendations
-        reco = segment_recommendations(balance)
+        from engines.market_scheduler import get_cached_recommendations
+        reco = get_cached_recommendations()
         if not reco:
-            raise ValueError("empty")
+            return None
         all_picks = []
         for seg in ("equity_intraday", "options", "swing"):
             picks = reco.get(seg, [])
             if picks:
                 all_picks.extend(picks)
         if not all_picks:
-            raise ValueError("no picks")
+            return None
         all_picks.sort(key=lambda p: p.get("confidence", 0), reverse=True)
 
         held_symbols = {t["symbol"] for t in _open_trades(uid)}
         for pick in all_picks:
-            if pick["symbol"] in held_symbols:
+            if pick.get("symbol") in held_symbols:
                 continue
             if pick.get("confidence", 0) < 30:
                 continue
             return pick
-        return None
     except Exception:
         pass
-    from aos.sim_wallet import pick_trade
-    return pick_trade(balance)
+    return None
 
 
 def _reco_to_spec(pick):
