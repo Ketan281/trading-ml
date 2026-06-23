@@ -188,6 +188,26 @@ def ml_feature_store_ep():
     return get_store_stats()
 
 
+@router.get("/ml/intraday/equity")
+def ml_intraday_equity_ep(user: dict = Depends(auth.current_user)):
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    from engines.intraday_inference import get_intraday_equity_trades
+    return _silent(get_intraday_equity_trades, capital=balance, max_picks=5)
+
+
+@router.get("/ml/intraday/options")
+def ml_intraday_options_ep(user: dict = Depends(auth.current_user)):
+    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
+    from engines.intraday_inference import get_intraday_options_trades
+    return _silent(get_intraday_options_trades, capital=balance, max_picks=3)
+
+
+@router.get("/ml/intraday/status")
+def ml_intraday_status_ep():
+    from engines.intraday_inference import model_status
+    return model_status()
+
+
 @router.get("/market-intel")
 def market_intel_ep():
     from pipelines.market_intel import market_context

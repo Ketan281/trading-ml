@@ -33,6 +33,7 @@ models/ml_v2/v2_*.pkl
 models/ml_v2/v2_*_meta.json
 models/ml_v2/v3_2*.pkl
 models/ml_v2/v3_2*_meta.json
+models/intraday/intraday_*.pkl
 
 # ── DO commit (needed to run): code + price history + fundamentals + models ──
 # data/historical/*.csv         (10-yr price + index CSVs)  — kept
