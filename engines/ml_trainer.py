@@ -169,16 +169,24 @@ def _profit_simulation(df, top_n=10, capital=100000):
     if not daily_rets:
         return {}
     rets = pd.Series(daily_rets)
-    cum = (1 + rets).cumprod()
+    # Use log returns to avoid overflow in long backtests
+    log_rets = np.log1p(rets.clip(-0.99, None))
+    cum_log = log_rets.cumsum()
+    cum = np.exp(cum_log)
+    annual_periods = 252 / 21
+    n_years = len(rets) / annual_periods
     total_ret = float(cum.iloc[-1] - 1) if len(cum) > 0 else 0
-    sharpe = float(rets.mean() / (rets.std() + 1e-9) * np.sqrt(252 / 21))
+    cagr = float((cum.iloc[-1]) ** (1 / max(n_years, 1)) - 1) if len(cum) > 0 else 0
+    sharpe = float(rets.mean() / (rets.std() + 1e-9) * np.sqrt(annual_periods))
     max_dd = float((cum / cum.cummax() - 1).min())
     return {
         "total_return": round(total_ret * 100, 2),
+        "cagr": round(cagr * 100, 2),
         "sharpe": round(sharpe, 3),
         "max_drawdown": round(max_dd * 100, 2),
         "win_rate": round(float((rets > 0).mean() * 100), 1),
         "n_periods": len(daily_rets),
+        "n_years": round(n_years, 1),
     }
 
 
@@ -288,10 +296,11 @@ def train(horizon_key="21d", n_splits=5):
     print(f"  Mean L/S spread     : {mean_ls:+.4%}  (per {horizon_key})")
     print(f"  Mean Precision@10   : {mean_prec:.1%}")
     if sim_results:
-        print(f"  Backtest Return     : {sim_results.get('total_return', 0):.1f}%")
+        print(f"  Backtest CAGR       : {sim_results.get('cagr', 0):.1f}%")
         print(f"  Backtest Sharpe     : {sim_results.get('sharpe', 0):.3f}")
         print(f"  Max Drawdown        : {sim_results.get('max_drawdown', 0):.1f}%")
         print(f"  Win Rate            : {sim_results.get('win_rate', 0):.1f}%")
+        print(f"  Test period         : {sim_results.get('n_years', 0):.1f} years")
 
     edge = "STRONG" if mean_ic > 0.05 else "EDGE" if mean_ic > 0.02 else "WEAK"
     print(f"  Verdict             : {edge}")
@@ -321,7 +330,7 @@ def train(horizon_key="21d", n_splits=5):
     imp = imp.sort_values(ascending=False)
     print("\n  Top features:")
     for feat, val in imp.head(10).items():
-        bar = "█" * int(val * 60)
+        bar = "#" * int(val * 60)
         print(f"    {feat:<24} {bar} {val:.3f}")
 
     # 6. Save model + metadata
@@ -379,9 +388,9 @@ def train(horizon_key="21d", n_splits=5):
     shutil.copy2(model_path, latest_path)
     shutil.copy2(meta_path, latest_meta_path)
 
-    print(f"\n  ✅ Model saved → {model_path}")
-    print(f"     Also → {latest_path}")
-    print(f"     Training time: {time.time() - t0:.0f}s")
+    print(f"\n  [OK] Model saved -> {model_path}")
+    print(f"       Also -> {latest_path}")
+    print(f"       Training time: {time.time() - t0:.0f}s")
 
     return meta
 

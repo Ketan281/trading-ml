@@ -112,9 +112,9 @@ def predict_all(top_n=20):
     latest["ml_score"] = scores
     latest["ml_rank"] = latest["ml_score"].rank(ascending=False).astype(int)
 
-    # Confidence: map raw probability to 0-100 scale
-    # Calibrate: 0.5 = 50% (random), 0.7+ = high confidence
-    latest["confidence"] = ((latest["ml_score"] - 0.5) * 200).clip(0, 100).round(1)
+    # Confidence: rank-based percentile within today's cross-section
+    # Top stock = 100, median = 50, bottom = 0
+    latest["confidence"] = latest["ml_score"].rank(pct=True).mul(100).round(1)
 
     # Sort by score
     ranked = latest.sort_values("ml_score", ascending=False).reset_index(drop=True)
@@ -278,4 +278,4 @@ if __name__ == "__main__":
         for p in result["picks"]:
             print(f"  #{p['rank']:>3}  {p['symbol']:<15} "
                   f"score={p['ml_score']:.3f}  conf={p['confidence']:.0f}%  "
-                  f"price=₹{p['price']:.0f}")
+                  f"price=Rs{p['price']:.0f}")
