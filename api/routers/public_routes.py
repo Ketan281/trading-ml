@@ -113,9 +113,8 @@ def recommendation_ep(user: dict = Depends(auth.current_user)):
 # ── Multi-segment recommendations ──────────────────────
 @router.get("/recommendations")
 def recommendations_ep(user: dict = Depends(auth.current_user)):
-    from api.recommendations import segment_recommendations
-    balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
-    return cached("reco_multi", lambda: _silent(segment_recommendations, balance), ttl=120)
+    from api.precompute import get_cached_recommendations
+    return get_cached_recommendations()
 
 
 @router.get("/market-intel")

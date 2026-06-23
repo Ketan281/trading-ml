@@ -724,6 +724,11 @@ def _start_ml_loop():
     t.start()
     _ml_log.info("ML auto-trading background loop started (60s interval)")
 
+@app.on_event("startup")
+def _start_reco_precompute():
+    from api.precompute import start_reco_background
+    start_reco_background()
+
 
 if __name__ == "__main__":
     import uvicorn
