@@ -201,7 +201,7 @@ def run_job(name):
 
 # On a 1 GB micro box, skip the jobs that reload models / train (they OOM).
 MICRO = os.getenv("AOS_PROFILE") == "micro"
-MICRO_SKIP = {"retrain", "deliberate", "manage"}
+MICRO_SKIP = {"retrain", "deliberate", "manage", "user_ml_tick", "monitor"}
 
 
 def run_forever(tick=30):

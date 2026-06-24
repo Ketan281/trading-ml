@@ -12,6 +12,7 @@ User=ubuntu
 WorkingDirectory=/home/ubuntu/trading-ai
 Environment=PYTHONIOENCODING=utf-8
 Environment=PYTHONPATH=/home/ubuntu/trading-ai
+Environment=AOS_PROFILE=micro
 ExecStart=/home/ubuntu/trading-ai/.venv/bin/python aos/scheduler.py run-forever
 Restart=always
 RestartSec=10
