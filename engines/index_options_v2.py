@@ -322,17 +322,19 @@ def _determine_trade(signals):
     ltp = 0
     # Will be filled from strikes data
 
+    _f = lambda v: int(v) if hasattr(v, 'item') and isinstance(v.item(), int) else (float(v) if hasattr(v, 'item') else v)
+
     return {
         "symbol": sym,
         "segment": "index_options_v2",
         "tier": tier,
         "direction": direction,
         "option_type": option_type,
-        "strike": strike,
-        "contract": f"{sym} {strike} {option_type}" if option_type else None,
-        "spot": spot,
-        "target_spot": round(target_spot, 0),
-        "sl_spot": round(sl_spot, 0),
+        "strike": _f(strike),
+        "contract": f"{sym} {int(strike)} {option_type}" if option_type else None,
+        "spot": float(spot),
+        "target_spot": float(round(target_spot, 0)),
+        "sl_spot": float(round(sl_spot, 0)),
         "win_rate_est": win_rate_est,
         "position_pct": position_pct,
         "signals": {
@@ -342,16 +344,16 @@ def _determine_trade(signals):
             "n_bear": n_bear,
         },
         "data": {
-            "pcr": signals["pcr"],
+            "pcr": float(signals["pcr"]),
             "oi_flow": signals["net_oi_flow"],
-            "ce_chg_oi": signals["ce_chg_oi"],
-            "pe_chg_oi": signals["pe_chg_oi"],
-            "rsi": signals["rsi"],
-            "max_pain": signals["max_pain"],
-            "max_pain_dist": signals["max_pain_dist_pct"],
-            "call_wall": call_wall,
-            "put_wall": put_wall,
-            "atm_iv": signals["atm_iv"],
+            "ce_chg_oi": int(signals["ce_chg_oi"]),
+            "pe_chg_oi": int(signals["pe_chg_oi"]),
+            "rsi": float(signals["rsi"]),
+            "max_pain": int(signals["max_pain"]),
+            "max_pain_dist": float(signals["max_pain_dist_pct"]),
+            "call_wall": int(call_wall),
+            "put_wall": int(put_wall),
+            "atm_iv": float(signals["atm_iv"]),
         },
         "reason": (f"{tier}: {sym} {direction} | "
                    f"OI={'PE>CE (bull)' if oi_bull else 'CE>PE (bear)'} | "

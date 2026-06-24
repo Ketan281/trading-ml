@@ -46,6 +46,10 @@ from pydantic import BaseModel
 from api.router import route, _silent
 from api import auth
 from aos import user_wallet as uw
+from api.routers.public_routes import router as public_router
+from api.routers.user_routes import router as user_router
+from api.routers.live_routes import router as live_router
+from api.routers.admin_routes import router as admin_router
 from api.routers.phase2_routes import router as phase2_router
 from api.routers.portfolio_routes import router as portfolio_router
 
@@ -59,7 +63,11 @@ try:
 except Exception as _e:
     print(f"Phase 2 migration: {_e}")
 
-# Phase 2 routes
+# Routers (inline @app routes above take precedence for duplicate paths)
+app.include_router(public_router)
+app.include_router(user_router)
+app.include_router(live_router)
+app.include_router(admin_router)
 app.include_router(phase2_router)
 app.include_router(portfolio_router)
 

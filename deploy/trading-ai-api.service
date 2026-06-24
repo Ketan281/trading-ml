@@ -13,7 +13,7 @@ Environment=PYTHONIOENCODING=utf-8
 Environment=PYTHONPATH=/home/ubuntu/trading-ai
 Environment=ALLOWED_ORIGINS=https://app.example.com
 # Run on localhost only; nginx is the public edge.
-ExecStart=/home/ubuntu/trading-ai/.venv/bin/uvicorn api.server:app --host 127.0.0.1 --port 8000 --workers 2
+ExecStart=/home/ubuntu/trading-ai/.venv/bin/uvicorn api.server:app --host 127.0.0.1 --port 8000 --workers 1
 Restart=always
 RestartSec=5
 

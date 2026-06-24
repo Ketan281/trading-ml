@@ -6,9 +6,10 @@ crashes (idempotent jobs + persisted last-run + state on disk), logs
 everything, and catches up on jobs missed during downtime.
 
 JOBS
-  premarket    daily 08:30 (wkday)   global+regime+breadth briefing
-  deliberate   every 15m, mkt hours  committee considers a NEW trade
-  manage       every 2m,  mkt hours  tick open positions → stops/targets/booking
+  premarket      daily 08:30 (wkday)   global+regime+breadth briefing
+  collect_chains every 3m, mkt hours   NSE option chain snapshot (V2 signal data)
+  deliberate     every 15m, mkt hours  committee considers a NEW trade
+  manage         every 2m,  mkt hours  tick open positions → stops/targets/booking
   user_ml_tick every 1m,  weekdays   tick ML-mode user books + auto-open setups
   precompute   every 5m,  mkt hours  warm API caches
   monitor      every 60m             health dashboard; logs WARN/ALERT
@@ -105,6 +106,11 @@ def job_user_ml_tick():
     results = uw.ml_tick_all()
     return {"opened": len(results), "events": results[:10]}
 
+def job_collect_chains():
+    from training.collect_option_chain import collect_once
+    collect_once()
+    return {"status": "collected"}
+
 def job_wallet_open():
     from aos.sim_wallet import start_daily_trade
     r = start_daily_trade()
@@ -120,6 +126,7 @@ def job_wallet_tick():
 # kind: 'daily' (at HH:MM), 'interval' (every N min), 'weekly' (weekday@HH:MM)
 JOBS = {
     "premarket":  {"fn": job_premarket,  "kind": "daily",    "at": "08:30", "wkday": True},
+    "collect_chains": {"fn": job_collect_chains, "kind": "interval", "every_min": 3, "market": True},
     "deliberate": {"fn": job_deliberate, "kind": "interval", "every_min": 15, "market": True},
     "manage":     {"fn": job_manage,     "kind": "interval", "every_min": 2,  "market": True},
     "user_ml_tick": {"fn": job_user_ml_tick, "kind": "interval", "every_min": 1, "wkday": True},
