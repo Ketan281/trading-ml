@@ -208,6 +208,18 @@ def ml_intraday_status_ep():
     return model_status()
 
 
+@router.get("/ml/intraday/strikes/{symbol}")
+def ml_strike_rank_ep(symbol: str):
+    from engines.strike_ranker import rank_contracts
+    return rank_contracts(symbol.upper(), top_n=5)
+
+
+@router.get("/ml/intraday/strikes-status")
+def ml_strike_status_ep():
+    from engines.strike_ranker import data_status
+    return data_status()
+
+
 @router.get("/market-intel")
 def market_intel_ep():
     from pipelines.market_intel import market_context

@@ -347,18 +347,32 @@ def _predict_index_options():
 
 
 def get_intraday_options_trades(capital=100000, max_picks=5):
-    """Combined options trades: NIFTY/BANKNIFTY first, then stock options.
+    """Combined options trades: strike-ranked index options first, then stocks.
 
     Priority:
-      1. NIFTY/BANKNIFTY index options (from index_options model)
-      2. Stock options (from stock direction model + range filter)
+      1. Strike-ranked NIFTY/BANKNIFTY contracts (conviction-filtered)
+      2. Index direction model fallback (if no strike data)
+      3. Stock options (from stock direction model + range filter)
     """
     trades = []
 
-    # === PRIMARY: NIFTY/BANKNIFTY index options ===
-    index_trades = _predict_index_options()
-    for t in index_trades:
-        trades.append(t)
+    # === PRIMARY: Strike-ranked index options (HIGH/MEDIUM conviction only) ===
+    try:
+        from engines.strike_ranker import rank_all_indices
+        ranked = rank_all_indices(top_n=3)
+        for res in ranked:
+            if res.get("skipped"):
+                continue
+            for t in res.get("trades", []):
+                trades.append(t)
+    except Exception as e:
+        log.warning(f"Strike ranker unavailable: {e}")
+
+    # === FALLBACK: Index direction model if no strike-ranked trades ===
+    if not trades:
+        index_trades = _predict_index_options()
+        for t in index_trades:
+            trades.append(t)
 
     # === SECONDARY: Stock options (fill remaining slots) ===
     remaining = max_picks - len(trades)
@@ -465,6 +479,13 @@ def model_status():
         }
     else:
         status["index_options"] = {"loaded": False}
+
+    # Strike ranker + data collection status
+    try:
+        from engines.strike_ranker import data_status
+        status["strike_ranker"] = data_status()
+    except Exception:
+        status["strike_ranker"] = {"error": "unavailable"}
 
     return status
 
