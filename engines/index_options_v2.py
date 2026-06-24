@@ -129,8 +129,12 @@ def _compute_signals(strikes_df, idx_daily, symbol):
     put_wall = int(otm_puts.loc[otm_puts["pe_oi"].idxmax(), "strike"]) if len(otm_puts) > 0 else atm - step * 3
 
     dow = datetime.now().weekday()
+    above_ema = False
     if len(idx_daily) >= 1:
         dow = idx_daily.iloc[-1]["Date"].weekday()
+    if len(idx_daily) >= 20:
+        ema20 = idx_daily["Close"].ewm(span=20).mean().iloc[-1]
+        above_ema = idx_daily.iloc[-1]["Close"] > ema20
 
     return {
         "symbol": symbol,
@@ -153,6 +157,7 @@ def _compute_signals(strikes_df, idx_daily, symbol):
         "put_wall": put_wall,
         "step": step,
         "dow": dow,
+        "above_ema": above_ema,
     }
 
 
@@ -260,7 +265,28 @@ def _determine_trade(signals):
         win_rate_est = 85
         position_pct = 100
 
-    # NO_TRADE: no PCR confirmation AND ratio not strong enough
+    # TIER_2A: OI bull + Tue/Fri + any ratio > 0.1 (93% NIFTY, 82% BANKNIFTY)
+    elif oi_bull and dow in (1, 4) and oi_ratio > 0.1:
+        tier = "TIER_2"
+        direction = "BULLISH"
+        win_rate_est = 93 if sym == "NIFTY" else 82
+        position_pct = 75
+
+    # TIER_2B: OI bull + prev bull + above EMA + ratio > 0.2 (85% N, 86% BN)
+    elif oi_bull and oi_ratio > 0.2 and prev_bull and signals.get("above_ema", False):
+        tier = "TIER_2"
+        direction = "BULLISH"
+        win_rate_est = 85 if sym == "NIFTY" else 86
+        position_pct = 60
+
+    # TIER_2C: OI bear + prev bear + ratio > 0.3 -- BANKNIFTY only (89%)
+    elif not oi_bull and oi_ratio > 0.3 and not prev_bull and sym == "BANKNIFTY":
+        tier = "TIER_2"
+        direction = "BEARISH"
+        win_rate_est = 89
+        position_pct = 60
+
+    # NO_TRADE: no confirmation available
     else:
         tier = "NO_TRADE"
         direction = "NEUTRAL"
