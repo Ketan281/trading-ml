@@ -286,6 +286,17 @@ def current_user(authorization: str = Header(None)):
     return user
 
 
+def optional_user(authorization: str = Header(None)):
+    """Resolve bearer token if present, otherwise return a default guest user."""
+    if not authorization or not authorization.lower().startswith("bearer "):
+        return {"id": "guest", "email": "guest@local", "role": "user"}
+    payload = decode_token(authorization.split(" ", 1)[1].strip())
+    if not payload:
+        return {"id": "guest", "email": "guest@local", "role": "user"}
+    user = get_user(payload["sub"])
+    return user or {"id": "guest", "email": "guest@local", "role": "user"}
+
+
 def admin_only(user: dict = Depends(current_user)):
     if user.get("role") != "admin":
         raise HTTPException(403, "admin access only")
