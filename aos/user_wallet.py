@@ -339,6 +339,15 @@ def reset(uid):
     return get_wallet(uid)
 
 
+def reset_all_wallets():
+    """Reset every user's wallet to DEFAULT_BALANCE and clear all trades."""
+    init_db()
+    with _conn() as c:
+        c.execute("DELETE FROM trades WHERE segment!='forex'")
+        c.execute("DELETE FROM wallets")
+    return {"status": "all wallets reset", "default_balance": DEFAULT_BALANCE}
+
+
 # ── trade storage helpers ─────────────────────────────
 _TRADE_COLS = ["id", "user_id", "date", "segment", "kind", "side", "symbol",
                "chart_symbol", "underlying", "strike", "leg", "qty", "lots",

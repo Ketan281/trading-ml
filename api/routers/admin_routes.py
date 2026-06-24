@@ -98,3 +98,8 @@ def admin_kill_switch_reset(user: dict = Depends(auth.admin_only)):
     gate = get_executor()
     gate.reset_kill_switch()
     return {"kill_switch": False, "message": "orders re-enabled"}
+
+
+@router.post("/wallets/reset-all")
+def admin_reset_all_wallets(user: dict = Depends(auth.admin_only)):
+    return uw.reset_all_wallets()
