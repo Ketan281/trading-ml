@@ -735,38 +735,63 @@ def train_strike_ranker():
             if current.empty or next_day.empty:
                 continue
 
-            # Use first snapshot as features, last as "EOD" for labels
+            # Features: use today's data (first or only snapshot)
             first_ts = current["timestamp"].min()
-            last_ts = current["timestamp"].max()
+            feature_snap = current[current["timestamp"] == first_ts].copy()
 
-            first_snap = current[current["timestamp"] == first_ts].copy()
-            last_snap = current[current["timestamp"] == last_ts].copy()
+            # Label: compare today's LTP with next day's LTP (or today's last vs first for intraday)
+            has_intraday = current["timestamp"].nunique() > 1
+            if has_intraday:
+                # Intraday: first snapshot -> last snapshot return
+                last_ts = current["timestamp"].max()
+                label_snap = current[current["timestamp"] == last_ts].copy()
+            else:
+                # EOD backfill: today's close -> next day's close
+                next_last_ts = next_day["timestamp"].max()
+                label_snap = next_day[next_day["timestamp"] == next_last_ts].copy()
 
-            # Match aggregate
+            # Match aggregate (try date match, fallback to building from strikes)
             agg_match = agg_df[agg_df["timestamp"].dt.date == pd.to_datetime(date_str).date()]
             if agg_match.empty:
-                continue
-            agg_row = agg_match.iloc[0].to_dict()
+                # Build aggregate from strikes directly
+                spot_approx = feature_snap.iloc[len(feature_snap)//2]["strike"] if len(feature_snap) > 0 else 0
+                agg_row = {
+                    "spot": spot_approx, "atm": spot_approx,
+                    "max_pain": spot_approx, "atm_iv": 20,
+                    "india_vix": None, "pcr_oi": 1.0, "pcr_vol": 1.0,
+                    "max_pain_dist_pct": 0, "ce_chg_oi": 0, "pe_chg_oi": 0,
+                }
+                # Compute PCR from strikes
+                tot_ce = feature_snap["ce_oi"].sum()
+                tot_pe = feature_snap["pe_oi"].sum()
+                if tot_ce > 0:
+                    agg_row["pcr_oi"] = tot_pe / tot_ce
+                agg_row["ce_chg_oi"] = int(feature_snap["ce_chg_oi"].sum())
+                agg_row["pe_chg_oi"] = int(feature_snap["pe_chg_oi"].sum())
+                atm_r = feature_snap.iloc[(feature_snap["strike"] - spot_approx).abs().argmin()]
+                agg_row["atm_iv"] = (atm_r["ce_iv"] + atm_r["pe_iv"]) / 2
+            else:
+                agg_row = agg_match.iloc[0].to_dict()
 
-            contracts = _compute_strike_features(first_snap, agg_row, sym)
+            contracts = _compute_strike_features(feature_snap, agg_row, sym)
             if contracts.empty:
                 continue
 
-            # Label: return from first snapshot LTP to last snapshot LTP
-            last_prices = dict(zip(
-                zip(last_snap["strike"], ["CE"]*len(last_snap)),
-                last_snap["ce_ltp"]
+            # Build label prices from label snapshot
+            label_prices = dict(zip(
+                zip(label_snap["strike"], ["CE"]*len(label_snap)),
+                label_snap["ce_ltp"]
             ))
-            last_prices.update(dict(zip(
-                zip(last_snap["strike"], ["PE"]*len(last_snap)),
-                last_snap["pe_ltp"]
+            label_prices.update(dict(zip(
+                zip(label_snap["strike"], ["PE"]*len(label_snap)),
+                label_snap["pe_ltp"]
             )))
 
-            contracts["eod_ltp"] = contracts.apply(
-                lambda r: last_prices.get((r["strike"], r["option_type"]), r["ltp"]), axis=1)
+            contracts["exit_ltp"] = contracts.apply(
+                lambda r: label_prices.get((r["strike"], r["option_type"]), r["ltp"]), axis=1)
             contracts["return"] = np.where(
                 contracts["ltp"] > 0,
-                (contracts["eod_ltp"] - contracts["ltp"]) / contracts["ltp"],
+                (contracts["exit_ltp"] - contracts["ltp"]) / contracts["ltp"],
                 0)
             contracts["date"] = date_str
             all_data.append(contracts)

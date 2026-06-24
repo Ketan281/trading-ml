@@ -356,19 +356,30 @@ def get_intraday_options_trades(capital=100000, max_picks=5):
     """
     trades = []
 
-    # === PRIMARY: Strike-ranked index options (HIGH/MEDIUM conviction only) ===
+    # === PRIMARY: V2 OI-flow based index options (75-79% win rate) ===
     try:
-        from engines.strike_ranker import rank_all_indices
-        ranked = rank_all_indices(top_n=3)
-        for res in ranked:
-            if res.get("skipped"):
-                continue
-            for t in res.get("trades", []):
+        from engines.index_options_v2 import predict_index_options_v2
+        v2_trades = predict_index_options_v2()
+        for t in v2_trades:
+            if t.get("tier") != "NO_TRADE":
                 trades.append(t)
     except Exception as e:
-        log.warning(f"Strike ranker unavailable: {e}")
+        log.warning(f"Index options V2 unavailable: {e}")
 
-    # === FALLBACK: Index direction model if no strike-ranked trades ===
+    # === FALLBACK: Strike ranker if V2 returned nothing ===
+    if not trades:
+        try:
+            from engines.strike_ranker import rank_all_indices
+            ranked = rank_all_indices(top_n=3)
+            for res in ranked:
+                if res.get("skipped"):
+                    continue
+                for t in res.get("trades", []):
+                    trades.append(t)
+        except Exception as e:
+            log.warning(f"Strike ranker unavailable: {e}")
+
+    # === FALLBACK: Index direction model ===
     if not trades:
         index_trades = _predict_index_options()
         for t in index_trades:
