@@ -134,26 +134,43 @@ def live_prices(tm):
     return pm
 
 
+_price_cache = {}   # symbol -> (timestamp, price_or_None)
+_CACHE_TTL = 60     # seconds — avoid hammering yfinance
+_FAIL_TTL = 300     # seconds — back off longer on failures
+
 def _stock_price(symbol):
-    """Robust last price: fast_info, else latest 1-day close (works even when
-    the market is closed)."""
+    """Robust last price with caching to avoid yfinance spam."""
+    import time as _time
+    now = _time.time()
+    if symbol in _price_cache:
+        ts, px = _price_cache[symbol]
+        ttl = _CACHE_TTL if px is not None else _FAIL_TTL
+        if now - ts < ttl:
+            return px
+
     import yfinance as yf
     from pipelines.intraday import INDEX_YF
-    t = yf.Ticker(INDEX_YF.get(symbol, f"{symbol}.NS"))
+    yf_sym = INDEX_YF.get(symbol, f"{symbol}.NS")
     try:
+        t = yf.Ticker(yf_sym)
         fi = t.fast_info
         for k in ("last_price", "lastPrice"):
             v = fi.get(k) if hasattr(fi, "get") else getattr(fi, k, None)
             if v:
-                return float(v)
+                px = float(v)
+                _price_cache[symbol] = (now, px)
+                return px
     except Exception:
         pass
     try:
-        h = t.history(period="1d")
+        h = yf.Ticker(yf_sym).history(period="1d")
         if len(h):
-            return float(h["Close"].iloc[-1])
+            px = float(h["Close"].iloc[-1])
+            _price_cache[symbol] = (now, px)
+            return px
     except Exception:
         pass
+    _price_cache[symbol] = (now, None)
     return None
 
 
