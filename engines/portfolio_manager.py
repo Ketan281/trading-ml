@@ -154,27 +154,33 @@ def daily_brief(user_id, capital=100000):
     except Exception as e:
         brief["signals"]["index_options"] = [{"error": str(e)}]
 
-    # Stock equity picks
-    try:
-        from engines.intraday_inference import get_intraday_equity_trades
-        equity = get_intraday_equity_trades(capital=balance, max_picks=5)
-        if isinstance(equity, dict):
-            brief["signals"]["equity"] = equity.get("trades", [])
-        else:
-            brief["signals"]["equity"] = []
-    except Exception as e:
-        brief["signals"]["equity"] = [{"error": str(e)}]
+    # Stock equity picks (skip on micro/Oracle — yfinance hangs for NIFTY.NS)
+    if not os.environ.get("AOS_PROFILE") == "micro":
+        try:
+            from engines.intraday_inference import get_intraday_equity_trades
+            equity = get_intraday_equity_trades(capital=balance, max_picks=5)
+            if isinstance(equity, dict):
+                brief["signals"]["equity"] = equity.get("trades", [])
+            else:
+                brief["signals"]["equity"] = []
+        except Exception as e:
+            brief["signals"]["equity"] = [{"error": str(e)}]
+    else:
+        brief["signals"]["equity"] = []
 
-    # Stock options picks
-    try:
-        from engines.intraday_inference import get_intraday_options_trades
-        opts = get_intraday_options_trades(capital=balance, max_picks=5)
-        if isinstance(opts, dict):
-            brief["signals"]["stock_options"] = opts.get("trades", [])
-        else:
-            brief["signals"]["stock_options"] = []
-    except Exception as e:
-        brief["signals"]["stock_options"] = [{"error": str(e)}]
+    # Stock options picks (skip on micro — same yfinance issue)
+    if not os.environ.get("AOS_PROFILE") == "micro":
+        try:
+            from engines.intraday_inference import get_intraday_options_trades
+            opts = get_intraday_options_trades(capital=balance, max_picks=5)
+            if isinstance(opts, dict):
+                brief["signals"]["stock_options"] = opts.get("trades", [])
+            else:
+                brief["signals"]["stock_options"] = []
+        except Exception as e:
+            brief["signals"]["stock_options"] = [{"error": str(e)}]
+    else:
+        brief["signals"]["stock_options"] = []
 
     # Risk summary
     brief["risk_summary"] = _compute_risk_summary(user_id, balance, open_trades)
