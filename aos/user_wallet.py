@@ -412,8 +412,13 @@ def _live_price(t):
     if t["kind"] == "forex":
         from pipelines.forex.data import current_price as fx_price
         return fx_price(t["symbol"])
+    sym = t["chart_symbol"] or t["symbol"]
+    if t["kind"] == "futures" and sym in INDICES:
+        from pipelines.options.chain_live_intel import fetch_chain
+        ch = fetch_chain(sym)
+        return float(ch["spot"]) if ch and "spot" in ch else None
     from agents.auto_trader import _stock_price
-    return _stock_price(t["chart_symbol"] or t["symbol"])
+    return _stock_price(sym)
 
 
 # ── open a trade ──────────────────────────────────────

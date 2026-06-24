@@ -12,7 +12,7 @@ router = APIRouter(tags=["user"])
 
 @router.get("/me/wallet")
 def me_wallet(user: dict = Depends(auth.current_user)):
-    return _silent(uw.status, user["id"])
+    return _silent(uw.status, user["id"], do_tick=False)
 
 
 @router.post("/me/wallet/deposit")
