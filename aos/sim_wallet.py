@@ -33,8 +33,8 @@ if ROOT not in sys.path:
 STATE = os.path.join(ROOT, "data", "aos", "sim_wallet.json")
 os.makedirs(os.path.dirname(STATE), exist_ok=True)
 
-DEFAULT_BALANCE = 10_000
-DEPOSIT_CAP     = 100_000
+DEFAULT_BALANCE = 1_000_000
+DEPOSIT_CAP     = 10_000_000
 SQUARE_OFF      = dtime(15, 15)
 OPT_SL_PCT      = 0.35      # option stop = 35% premium decay
 OPT_TGT_PCT     = 0.50      # option target = +50%

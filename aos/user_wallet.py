@@ -38,7 +38,7 @@ from agents.brokerage import charges
 # Multi-user paper product gets a higher (fake-money) deposit cap than the
 # single autonomous wallet, so index futures — which need lakhs of margin — are
 # actually takeable. Still paper money; no real funds involved.
-DEPOSIT_CAP = 100_000
+DEPOSIT_CAP = 10_000_000
 
 # Forex wallet: separate USD-denominated wallet for currency trading.
 FX_DEFAULT_BALANCE = 10_000.0     # $10,000 starting balance

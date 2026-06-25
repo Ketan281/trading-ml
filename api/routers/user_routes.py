@@ -106,3 +106,8 @@ def me_save_broker_config(body: BrokerConfig, user: dict = Depends(auth.current_
 @router.delete("/me/broker-config")
 def me_delete_broker_config(user: dict = Depends(auth.current_user)):
     return uw.delete_broker_config(user["id"])
+
+
+@router.post("/me/wallet/reset")
+def me_wallet_reset(user: dict = Depends(auth.current_user)):
+    return {"wallet": _silent(uw.reset, user["id"])}
