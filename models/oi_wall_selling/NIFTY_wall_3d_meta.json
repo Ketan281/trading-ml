@@ -1,0 +1,43 @@
+{
+  "symbol": "NIFTY",
+  "hold_days": 3,
+  "accuracy": 0.6592,
+  "baseline": 0.7065,
+  "edge": -0.0473,
+  "n_samples": 1421,
+  "era_results": [
+    {
+      "test_year": 2022,
+      "accuracy": 0.7039,
+      "baseline": 0.691,
+      "edge": 0.0129,
+      "n_test": 466
+    },
+    {
+      "test_year": 2023,
+      "accuracy": 0.6108,
+      "baseline": 0.7075,
+      "edge": -0.0968,
+      "n_test": 465
+    },
+    {
+      "test_year": 2024,
+      "accuracy": 0.6667,
+      "baseline": 0.7359,
+      "edge": -0.0693,
+      "n_test": 231
+    }
+  ],
+  "top_features": [
+    "dist_pct",
+    "wall_type",
+    "wall_to_maxpain",
+    "wall_vol_ratio",
+    "strike_pcr",
+    "iv_vs_atm",
+    "wall_oi_log",
+    "net_oi_bias",
+    "wall_vol_log",
+    "oi_concentration"
+  ]
+}

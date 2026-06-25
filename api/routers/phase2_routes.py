@@ -302,3 +302,47 @@ def lab_stress(scenario: str):
     """Run a stress test scenario."""
     from engines.quant_lab import stress_test
     return _safe(stress_test, scenario)
+
+
+# ── Auto Trader (ML Mode) ────────────────────────────
+
+@router.get("/auto/dashboard")
+def auto_dashboard():
+    """Full auto-trader dashboard: account, open trades, daily P&L."""
+    from engines.auto_trader import dashboard
+    return _safe(dashboard)
+
+
+@router.get("/auto/account")
+def auto_account():
+    """Auto-trader account status."""
+    from engines.auto_trader import get_account
+    return _safe(get_account)
+
+
+@router.get("/auto/signals")
+def auto_signals():
+    """Generate today's signals (wall selling + stock ML picks)."""
+    from engines.auto_trader import generate_signals
+    return _safe(generate_signals)
+
+
+@router.post("/auto/trade")
+def auto_trade():
+    """Place the highest-probability trades for today."""
+    from engines.auto_trader import place_best_trades
+    return _safe(place_best_trades)
+
+
+@router.post("/auto/close")
+def auto_close():
+    """Close all open trades at EOD."""
+    from engines.auto_trader import close_trades
+    return _safe(close_trades)
+
+
+@router.post("/auto/reset")
+def auto_reset(capital: float = Query(1000000)):
+    """Reset paper trading account with given capital."""
+    from engines.auto_trader import reset_account
+    return _safe(reset_account, capital)

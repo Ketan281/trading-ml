@@ -1,0 +1,43 @@
+{
+  "symbol": "BANKNIFTY",
+  "hold_days": 3,
+  "accuracy": 0.5965,
+  "baseline": 0.6673,
+  "edge": -0.0708,
+  "n_samples": 1387,
+  "era_results": [
+    {
+      "test_year": 2022,
+      "accuracy": 0.5978,
+      "baseline": 0.6609,
+      "edge": -0.063,
+      "n_test": 460
+    },
+    {
+      "test_year": 2023,
+      "accuracy": 0.5762,
+      "baseline": 0.6794,
+      "edge": -0.1031,
+      "n_test": 446
+    },
+    {
+      "test_year": 2024,
+      "accuracy": 0.6339,
+      "baseline": 0.6562,
+      "edge": -0.0223,
+      "n_test": 224
+    }
+  ],
+  "top_features": [
+    "dist_pct",
+    "wall_vol_ratio",
+    "wall_type",
+    "wall_to_maxpain",
+    "depth_ratio",
+    "iv_vs_atm",
+    "premium",
+    "pcr",
+    "support_depth_log",
+    "competing_walls"
+  ]
+}

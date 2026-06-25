@@ -1,0 +1,92 @@
+{
+  "symbol": "BANKNIFTY",
+  "model_type": "index_direction",
+  "accuracy": 0.5466,
+  "baseline": 0.5427,
+  "edge": 0.0039,
+  "n_features": 102,
+  "n_rows": 1573,
+  "data_range": "2015-02-12 -> 2024-12-20",
+  "trained": "2026-06-24T22:02:58.027695",
+  "era_results": [
+    {
+      "era": "era_2015_2017",
+      "test_year": 2018,
+      "accuracy": 0.6,
+      "baseline": 0.4,
+      "edge": 0.2,
+      "train_rows": 379,
+      "test_rows": 45
+    },
+    {
+      "era": "era_2016_2018",
+      "test_year": 2019,
+      "accuracy": 0.5876,
+      "baseline": 0.732,
+      "edge": -0.1443,
+      "train_rows": 308,
+      "test_rows": 97
+    },
+    {
+      "era": "era_2017_2019",
+      "test_year": 2020,
+      "accuracy": 0.5371,
+      "baseline": 0.5771,
+      "edge": -0.04,
+      "train_rows": 162,
+      "test_rows": 175
+    },
+    {
+      "era": "era_2018_2020",
+      "test_year": 2021,
+      "accuracy": 0.4931,
+      "baseline": 0.5139,
+      "edge": -0.0208,
+      "train_rows": 317,
+      "test_rows": 144
+    },
+    {
+      "era": "era_2019_2021",
+      "test_year": 2022,
+      "accuracy": 0.5202,
+      "baseline": 0.5,
+      "edge": 0.0202,
+      "train_rows": 416,
+      "test_rows": 248
+    },
+    {
+      "era": "era_2020_2022",
+      "test_year": 2023,
+      "accuracy": 0.5592,
+      "baseline": 0.5551,
+      "edge": 0.0041,
+      "train_rows": 567,
+      "test_rows": 245
+    },
+    {
+      "era": "era_2021_2023",
+      "test_year": 2024,
+      "accuracy": 0.5292,
+      "baseline": 0.5208,
+      "edge": 0.0083,
+      "train_rows": 637,
+      "test_rows": 240
+    }
+  ],
+  "top_features": [
+    "ema_20",
+    "ema_200",
+    "iv_proxy_20d",
+    "vpt",
+    "bb_upper_20",
+    "ema_9",
+    "kc_lower",
+    "ema_100",
+    "bb_lower_20",
+    "iv_zscore"
+  ],
+  "thresholds": {
+    "up_pct": 0.5,
+    "horizon_days": 5
+  }
+}

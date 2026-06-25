@@ -63,6 +63,13 @@ try:
 except Exception as _e:
     print(f"Phase 2 migration: {_e}")
 
+# Auto-trader initialization (paper account with Rs.10L)
+try:
+    from engines.auto_trader import _init_schema
+    _init_schema()
+except Exception as _e:
+    print(f"Auto-trader init: {_e}")
+
 # Routers (inline @app routes above take precedence for duplicate paths)
 app.include_router(public_router)
 app.include_router(user_router)

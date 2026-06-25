@@ -1,0 +1,101 @@
+{
+  "symbol": "NIFTY",
+  "model_type": "index_direction",
+  "accuracy": 0.5055,
+  "baseline": 0.4989,
+  "edge": 0.0066,
+  "n_features": 102,
+  "n_rows": 2422,
+  "data_range": "2015-02-18 -> 2024-12-20",
+  "trained": "2026-06-24T22:02:50.945200",
+  "era_results": [
+    {
+      "era": "era_2014_2016",
+      "test_year": 2017,
+      "accuracy": 0.4677,
+      "baseline": 0.4677,
+      "edge": 0.0,
+      "train_rows": 457,
+      "test_rows": 248
+    },
+    {
+      "era": "era_2015_2017",
+      "test_year": 2018,
+      "accuracy": 0.5143,
+      "baseline": 0.502,
+      "edge": 0.0122,
+      "train_rows": 705,
+      "test_rows": 245
+    },
+    {
+      "era": "era_2016_2018",
+      "test_year": 2019,
+      "accuracy": 0.556,
+      "baseline": 0.5353,
+      "edge": 0.0207,
+      "train_rows": 737,
+      "test_rows": 241
+    },
+    {
+      "era": "era_2017_2019",
+      "test_year": 2020,
+      "accuracy": 0.544,
+      "baseline": 0.468,
+      "edge": 0.076,
+      "train_rows": 734,
+      "test_rows": 250
+    },
+    {
+      "era": "era_2018_2020",
+      "test_year": 2021,
+      "accuracy": 0.4677,
+      "baseline": 0.5,
+      "edge": -0.0323,
+      "train_rows": 736,
+      "test_rows": 248
+    },
+    {
+      "era": "era_2019_2021",
+      "test_year": 2022,
+      "accuracy": 0.4637,
+      "baseline": 0.5242,
+      "edge": -0.0605,
+      "train_rows": 739,
+      "test_rows": 248
+    },
+    {
+      "era": "era_2020_2022",
+      "test_year": 2023,
+      "accuracy": 0.5469,
+      "baseline": 0.4939,
+      "edge": 0.0531,
+      "train_rows": 746,
+      "test_rows": 245
+    },
+    {
+      "era": "era_2021_2023",
+      "test_year": 2024,
+      "accuracy": 0.4833,
+      "baseline": 0.5,
+      "edge": -0.0167,
+      "train_rows": 741,
+      "test_rows": 240
+    }
+  ],
+  "top_features": [
+    "year",
+    "vpt",
+    "return_5d",
+    "ema_100",
+    "ema_50",
+    "ema_200",
+    "bb_upper_20",
+    "ema20_vs_50",
+    "atr_21",
+    "obv"
+  ],
+  "thresholds": {
+    "up_pct": 0.5,
+    "horizon_days": 5
+  }
+}

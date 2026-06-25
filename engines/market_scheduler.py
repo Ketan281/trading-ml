@@ -909,6 +909,44 @@ def _should_run_postmarket():
 
 
 _premarket_ran_today = None
+_auto_traded_today = None
+_auto_closed_today = None
+
+
+def _run_auto_trader_open():
+    """Place auto-trader trades at market open (09:20)."""
+    global _auto_traded_today
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    if _auto_traded_today == today:
+        return
+    if not (now.weekday() < 5 and now.hour == 9 and now.minute >= 20):
+        return
+    try:
+        from engines.auto_trader import place_best_trades
+        result = place_best_trades()
+        log.warning("Auto-trader open: %s", result.get("status", "unknown"))
+        _auto_traded_today = today
+    except Exception as e:
+        log.error("Auto-trader open error: %s", e)
+
+
+def _run_auto_trader_close():
+    """Close auto-trader trades at EOD (15:20)."""
+    global _auto_closed_today
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    if _auto_closed_today == today:
+        return
+    if not (now.weekday() < 5 and now.hour == 15 and now.minute >= 20):
+        return
+    try:
+        from engines.auto_trader import close_trades
+        result = close_trades()
+        log.warning("Auto-trader close: %s", result.get("status", "unknown"))
+        _auto_closed_today = today
+    except Exception as e:
+        log.error("Auto-trader close error: %s", e)
 
 
 def background_loop():
@@ -916,6 +954,8 @@ def background_loop():
     The production scheduler loop:
     - 08:30–09:00: Full 434-stock pre-market scan (rule #1)
     - 09:15–15:30: Lightweight Tier A + options every 10 min (rule #2,6)
+    - 09:20: Auto-trader places best trades
+    - 15:20: Auto-trader closes all positions
     - 15:30–16:30: Final post-market scan
     - Overnight: sleep (rule #13)
     """
@@ -939,9 +979,12 @@ def background_loop():
                 _premarket_ran_today = today
                 time.sleep(300)
             elif _should_run_market():
+                _run_auto_trader_open()
+                _run_auto_trader_close()
                 run_full_pipeline(is_premarket=False)
                 time.sleep(600)
             elif _should_run_postmarket():
+                _run_auto_trader_close()
                 run_full_pipeline(is_premarket=False)
                 time.sleep(1800)
             else:

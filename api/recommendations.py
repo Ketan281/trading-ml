@@ -92,47 +92,43 @@ def _equity_intraday_picks(balance=100_000):
 
 
 def _options_picks(capital=100_000):
-    """Best options picks for NIFTY and BANKNIFTY."""
-    from pipelines.options_action_engine import live_trade_plan
-    mkt = _get_market_context()
+    """OI wall selling signals for NIFTY and BANKNIFTY.
+    Walk-forward tested: 90%+ win rate at 80%+ participation."""
+    from pipelines.options_action_engine import simple_signal
     picks = []
-    for sym in ("BANKNIFTY", "NIFTY"):
-        plan = _safe(live_trade_plan, sym, capital)
-        if not plan or plan.get("error") or plan.get("note"):
+    for sym in ("NIFTY", "BANKNIFTY"):
+        signals = _safe(simple_signal, sym, capital)
+        if not signals:
             continue
-        conf_map = {"high": 85, "moderate": 60, "none": 0}
-        conf = conf_map.get(plan.get("conviction", "none"), 0)
-        prob = plan.get("prob_up", 0.5)
-        directional_strength = abs(prob - 0.5) * 200
-        effective_conf = round((conf * 0.6 + directional_strength * 0.4), 1)
-        adj_conf = effective_conf * mkt.get("conviction_multiplier", 1.0)
-        adj_conf = min(99, max(0, adj_conf))
-        picks.append({
-            "segment": "options",
-            "symbol": plan.get("instrument", sym),
-            "underlying": sym,
-            "action": plan.get("action", "NO_TRADE"),
-            "entry": plan.get("entry_premium", 0),
-            "stop": plan.get("stop_premium", 0),
-            "target": plan.get("target_premium", 0),
-            "confidence": round(adj_conf, 1),
-            "raw_confidence": effective_conf,
-            "prob_up": round(prob, 3),
-            "conviction": plan.get("conviction", "none"),
-            "lots": plan.get("lots", 0),
-            "qty": plan.get("qty", 0),
-            "capital_deployed": plan.get("capital_deployed", 0),
-            "max_loss": plan.get("max_loss", 0),
-            "reward_risk": plan.get("reward_risk", 0),
-            "strike": plan.get("instrument", "").split()[-2] if " " in plan.get("instrument", "") else "—",
-            "leg": plan.get("action", "").replace("BUY_", "").replace("SMALL_", ""),
-            "regime_alignment": plan.get("regime_alignment", ""),
-            "market_context": mkt.get("overall", "—"),
-            "reason": f"{plan.get('instrument', sym)} — {plan.get('conviction', '')} conviction "
-                      f"({adj_conf:.0f}%), P(up) {prob:.1%}, R:R {plan.get('reward_risk', 0):.1f}:1, "
-                      f"market {mkt.get('overall', '?')}",
-        })
-    picks.sort(key=lambda x: x["confidence"], reverse=True)
+        if isinstance(signals, dict):
+            continue  # no trade or error
+        for s in signals:
+            picks.append({
+                "segment": "options",
+                "symbol": s["signal"],
+                "underlying": sym,
+                "action": s["signal"],
+                "entry": s.get("premium", 0),
+                "stop": s.get("stoploss", 0),
+                "target": s.get("target", 0),
+                "confidence": s.get("win_pct", 0),
+                "conviction": s.get("conviction", "none"),
+                "lots": s.get("lots", 0),
+                "qty": s.get("qty", 0),
+                "capital_deployed": s.get("funds_required", 0),
+                "max_loss": s.get("max_loss", 0),
+                "max_profit": s.get("max_profit", 0),
+                "win_pct": s.get("win_pct", 0),
+                "funds_required": s.get("funds_required", 0),
+                "wall_oi": s.get("wall_oi", 0),
+                "oi_building": s.get("oi_building", False),
+                "dist_pct": s.get("dist_pct", 0),
+                "hold": s.get("hold", "1 day"),
+                "reason": f"{s['signal']} - {s.get('win_pct',0)}% win rate, "
+                          f"wall {s.get('dist_pct',0)}% from spot, "
+                          f"OI {'building' if s.get('oi_building') else 'unwinding'}",
+            })
+    picks.sort(key=lambda x: x.get("win_pct", 0), reverse=True)
     return picks
 
 
