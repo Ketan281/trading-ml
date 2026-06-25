@@ -346,3 +346,66 @@ def auto_reset(capital: float = Query(1000000)):
     """Reset paper trading account with given capital."""
     from engines.auto_trader import reset_account
     return _safe(reset_account, capital)
+
+
+@router.get("/auto/wall-signals")
+def auto_wall_signals():
+    """Live OI wall selling signals with scoring and win%."""
+    from engines.auto_trader import _score_wall_trade, get_account, MARGIN_PER_LOT, INDEX_LOT
+    from pipelines.options_action_engine import simple_signal
+    from datetime import datetime
+
+    account = get_account() or {"capital": 1000000}
+    capital = account["capital"]
+    dow = datetime.now().weekday()
+    results = {}
+
+    for sym in ["NIFTY", "BANKNIFTY"]:
+        try:
+            raw = simple_signal(sym, capital)
+            if isinstance(raw, dict):
+                results[sym] = {"status": raw.get("signal", "NO DATA"),
+                                "reason": raw.get("reason", ""), "signals": []}
+                continue
+
+            scored = []
+            for s in raw:
+                if "STRANGLE" in s.get("signal", ""):
+                    continue
+                dist = s.get("dist_pct", 0)
+                prem = s.get("premium", 0)
+                wtype = "put" if "PE" in s.get("signal", "") else "call"
+                oi_build = s.get("oi_building", False)
+                sc = _score_wall_trade(dist, prem, dow, wtype, oi_build)
+
+                if sc >= 55:
+                    tier, tier_label = 1, "FULL"
+                elif sc >= 35:
+                    tier, tier_label = 2, "HALF"
+                elif sc >= 20:
+                    tier, tier_label = 3, "QUARTER"
+                else:
+                    tier, tier_label = 0, "SKIP"
+
+                scored.append({
+                    **s,
+                    "score": sc,
+                    "tier": tier,
+                    "tier_label": tier_label,
+                    "tradeable": sc >= 20,
+                })
+
+            scored.sort(key=lambda x: x["score"], reverse=True)
+            results[sym] = {"status": "ok", "signals": scored,
+                            "spot": scored[0]["spot"] if scored else 0}
+        except Exception as e:
+            results[sym] = {"status": "error", "reason": str(e), "signals": []}
+
+    return {
+        "account": {
+            "capital": round(capital, 0),
+            "deployed": round(account.get("deployed", 0), 0),
+        },
+        "signals": results,
+        "timestamp": datetime.now().isoformat(),
+    }
