@@ -351,7 +351,11 @@ def auto_reset(capital: float = Query(1000000)):
 @router.get("/auto/wall-signals")
 def auto_wall_signals():
     """Live OI wall selling signals with scoring and win%."""
-    from engines.auto_trader import _score_wall_trade, get_account, MARGIN_PER_LOT, INDEX_LOT
+    return _cached("auto_wall_signals", _build_wall_signals, ttl=300)
+
+
+def _build_wall_signals():
+    from engines.auto_trader import _score_wall_trade, get_account
     from pipelines.options_action_engine import simple_signal
     from datetime import datetime
 

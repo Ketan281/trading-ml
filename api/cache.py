@@ -3,7 +3,7 @@
 import time
 
 _CACHE = {}
-_TTL = 60
+_TTL = 300
 
 
 def cached(key, builder, ttl=_TTL):

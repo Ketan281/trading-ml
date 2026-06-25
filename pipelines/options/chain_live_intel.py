@@ -60,7 +60,23 @@ def bs_greeks(S, K, dte, iv, leg):
 
 
 # ── Fetch + parse a rich strike-level chain ───────────
+import time as _time
+
+_chain_cache = {}
+_CHAIN_TTL = 180
+
 def fetch_chain(symbol):
+    now = _time.time()
+    hit = _chain_cache.get(symbol)
+    if hit and now - hit[0] < _CHAIN_TTL:
+        return hit[1]
+    result = _fetch_chain_live(symbol)
+    if result is not None:
+        _chain_cache[symbol] = (now, result)
+    return result
+
+
+def _fetch_chain_live(symbol):
     raw = nse.index_option_chain(symbol)
     recs = raw["records"]
     spot = recs.get("underlyingValue")

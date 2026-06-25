@@ -34,7 +34,7 @@ def query(body: Query):
 @router.get("/options/{symbol}")
 def options(symbol: str):
     from pipelines.options.options_dashboard import dashboard
-    return cached(f"opt::{symbol.upper()}", lambda: _silent(dashboard, symbol.upper()))
+    return cached(f"opt::{symbol.upper()}", lambda: _silent(dashboard, symbol.upper()), ttl=300)
 
 
 @router.get("/book")
@@ -100,14 +100,14 @@ def equity_recommendation(user: dict = Depends(auth.current_user)):
 def candles_ep(symbol: str, interval: str = "5m", period: str = "1d"):
     from api.market import candles
     return cached(f"candles::{symbol.upper()}::{interval}::{period}",
-                  lambda: _silent(candles, symbol, interval, period))
+                  lambda: _silent(candles, symbol, interval, period), ttl=120)
 
 
 @router.get("/recommendation")
 def recommendation_ep(user: dict = Depends(auth.current_user)):
     from api.market import recommendation
     balance = _silent(uw.get_wallet, user["id"]).get("balance", 10_000)
-    return cached("reco", lambda: _silent(recommendation, balance))
+    return cached("reco", lambda: _silent(recommendation, balance), ttl=300)
 
 
 # ── Multi-segment recommendations ──────────────────────
