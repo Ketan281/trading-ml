@@ -237,7 +237,7 @@ def stock_intel_ep(symbol: str):
 def allocate_ep(user: dict = Depends(auth.current_user)):
     from api.recommendations import segment_recommendations, allocate_capital
     balance = _silent(uw.get_wallet, user["id"]).get("balance", 100_000)
-    data = cached("reco_multi", lambda: _silent(segment_recommendations, balance), ttl=120)
+    data = cached("reco_multi", lambda: _silent(segment_recommendations, balance), ttl=300)
     if not data:
         return {"allocation": {}, "balance": balance}
     return {"allocation": allocate_capital(balance, data), "balance": balance}

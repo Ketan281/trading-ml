@@ -87,4 +87,7 @@ def get_plan(user: dict = Depends(auth.current_user), date: Optional[str] = None
 def model_status():
     """Status of all ML models powering the portfolio."""
     from engines.portfolio_manager import model_status
-    return _silent(model_status)
+    # Model metadata + CSV-derived signals don't change intra-session; cache so
+    # the Performance/Portfolio polls don't recompute predict_index_options_v2
+    # on every hit and compete for the single worker.
+    return cached("portfolio_models", lambda: _silent(model_status), ttl=600)

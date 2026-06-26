@@ -194,9 +194,15 @@ def _swing_picks(balance=100_000):
 def segment_recommendations(balance=100_000):
     """Fetch best picks across all segments. Returns per-segment sorted lists."""
     mkt = _get_market_context()
-    equity = _safe(_equity_intraday_picks, balance) or []
     options = _safe(_options_picks, balance) or []
-    swing = _safe(_swing_picks, balance) or []
+    # On the 1GB server, the equity/swing paths run the screener (twice) plus a
+    # live stock_context per pick (~35 calls) — that blows past the nginx timeout
+    # and 504s. Skip them on micro; options (OI wall selling) is the strategy.
+    if os.environ.get("AOS_PROFILE") == "micro":
+        equity, swing = [], []
+    else:
+        equity = _safe(_equity_intraday_picks, balance) or []
+        swing = _safe(_swing_picks, balance) or []
     return {
         "equity_intraday": equity,
         "options": options,

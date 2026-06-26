@@ -1,3 +1,5 @@
+import time as _time
+
 from fastapi import APIRouter, Depends
 
 from api import auth
@@ -9,10 +11,23 @@ from aos import user_wallet_views as uw_views
 
 router = APIRouter(tags=["user"])
 
+# The frontend hits /me/wallet from ~6 components at once, and each tick does a
+# live NSE/yfinance price sweep of every open position — on the 1GB single-worker
+# server those pile up and make the endpoint crawl. Throttle the *tick* per user
+# (balance/trades are still read fresh from the DB every call); live P&L just
+# refreshes at most once per interval instead of on every concurrent poll.
+_last_tick = {}
+_TICK_INTERVAL = 30  # seconds
+
 
 @router.get("/me/wallet")
 def me_wallet(user: dict = Depends(auth.current_user)):
-    return _silent(uw.status, user["id"], do_tick=True)
+    uid = user["id"]
+    now = _time.time()
+    do_tick = now - _last_tick.get(uid, 0) >= _TICK_INTERVAL
+    if do_tick:
+        _last_tick[uid] = now
+    return _silent(uw.status, uid, do_tick=do_tick)
 
 
 @router.post("/me/wallet/deposit")
