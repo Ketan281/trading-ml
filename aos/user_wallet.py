@@ -1012,66 +1012,42 @@ def _reco_to_spec(pick):
 
 
 def _pick_wall_sell(uid, available, skip_underlyings=None):
-    """Best OI wall-selling trade — the trained, backtested strategy
-    (71-89% win, PF 5.8-16.5). Returns a short-option trade spec, or None.
+    """Best OI wall-selling trade by EXPECTED VALUE — the trained, backtested
+    strategy (71-89% win, PF 5.8-16.5). Returns a short-option trade spec, or None.
 
-    Scores every wall with the same model the auto-trader uses and applies
-    tiered sizing (full / half / quarter lot) on the signal's recommended lots.
-    `skip_underlyings` lets the caller exclude indices already held, so the
-    book can carry one wall per index (NIFTY + BANKNIFTY) at once.
+    Uses the canonical EV ranker (engines.auto_trader.rank_wall_trades) so the
+    autonomous loop and the Home suggestion always pick the same trade. Applies
+    tiered sizing (full / half / quarter lot) by score. `skip_underlyings` lets
+    the book carry one wall per index (NIFTY + BANKNIFTY) at once.
     """
     held = {t["symbol"] for t in _open_trades(uid)}
-    skip_underlyings = set(skip_underlyings or ())
     try:
-        from pipelines.options_action_engine import simple_signal
-        from engines.auto_trader import _score_wall_trade
+        from engines.auto_trader import rank_wall_trades
     except Exception:
         return None
-    dow = datetime.now().weekday()
-    best = None
-    for sym in ("BANKNIFTY", "NIFTY"):
-        if sym in skip_underlyings:
-            continue
+    for s in rank_wall_trades(available, skip_underlyings=skip_underlyings):
+        sym, wtype, score = s["underlying"], s["wall_type"], s["score"]
+        leg = "PE" if wtype == "put" else "CE"
         try:
-            raw = simple_signal(sym, available)
+            strike = int(str(s["signal"]).split(" at ")[-1].strip())
         except Exception:
             continue
-        if not isinstance(raw, list):
+        if f"{sym} {strike} {leg}" in held:
             continue
-        for s in raw:
-            sig = s.get("signal", "")
-            if "STRANGLE" in sig or " at " not in sig:
-                continue
-            wtype = "put" if "PE" in sig else "call"
-            score = _score_wall_trade(s.get("dist_pct", 0), s.get("premium", 0),
-                                      dow, wtype, s.get("oi_building", False))
-            if score < 20:                       # below tradeable threshold
-                continue
-            if best is None or score > best[0]:
-                best = (score, sym, s, wtype)
-    if not best:
-        return None
-    score, sym, s, wtype = best
-    leg = "PE" if wtype == "put" else "CE"
-    try:
-        strike = int(str(s["signal"]).split(" at ")[-1].strip())
-    except Exception:
-        return None
-    if f"{sym} {strike} {leg}" in held:
-        return None
-    lots = s.get("lots") or 1                      # tiered sizing by score
-    if score < 35:
-        lots = max(1, lots // 4)
-    elif score < 55:
-        lots = max(1, lots // 2)
-    return {
-        "segment": "options", "underlying": sym, "leg": leg, "strike": strike,
-        "side": "short", "lots": lots,
-        "stop": s.get("stoploss"), "target": s.get("target"),
-        "confidence": s.get("win_pct", 0),
-        "reason": f"OI wall {leg} sell @ {strike} — score {score}, "
-                  f"{s.get('win_pct', 0)}% win, dist {s.get('dist_pct', 0)}%",
-    }
+        lots = s.get("lots") or 1                   # tiered sizing by score
+        if score < 35:
+            lots = max(1, lots // 4)
+        elif score < 55:
+            lots = max(1, lots // 2)
+        return {
+            "segment": "options", "underlying": sym, "leg": leg, "strike": strike,
+            "side": "short", "lots": lots,
+            "stop": s.get("stoploss"), "target": s.get("target"),
+            "confidence": s.get("win_pct", 0),
+            "reason": f"OI wall {leg} sell @ {strike} — EV ₹{s['ev']:.0f}, "
+                      f"{s.get('win_pct', 0)}% win, score {score}",
+        }
+    return None
 
 
 # Max concurrent Indian-market positions the auto-trader will carry — one OI
@@ -1117,20 +1093,33 @@ def _auto_open_one(uid):
     # Budget per position = an equal share of free capital across the remaining
     # slots, so the book holds one wall PER INDEX instead of spending the whole
     # account on the first. open_trade still hard-caps against real free margin.
-    per_trade_budget = round(available / slots_left * size_mult, 2)
-    if per_trade_budget <= 0:
+    base_budget = round(available / slots_left * size_mult, 2)
+    if base_budget <= 0:
         return None
 
+    # Edge-tracker trust: each engine's size is scaled by how its LIVE results
+    # hold up vs. its backtest. A diverging engine is down-weighted (and skipped
+    # if trust → 0). Walls start trusted; equity starts at half until proven.
+    try:
+        from engines.edge_tracker import trust as _edge_trust
+    except Exception:
+        _edge_trust = lambda e: 1.0
+
     # 1) OI wall selling — the strategy the system is built and backtested on.
-    wall = _pick_wall_sell(uid, per_trade_budget, skip_underlyings=held_underlyings)
-    if wall:
-        wall["reason"] = f"[ML auto] {wall['reason']}"
-        res = open_trade(uid, wall)
-        if not res.get("error"):
-            return res.get("trade")
+    wall_budget = round(base_budget * _edge_trust("wall_selling"), 2)
+    if wall_budget > 0:
+        wall = _pick_wall_sell(uid, wall_budget, skip_underlyings=held_underlyings)
+        if wall:
+            wall["reason"] = f"[ML auto] {wall['reason']}"
+            res = open_trade(uid, wall)
+            if not res.get("error"):
+                return res.get("trade")
 
     # 2) Fallback: intelligence-backed equity / directional recommendation.
-    pick = _pick_best_recommendation(uid, per_trade_budget)
+    eq_budget = round(base_budget * _edge_trust("intraday_equity"), 2)
+    if eq_budget <= 0:
+        return None
+    pick = _pick_best_recommendation(uid, eq_budget)
     if not pick:
         return None
 
@@ -1229,6 +1218,16 @@ def ml_tick_all():
     indian_uids = set(ml_indian_users())
     forex_uids = set(ml_forex_users())
     all_uids = indian_uids | forex_uids
+
+    # Backend visibility: log each engine's live-vs-backtest trust (no UI).
+    if indian_uids:
+        try:
+            from engines.edge_tracker import report as _edge_report
+            log.info("edge trust: %s",
+                     {e: d["trust"] for e, d in _edge_report().items()})
+        except Exception:
+            pass
+
     results = []
     for uid in all_uids:
         try:

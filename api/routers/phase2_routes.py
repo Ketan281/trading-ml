@@ -362,7 +362,7 @@ def auto_wall_signals():
 
 
 def _build_wall_signals():
-    from engines.auto_trader import _score_wall_trade, get_account
+    from engines.auto_trader import _score_wall_trade, _wall_ev, best_trade_today, get_account
     from pipelines.options_action_engine import simple_signal
     from datetime import datetime
 
@@ -404,6 +404,7 @@ def _build_wall_signals():
                     "tier": tier,
                     "tier_label": tier_label,
                     "tradeable": sc >= 20,
+                    "ev": _wall_ev(s),
                 })
 
             scored.sort(key=lambda x: x["score"], reverse=True)
@@ -418,5 +419,6 @@ def _build_wall_signals():
             "deployed": round(account.get("deployed", 0), 0),
         },
         "signals": results,
+        "best": best_trade_today(capital),   # canonical EV-ranked daily best
         "timestamp": datetime.now().isoformat(),
     }

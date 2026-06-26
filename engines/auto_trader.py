@@ -139,6 +139,61 @@ def _score_wall_trade(dist_pct, entry_prem, dow, wall_type, oi_building):
     return score
 
 
+def _wall_ev(sig):
+    """Expected value of an OI wall sell in rupees:
+    EV = P(win)·max_profit − (1−P(win))·max_loss.
+    P(win) is the ML-calibrated prob the wall holds (win_pct)."""
+    p = (sig.get("win_pct", 0) or 0) / 100.0
+    max_profit = sig.get("max_profit", 0) or 0
+    max_loss = sig.get("max_loss", 0) or 0
+    return round(p * max_profit - (1 - p) * max_loss, 1)
+
+
+def rank_wall_trades(capital=1_000_000, skip_underlyings=None):
+    """All tradeable OI wall sells across NIFTY + BANKNIFTY, ranked by EXPECTED
+    VALUE (desc). EV captures 'highest probability of *profit*' honestly — it
+    weights the ML win-probability by what's actually won vs. risked, so a rich
+    82%-win wall outranks a thin 90%-win one. Ties break by win% then score.
+
+    Each returned signal is enriched with `score`, `ev`, `underlying`, `wall_type`.
+    """
+    from pipelines.options_action_engine import simple_signal
+    from datetime import datetime
+    skip = set(skip_underlyings or ())
+    dow = datetime.now().weekday()
+    out = []
+    for sym in ("NIFTY", "BANKNIFTY"):
+        if sym in skip:
+            continue
+        try:
+            raw = simple_signal(sym, capital)
+        except Exception:
+            continue
+        if not isinstance(raw, list):
+            continue
+        for s in raw:
+            sig = s.get("signal", "")
+            if "STRANGLE" in sig or " at " not in sig:
+                continue
+            wtype = "put" if "PE" in sig else "call"
+            score = _score_wall_trade(s.get("dist_pct", 0), s.get("premium", 0),
+                                      dow, wtype, s.get("oi_building", False))
+            if score < 20:                        # below tradeable threshold
+                continue
+            out.append({**s, "underlying": sym, "wall_type": wtype,
+                        "score": score, "ev": _wall_ev(s)})
+    out.sort(key=lambda c: (c["ev"], c.get("win_pct", 0), c["score"]), reverse=True)
+    return out
+
+
+def best_trade_today(capital=1_000_000):
+    """The single highest expected-value OI wall sell right now, or None.
+    This is the system's canonical 'daily best trade' — used by the autonomous
+    loop and the Home suggestion so they always agree."""
+    ranked = rank_wall_trades(capital)
+    return ranked[0] if ranked else None
+
+
 def _get_wall_signals():
     """Get OI wall selling signals from live chain data."""
     try:
