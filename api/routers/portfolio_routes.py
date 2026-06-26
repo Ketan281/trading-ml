@@ -6,6 +6,7 @@ from typing import Optional, List
 
 from api import auth
 from api.router import _silent
+from api.cache import cached
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
@@ -14,14 +15,19 @@ router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 def daily_brief(user: dict = Depends(auth.current_user)):
     """Today's trading plan: signals, positions, risk, and recommended actions."""
     from engines.portfolio_manager import daily_brief
-    return _silent(daily_brief, user["id"])
+    # Cache per-user — the brief is built from CSV signals + DB reads that don't
+    # change intra-minute. Without this, every frontend poll recomputes it and
+    # competes with live-tick / NSE work for the single worker, causing 504s.
+    return cached(f"brief:{user['id']}",
+                  lambda: _silent(daily_brief, user["id"]), ttl=180)
 
 
 @router.get("/risk")
 def risk_dashboard(user: dict = Depends(auth.current_user)):
     """Real-time risk dashboard: exposure, concentration, drawdown, alerts."""
     from engines.portfolio_manager import risk_dashboard
-    return _silent(risk_dashboard, user["id"])
+    return cached(f"risk:{user['id']}",
+                  lambda: _silent(risk_dashboard, user["id"]), ttl=120)
 
 
 @router.get("/performance")

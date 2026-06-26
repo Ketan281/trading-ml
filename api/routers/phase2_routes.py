@@ -75,24 +75,31 @@ def psychology_events(limit: int = Query(50, ge=1, le=500)):
 def regime_status():
     """Current market regime classification + day type."""
     if os.environ.get("AOS_PROFILE") == "micro":
-        from engines.regime_v2 import STRATEGY_ADAPTATION
-        from pipelines.market_regime import _load_index, regime_at
-        macro = "unknown"
-        try:
-            df = _load_index("NIFTY")
-            if df is not None:
-                r = regime_at(df)
-                macro = r.get("label", "unknown") if isinstance(r, dict) else "unknown"
-        except Exception:
-            pass
-        return {
-            "macro_regime": macro,
-            "day_type": "range_day",
-            "regime_confidence": 0.3,
-            "strategy_adaptation": STRATEGY_ADAPTATION["range_day"],
-        }
+        # Cache the micro read too — it re-parses the NIFTY history CSV on every
+        # hit, and RegimeStrip + DailyBrief both poll it. Uncached, it competed
+        # with live-tick / NSE work for the single worker and caused 504s.
+        return _cached("regime_micro", _build_regime_micro, 300)
     from engines.regime_v2 import classify_regime_v2
     return _cached("regime", classify_regime_v2, 300)
+
+
+def _build_regime_micro():
+    from engines.regime_v2 import STRATEGY_ADAPTATION
+    from pipelines.market_regime import _load_index, regime_at
+    macro = "unknown"
+    try:
+        df = _load_index("NIFTY")
+        if df is not None:
+            r = regime_at(df)
+            macro = r.get("label", "unknown") if isinstance(r, dict) else "unknown"
+    except Exception:
+        pass
+    return {
+        "macro_regime": macro,
+        "day_type": "range_day",
+        "regime_confidence": 0.3,
+        "strategy_adaptation": STRATEGY_ADAPTATION["range_day"],
+    }
 
 
 # ── Conviction Grading ─────────────────────────────────
