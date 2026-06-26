@@ -135,11 +135,47 @@ def live_prices(tm):
 
 
 _price_cache = {}   # symbol -> (timestamp, price_or_None)
-_CACHE_TTL = 60     # seconds — avoid hammering yfinance
-_FAIL_TTL = 300     # seconds — back off longer on failures
+_CACHE_TTL = 60     # seconds — avoid hammering the data sources
+_FAIL_TTL = 120     # seconds — back off on failures, but recover reasonably fast
+
+
+def _nse_equity_ltp(symbol):
+    """Live equity LTP from NSE, reusing the same warmed NSELive session that
+    the option chain uses. This is the PRIMARY source on the Oracle server,
+    where yfinance is blocked/rate-limited but NSE works."""
+    try:
+        from pipelines.options.chain_live_intel import nse as _nse
+        q = _nse.stock_quote(symbol.upper())
+        pi = (q or {}).get("priceInfo", {}) or {}
+        px = pi.get("lastPrice") or pi.get("close") or pi.get("previousClose")
+        return float(px) if px else None
+    except Exception:
+        return None
+
+
+def _yf_price(symbol):
+    """Fallback last price from yfinance (works locally; flaky on the server)."""
+    try:
+        import yfinance as yf
+        from pipelines.intraday import INDEX_YF
+        yf_sym = INDEX_YF.get(symbol, f"{symbol}.NS")
+        t = yf.Ticker(yf_sym)
+        fi = t.fast_info
+        for k in ("last_price", "lastPrice"):
+            v = fi.get(k) if hasattr(fi, "get") else getattr(fi, k, None)
+            if v:
+                return float(v)
+        h = yf.Ticker(yf_sym).history(period="1d")
+        if len(h):
+            return float(h["Close"].iloc[-1])
+    except Exception:
+        pass
+    return None
+
 
 def _stock_price(symbol):
-    """Robust last price with caching to avoid yfinance spam."""
+    """Robust last price with caching. Tries NSE live first (the source that
+    actually works on the 1GB Oracle box), then yfinance as a fallback."""
     import time as _time
     now = _time.time()
     if symbol in _price_cache:
@@ -148,30 +184,12 @@ def _stock_price(symbol):
         if now - ts < ttl:
             return px
 
-    import yfinance as yf
-    from pipelines.intraday import INDEX_YF
-    yf_sym = INDEX_YF.get(symbol, f"{symbol}.NS")
-    try:
-        t = yf.Ticker(yf_sym)
-        fi = t.fast_info
-        for k in ("last_price", "lastPrice"):
-            v = fi.get(k) if hasattr(fi, "get") else getattr(fi, k, None)
-            if v:
-                px = float(v)
-                _price_cache[symbol] = (now, px)
-                return px
-    except Exception:
-        pass
-    try:
-        h = yf.Ticker(yf_sym).history(period="1d")
-        if len(h):
-            px = float(h["Close"].iloc[-1])
-            _price_cache[symbol] = (now, px)
-            return px
-    except Exception:
-        pass
-    _price_cache[symbol] = (now, None)
-    return None
+    px = _nse_equity_ltp(symbol)
+    if px is None:
+        px = _yf_price(symbol)
+
+    _price_cache[symbol] = (now, px)
+    return px
 
 
 def market_open(now=None):

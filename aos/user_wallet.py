@@ -52,6 +52,11 @@ FUT_SL_PCT, FUT_TGT_PCT = 0.004, 0.008
 # Index futures are leveraged: only SPAN+exposure margin is blocked (~15% of
 # notional), while P&L accrues on the FULL contract value (real leverage).
 FUT_MARGIN_PCT = 0.15
+# Selling (writing) index options — the OI wall-selling strategy. Blocked
+# margin ≈ a fraction of the strike notional per lot; P&L is premium decay.
+# When a wall signal supplies its own stop/target premiums we use those.
+OPT_SHORT_MARGIN_PCT = 0.12
+OPT_SHORT_SL_PCT, OPT_SHORT_TGT_PCT = 0.60, 0.50
 # Default intraday-equity bands when the caller doesn't supply levels.
 EQ_SL_PCT, EQ_TGT_PCT = 0.01, 0.02
 INDICES = ("NIFTY", "BANKNIFTY")
@@ -509,6 +514,9 @@ def _plan_option(spec, available):
     leg = (spec.get("leg") or "CE").upper()
     if leg not in ("CE", "PE"):
         raise _PlanError("leg must be CE or PE")
+    side = (spec.get("side") or "long").lower()
+    if side not in ("long", "short"):
+        raise _PlanError("option side must be long or short")
     ch = fetch_chain(u)
     if not ch:
         raise _PlanError(f"could not read {u} option chain (market closed / NSE down)")
@@ -519,16 +527,35 @@ def _plan_option(spec, available):
     if ltp <= 0:
         raise _PlanError(f"{u} {strike} {leg} has no tradable premium right now")
     lot = LOT[u]
-    cost1 = ltp * lot
-    lots = _affordable_lots(cost1, available, spec.get("lots"))
+
+    if side == "long":
+        cost1 = ltp * lot
+        lots = _affordable_lots(cost1, available, spec.get("lots"))
+        stop = spec.get("stop") or round(ltp * (1 - OPT_SL_PCT), 2)
+        target = spec.get("target") or round(ltp * (1 + OPT_TGT_PCT), 2)
+        cost = round(cost1 * lots, 2)
+        reason = (spec.get("reason") or
+                  f"Manual {leg} on {u} ATM {strike} @ {round(ltp,2)} × {lots} lot(s).")
+    else:
+        # Selling/writing the option (OI wall selling). Block SPAN-style margin
+        # per lot; the premium decay is the profit (handled by _signed_gross,
+        # which flips sign for shorts). Stop is ABOVE the entry premium, target
+        # BELOW it — honour the wall signal's levels when supplied.
+        margin1 = strike * lot * OPT_SHORT_MARGIN_PCT
+        lots = _affordable_lots(margin1, available, spec.get("lots"))
+        stop = spec.get("stop") or round(ltp * (1 + OPT_SHORT_SL_PCT), 2)
+        target = spec.get("target") or round(ltp * (1 - OPT_SHORT_TGT_PCT), 2)
+        cost = round(margin1 * lots, 2)
+        reason = (spec.get("reason") or
+                  f"SELL {leg} on {u} {strike} @ {round(ltp,2)} × {lots} lot(s) "
+                  f"(~₹{round(margin1*lots):,} margin).")
+
     qty = lots * lot
-    return {"kind": "option", "segment": "options", "side": "long",
+    return {"kind": "option", "segment": "options", "side": side,
             "underlying": u, "chart_symbol": u, "strike": strike, "leg": leg,
             "symbol": f"{u} {strike} {leg}", "qty": qty, "lots": lots,
-            "entry": round(ltp, 2), "stop": round(ltp * (1 - OPT_SL_PCT), 2),
-            "target": round(ltp * (1 + OPT_TGT_PCT), 2), "cost": round(cost1 * lots, 2),
-            "reason": spec.get("reason") or
-                      f"Manual {leg} on {u} ATM {strike} @ {round(ltp,2)} × {lots} lot(s)."}
+            "entry": round(ltp, 2), "stop": round(stop, 2),
+            "target": round(target, 2), "cost": cost, "reason": reason}
 
 
 def _plan_futures(spec, available):
@@ -725,6 +752,13 @@ def _close(t, w, price, reason):
         _save_forex_wallet(w)
     else:
         _save_wallet(w)
+        # Feed the backend discipline engine real outcomes so its loss-limit /
+        # cooldown / consecutive-loss breakers actually arm (Indian book only).
+        try:
+            from engines.psychology_engine import record_trade_result
+            record_trade_result(net, w.get("balance", 0))
+        except Exception:
+            pass
     try:
         from aos import memory as mem
         ccy = "$" if is_forex else "₹"
@@ -808,7 +842,7 @@ def close_trade(uid, trade_id, price=None):
     try:
         modes = get_mode(uid)
         market_key = "forex_trade_mode" if is_forex else "indian_trade_mode"
-        if modes.get(market_key) == "ml_auto":
+        if modes.get(market_key) == "ml":
             from aos.sim_wallet import SQUARE_OFF
             from datetime import time as dtime
             now = datetime.now()
@@ -977,27 +1011,126 @@ def _reco_to_spec(pick):
     return spec
 
 
-def auto_open_trade(uid):
-    """Pick and open the best Indian-market trade for an ML-mode user.
+def _pick_wall_sell(uid, available, skip_underlyings=None):
+    """Best OI wall-selling trade — the trained, backtested strategy
+    (71-89% win, PF 5.8-16.5). Returns a short-option trade spec, or None.
 
-    Uses the full intelligence-backed recommendation engine:
-    FII/DII · PCR · intermarket · volume profile · S/R · 30 patterns ·
-    20 fundamentals · sector rotation · regime · event calendar.
+    Scores every wall with the same model the auto-trader uses and applies
+    tiered sizing (full / half / quarter lot) on the signal's recommended lots.
+    `skip_underlyings` lets the caller exclude indices already held, so the
+    book can carry one wall per index (NIFTY + BANKNIFTY) at once.
+    """
+    held = {t["symbol"] for t in _open_trades(uid)}
+    skip_underlyings = set(skip_underlyings or ())
+    try:
+        from pipelines.options_action_engine import simple_signal
+        from engines.auto_trader import _score_wall_trade
+    except Exception:
+        return None
+    dow = datetime.now().weekday()
+    best = None
+    for sym in ("BANKNIFTY", "NIFTY"):
+        if sym in skip_underlyings:
+            continue
+        try:
+            raw = simple_signal(sym, available)
+        except Exception:
+            continue
+        if not isinstance(raw, list):
+            continue
+        for s in raw:
+            sig = s.get("signal", "")
+            if "STRANGLE" in sig or " at " not in sig:
+                continue
+            wtype = "put" if "PE" in sig else "call"
+            score = _score_wall_trade(s.get("dist_pct", 0), s.get("premium", 0),
+                                      dow, wtype, s.get("oi_building", False))
+            if score < 20:                       # below tradeable threshold
+                continue
+            if best is None or score > best[0]:
+                best = (score, sym, s, wtype)
+    if not best:
+        return None
+    score, sym, s, wtype = best
+    leg = "PE" if wtype == "put" else "CE"
+    try:
+        strike = int(str(s["signal"]).split(" at ")[-1].strip())
+    except Exception:
+        return None
+    if f"{sym} {strike} {leg}" in held:
+        return None
+    lots = s.get("lots") or 1                      # tiered sizing by score
+    if score < 35:
+        lots = max(1, lots // 4)
+    elif score < 55:
+        lots = max(1, lots // 2)
+    return {
+        "segment": "options", "underlying": sym, "leg": leg, "strike": strike,
+        "side": "short", "lots": lots,
+        "stop": s.get("stoploss"), "target": s.get("target"),
+        "confidence": s.get("win_pct", 0),
+        "reason": f"OI wall {leg} sell @ {strike} — score {score}, "
+                  f"{s.get('win_pct', 0)}% win, dist {s.get('dist_pct', 0)}%",
+    }
 
-    Respects portfolio risk: skips if already holding the same symbol,
-    applies meta-learning sizing, and enforces minimum confidence threshold.
+
+# Max concurrent Indian-market positions the auto-trader will carry — one OI
+# wall per index (NIFTY + BANKNIFTY) for fuller capital use, still bounded.
+MAX_INDIAN_POSITIONS = 2
+
+
+def _auto_open_one(uid):
+    """Open ONE new best Indian-market trade for an ML-mode user, or None.
+
+    Priority: the trained OI wall-selling strategy (71-89% win) first, then the
+    full intelligence-backed recommendation engine (FII/DII · PCR · intermarket
+    · volume profile · S/R · patterns · fundamentals · regime) as a fallback.
+
+    Caps the book at MAX_INDIAN_POSITIONS and skips indices already held, so a
+    second call adds the *other* index rather than doubling up.
     """
     indian_opens = [t for t in _open_trades(uid) if t.get("segment") != "forex"]
-    if indian_opens:
+    slots_left = MAX_INDIAN_POSITIONS - len(indian_opens)
+    if slots_left <= 0:
         return None
+    held_underlyings = {t.get("underlying") or t.get("symbol") for t in indian_opens}
     w = get_wallet(uid)
     available = round(w["balance"] - _locked_margin(uid, segment_filter="indian"), 2)
+
+    # Backend discipline gate — the system stops or de-risks itself on losing
+    # streaks, daily/weekly/monthly loss limits, cooldowns and overtrading. This
+    # is what keeps the autonomous account from blowing up. No UI: the frontend
+    # only ever sees the managed result.
+    risk_mult = 1.0
+    try:
+        from engines.psychology_engine import can_trade, dynamic_risk_reduction
+        gate = can_trade(w["balance"], {"confidence": 0.85, "conviction": 100})
+        if not gate.get("allowed"):
+            return None
+        risk_mult = dynamic_risk_reduction(1.0)   # 1.0 / 0.75 / 0.5 / 0
+    except Exception:
+        pass
+
     from aos.meta_learning import sizing_multiplier
     regime = _current_regime()
-    size_mult = sizing_multiplier("options_engine", regime)
-    adjusted_balance = round(available * size_mult, 2)
+    size_mult = sizing_multiplier("options_engine", regime) * risk_mult
+    # Budget per position = an equal share of free capital across the remaining
+    # slots, so the book holds one wall PER INDEX instead of spending the whole
+    # account on the first. open_trade still hard-caps against real free margin.
+    per_trade_budget = round(available / slots_left * size_mult, 2)
+    if per_trade_budget <= 0:
+        return None
 
-    pick = _pick_best_recommendation(uid, adjusted_balance)
+    # 1) OI wall selling — the strategy the system is built and backtested on.
+    wall = _pick_wall_sell(uid, per_trade_budget, skip_underlyings=held_underlyings)
+    if wall:
+        wall["reason"] = f"[ML auto] {wall['reason']}"
+        res = open_trade(uid, wall)
+        if not res.get("error"):
+            return res.get("trade")
+
+    # 2) Fallback: intelligence-backed equity / directional recommendation.
+    pick = _pick_best_recommendation(uid, per_trade_budget)
     if not pick:
         return None
 
@@ -1032,6 +1165,23 @@ def auto_open_trade(uid):
     if res.get("error"):
         return None
     return res.get("trade")
+
+
+def auto_open_trade(uid):
+    """Open the single best new Indian-market trade (backward-compatible)."""
+    return _auto_open_one(uid)
+
+
+def auto_open_trades(uid, max_new=MAX_INDIAN_POSITIONS):
+    """Fill the Indian book with up to `max_new` new trades — one OI wall per
+    index (NIFTY + BANKNIFTY) when both qualify. Returns the opened trades."""
+    opened = []
+    for _ in range(max_new):
+        trade = _auto_open_one(uid)
+        if not trade:
+            break
+        opened.append(trade)
+    return opened
 
 
 def auto_open_forex_trade(uid):
@@ -1087,12 +1237,11 @@ def ml_tick_all():
             log.warning("tick_user(%s) failed: %s", uid, e)
         if uid in indian_uids and indian_market_open:
             try:
-                t = auto_open_trade(uid)
-                if t:
+                for t in auto_open_trades(uid):
                     log.info("ML opened Indian trade for uid %s: %s", uid, t["symbol"])
                     results.append({"uid": uid, "market": "indian", "opened": t["symbol"]})
             except Exception as e:
-                log.warning("auto_open_trade(%s) failed: %s", uid, e)
+                log.warning("auto_open_trades(%s) failed: %s", uid, e)
         if uid in forex_uids:
             try:
                 t = auto_open_forex_trade(uid)

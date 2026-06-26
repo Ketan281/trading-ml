@@ -26,9 +26,10 @@ def trigger_ml_immediately(uid, market):
         indian_market_open = dtime(9, 15) <= now_time <= SQUARE_OFF
         if indian_market_open:
             try:
-                trade = uw.auto_open_trade(uid)
-                if trade:
-                    opened.append({"market": "indian", "symbol": trade["symbol"], "trade": trade})
+                trades = uw.auto_open_trades(uid)
+                if trades:
+                    for trade in trades:
+                        opened.append({"market": "indian", "symbol": trade["symbol"], "trade": trade})
                 else:
                     opened.append({"market": "indian", "symbol": None,
                                    "info": "no actionable Indian trade right now"})
